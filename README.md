@@ -1,0 +1,2 @@
+# AnnotaPipeline
+Genome annotation pipeline
