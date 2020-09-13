@@ -522,7 +522,7 @@ def no_hit(basename, all_anot, blast6):
     for a in list_hit:
         if a in list_all:
             list_all.remove(a)
-    no_hit.write("\n".join(list_all))
+    no_hit.write("\n".join(list_all) + "\n")
     no_hit.close()
     
     # =========================================================================================
