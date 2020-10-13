@@ -519,10 +519,11 @@ subprocess.run([
 )
 
 # Cleaning the house
-os.remove("Annotated_Products.fasta")
-os.remove("Hypothetical_Products.fasta")
-os.remove("hmmscan.err")
-os.rmdir("temp/")
+try:
+    os.remove("Annotated_Products.fasta")
+    os.remove("Hypothetical_Products.fasta")
+    os.remove("hmmscan.err")
+    os.rmdir("temp/")
 
 logger.info("INTERPROSCAN, HMMSCAN and RPSBLAST execution and parsing is finished")
 
@@ -570,9 +571,9 @@ subprocess.run([
     str('"%s"' % str(AnnotaPipeline.get('organism')))
 ]
 )
-
-os.system("sort -V All_annotation_products.txt -o All_Annotated_Products.txt")
-os.remove("All_annotation_products.txt")
+try:
+    os.system("sort -V All_annotation_products.txt -o All_Annotated_Products.txt")
+    os.remove("All_annotation_products.txt")
 
 logger.info("Annota annotated the annotations on the annoted file.")
 
