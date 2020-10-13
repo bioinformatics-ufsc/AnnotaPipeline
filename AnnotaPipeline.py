@@ -337,7 +337,7 @@ logger.info("Running INTERPROSCAN with Hypothetical Proteins")
 # INTERPROSCAN: commandline
 
 # General
-interpro_command_line = "interproscan.sh -i Hypothetical_Products.fasta -o " \
+interpro_command_line = str(AnnotaPipeline.get('interpro_exe')) + " -i Hypothetical_Products.fasta -o " \
                         + str(AnnotaBasename + "_interproscan_hypothetical_output.gff3") + \
                         " -f GFF3 -t p -goterms -iprlookup"
 
@@ -372,7 +372,7 @@ logger.info("Running INTERPROSCAN with Annotated Proteins")
 # INTERPROSCAN: commandline
 
 # General
-interpro_command_line = "interproscan.sh -i Annotated_Products.fasta -o " \
+interpro_command_line = str(AnnotaPipeline.get('interpro_exe')) + " -i Annotated_Products.fasta -o " \
                         + str(AnnotaBasename + "_interproscan_annotated_output.gff3") + \
                         " -f GFF3 -t p -goterms -iprlookup"
 
@@ -397,7 +397,7 @@ logger.info("INTERPROSCAN finished")
 logger.info("Running HMMSCAN with Hypothetical Proteins")
 
 # General
-hmmscan_command_line = "hmmscan --cpu " + str(AnnotaPipeline.get("threads")) + " --tblout " \
+hmmscan_command_line = str(AnnotaPipeline.get('hmm_exe')) + " --cpu " + str(AnnotaPipeline.get("threads")) + " --tblout " \
                        + str(AnnotaBasename + "_hmmscan_output.txt") + \
                        " --noali"
 
@@ -432,7 +432,7 @@ logger.info("HMMSCAN finished")
 logger.info("Running RPSBLAST with Hypothetical Proteins")
 
 # General
-rpsblast_command_line = "rpsblast -query Hypothetical_Products.fasta -out " \
+rpsblast_command_line = str(AnnotaPipeline.get('blast_path')) + "/rpsblast -query Hypothetical_Products.fasta -out " \
                         + str(AnnotaBasename + "_rpsblast_output.outfmt6") + \
                         " -db " + str(AnnotaPipeline.get('cdd')) + \
                         " -outfmt \"6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle\"" + \
