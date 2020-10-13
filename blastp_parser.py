@@ -13,12 +13,10 @@
 
 import argparse
 import subprocess
-import datetime
 import logging
 import sys
 import re
-import numpy
-import os
+from shutil import which
 
 '''---ARGUMENTS AND [--help / -help / -h]------------------------------------'''
 
@@ -211,6 +209,13 @@ def temporary_query(arq):
     del temp[0]
     temp.insert(0, "QueryTemp")
     arq.append("\t".join(temp))
+
+
+def is_tool(name):
+    if which(name) is None:
+        logging.error("Program: " + str(name) + " must be avaliable in $PATH")
+        logging.shutdown()
+        sys.exit(1)
 
 
 '''---Keywords-------------------------------------------------------------'''
@@ -542,6 +547,7 @@ if args.trytp is None and args.nr is None:
     exit("DATABASE ERROR")
 else:
     if args.trytp is None:
+        is_tool("blastp")
         swiss_run()
         #odb_out_name_7 = str(args.basename + "_BLASTp_AAvsNRDB.outfmt7")
         odb_out_name = str(args.basename + "_BLASTp_AAvsNRDB.outfmt6")
@@ -552,11 +558,12 @@ else:
         # ------------------------------
         logger.info("Running parser")
         parser_nr(args.basename, odb_out_name, args.id, args.pos, args.cov)
-        no_hit(str(args.basename), str(args.basename) + "_NR_annotations.txt",odb_out_name)
+        no_hit(str(args.basename), str(args.basename) + "_NR_annotations.txt", odb_out_name)
         # ----------Pseudotrat--------------
         logger.info("blast format 7 done")
 
     else:
+        is_tool("blastp")
         swiss_run()
         #odb_out_name_7 = str(args.basename + "_BLASTp_AAvsTriTrypDB.outfmt7")
         odb_out_name = str(args.basename + "_BLASTp_AAvsSpecifiedDB.outfmt6")

@@ -14,10 +14,10 @@ import os
 import sys
 import subprocess
 import pathlib
-import datetime
 import argparse
 import configparser
 import logging
+from shutil import which
 from Bio import SeqIO
 
 # --- SCRIPT LOCATION ----------------------------------------------------------
@@ -65,7 +65,7 @@ optionalNamed.add_argument(
     '-c', '--config', dest='annotaconfig',
     metavar='[AnnotaPipeline.config]',
     default=pipeline_pwd / "AnnotaPipeline.config",
-    help=('configuration file for AnnotaPipeline')
+    help='configuration file for AnnotaPipeline'
 )
 
 # custom [--help] argument
@@ -82,6 +82,7 @@ args = parser.parse_args()
 # --- CREATE LogFile -----------------------------------------------------------
 
 logger = logging.getLogger('AnnotaPipeline')
+
 
 # ----------------------Redirect STDOUT and STDERR to logfile--------------
 
@@ -132,7 +133,6 @@ config.optionxform = str  # set default: get varibles as str
 config.read(str(config_pwd))  # read configuration file
 config.sections()  # get sections of each program
 
-
 # to get variables type: config[_SECTION_].get('_variable_name_')
 
 # --- FUNCTIONS ----------------------------------------------------------------
@@ -171,12 +171,29 @@ def sequence_cleaner(fasta_file, min_length=0, por_n=100):
         # Take the current sequence
         sequence = str(seq_record.seq).upper()
         # Check if the current sequence is according to the user parameters
-        if len(sequence) >= min_length and ((float(sequence.count("N"))/float(len(sequence)))*100 <= por_n):
+        if len(sequence) >= min_length and ((float(sequence.count("N")) / float(len(sequence))) * 100 <= por_n):
             output_file.write(">" + str(seq_record.id) + "\n" + str(sequence) + "\n")
     output_file.close()
 
 
+def check_file(file):
+    if os.path.isfile(file) == 0:
+        logging.error("File " + str(file) + " does not exist, please check earlier steps")
+        logging.shutdown()
+        sys.exit(1)
+
+
+def is_tool(name):
+    if which(name) is None:
+        logging.error("Program: " + str(name) + " must be avaliable in $PATH")
+        logging.shutdown()
+        sys.exit(1)
+
+
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
+is_tool("blastp")
+is_tool("perl")
+is_tool("rpsblast")
 
 sections_config = config.sections()
 check_parameters(sections_config)
@@ -244,6 +261,9 @@ logger.info(str(aug_command))
 
 subprocess.getoutput(aug_command)
 
+# Check if expected file exists
+check_file(str("AUGUSTUS_" + str(AnnotaBasename) + ".gff"))
+
 logger.info("AUGUSTUS prediction is finished")
 
 # Parsing AUGUSTUS files
@@ -269,6 +289,9 @@ logger.info("SEQUENCE CLEANER has started")
 
 # Clean only with min_size
 sequence_cleaner(str(aug_parsing + ".aa"), int(seq_cleaner.get('minsize_seq')))
+
+# Check if expected file exists
+check_file(str("Clear_" + aug_parsing + ".aa"))
 
 logger.info("SEQUENCE CLEANER is finished. Please check Clear_" + aug_parsing + ".aa")
 
@@ -310,6 +333,11 @@ subprocess.run([
 
 logger.info("BLAST execution and parsing is finished")
 
+# Check if expected file exists
+check_file(str(AnnotaBasename + "_no_hit_products.txt"))
+check_file(str(AnnotaBasename + "_hypothetical_products.txt"))
+check_file(str(AnnotaBasename + "_annotated_products.txt"))
+
 os.chdir(annota_pwd)
 
 # --- INTERPROSCAN -------------------------------------------------------
@@ -328,8 +356,11 @@ data1 = [line.strip() for line in open(hypothetical_id, "r")]
 data2 = [line.strip() for line in open(no_hit_id, "r")]
 
 fasta_fetcher(str(augustus_folder / str("Clear_" + aug_parsing + ".aa")),
-              (data1+data2),
+              (data1 + data2),
               "Hypothetical_Products.fasta")
+
+# Check if expected file exists
+check_file("Hypothetical_Products.fasta")
 
 logger.info("InterProScan Hypothetical Proteins file preparation complete")
 
@@ -355,15 +386,21 @@ logger.info(str(interpro_command_line))
 
 subprocess.getoutput(interpro_command_line)
 
+# Check if expected file exists
+check_file(str(AnnotaBasename + "_interproscan_hypothetical_output.gff3"))
+
 logger.info("Preparing file for InterProScan Annotated Proteins execution")
 
 annotated_file = str(blast_folder / str(AnnotaBasename + "_annotated_products.txt"))
-os.system("cat " + annotated_file + " | cut -f 1 > Temp_annotated_products.txt") ### Using only IDs from the file
+os.system("cat " + annotated_file + " | cut -f 1 > Temp_annotated_products.txt")  # Using only IDs from the file
 annotated_id = [line.strip() for line in open("Temp_annotated_products.txt", "r")]
 
 fasta_fetcher(str(augustus_folder / str("Clear_" + aug_parsing + ".aa")),
               annotated_id,
               "Annotated_Products.fasta")
+
+# Check if expected file exists
+check_file("Annotated_Products.fasta")
 
 logger.info("InterProScan Annotated Proteins file preparation complete")
 os.remove("Temp_annotated_products.txt")
@@ -390,6 +427,9 @@ logger.info(str(interpro_command_line))
 
 subprocess.getoutput(interpro_command_line)
 
+# Check if expected file exists
+check_file(str(AnnotaBasename + "_interproscan_annotated_output.gff3"))
+
 logger.info("INTERPROSCAN finished")
 
 # --------------------------------------------------------------------
@@ -397,7 +437,8 @@ logger.info("INTERPROSCAN finished")
 logger.info("Running HMMSCAN with Hypothetical Proteins")
 
 # General
-hmmscan_command_line = str(AnnotaPipeline.get('hmm_exe')) + " --cpu " + str(AnnotaPipeline.get("threads")) + " --tblout " \
+hmmscan_command_line = str(AnnotaPipeline.get('hmm_exe')) + " --cpu " + str(
+    AnnotaPipeline.get("threads")) + " --tblout " \
                        + str(AnnotaBasename + "_hmmscan_output.txt") + \
                        " --noali"
 
@@ -425,6 +466,9 @@ logger.info(str(hmmscan_command_line))
 
 subprocess.getoutput(hmmscan_command_line)
 
+# Check if expected file exists
+check_file(str(AnnotaBasename + "_hmmscan_output.txt"))
+
 logger.info("HMMSCAN finished")
 
 # -------------------------------------------------------------------
@@ -432,7 +476,7 @@ logger.info("HMMSCAN finished")
 logger.info("Running RPSBLAST with Hypothetical Proteins")
 
 # General
-rpsblast_command_line = str(AnnotaPipeline.get('blast_path')) + "/rpsblast -query Hypothetical_Products.fasta -out " \
+rpsblast_command_line = "rpsblast -query Hypothetical_Products.fasta -out " \
                         + str(AnnotaBasename + "_rpsblast_output.outfmt6") + \
                         " -db " + str(AnnotaPipeline.get('cdd')) + \
                         " -outfmt \"6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle\"" + \
@@ -450,6 +494,9 @@ for variable in config['RPSBLAST']:
 logger.info(str(rpsblast_command_line))
 
 subprocess.getoutput(rpsblast_command_line)
+
+# Check if expected file exists
+check_file(str(AnnotaBasename + "_rpsblast_output.outfmt6"))
 
 logger.info("RPSBLAST finished")
 
@@ -471,6 +518,7 @@ subprocess.run([
 ]
 )
 
+# Cleaning the house
 os.remove("Annotated_Products.fasta")
 os.remove("Hypothetical_Products.fasta")
 os.remove("hmmscan.err")
@@ -499,6 +547,9 @@ subprocess.run([
     str(blast_folder / str(AnnotaBasename + "_no_hit_products.txt"))
 ]
 )
+
+# Check if expected file exists
+check_file("All_Annotated_Products.txt")
 
 logger.info("All_Annotated_Products.txt file is complete")
 
