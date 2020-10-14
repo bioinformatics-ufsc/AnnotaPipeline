@@ -207,10 +207,8 @@ keyword_list = config['EssentialParameters']['key_words']
 augustus_main = config['AUGUSTUS']
 seq_cleaner = config['SequenceCleaner']
 ## cdhit = config['CD-Hit']
-blast = config['BLAST']
 interpro = config['INTERPROSCAN']
 hmmscan = config['HMMSCAN']
-rpsblast = config['RPSBLAST']
 
 # AnnotaPipeline main directory
 home_dir = "AnnotaPipeline_" + str(AnnotaBasename)
