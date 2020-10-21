@@ -453,9 +453,7 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
         # IMPORTANT: the first time this loop runs it will add an empty line ("\n")
         #            to the first line of the hyp_file.txt
         if old_id != new_id:
-            if "pseudogene" in ' '.join(classification):
-                pass
-            elif "non_hypothetical" in ' '.join(classification):
+            if "non_hypothetical" in ' '.join(classification):
                 nhyp.write(str(old_id))
                 nhyp_list.append(str(old_id))
 
@@ -480,9 +478,7 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
         else:
             if float(line_split[7]) > float(cov):
                 # ifcov # mesmo q colocar flag qndo roda o blast -- apenas resultados acima rodar 30-90
-                if "pseudogene" in description.lower():
-                    classification.append("pseudogene")
-                elif not any(s in description.lower() for s in keyword_list):
+                if not any(s in description.lower() for s in keyword_list):
                     if float(line_split[5]) <= float(positividade) and float(line_split[6]) <= float(identidade):
                         classification.append("hypothetical")
                     else:
@@ -515,7 +511,7 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
 def no_hit(basename, all_anot, blast6):
    
     # =============================== Parser sequences with no hit =============================
-    # Get headers of hits against db
+    # Get hit headers 
     list_hit = subprocess.getoutput("cat " + str(blast6) + " | cut -f 1 | uniq")
     list_hit = list_hit.strip().split()
 
