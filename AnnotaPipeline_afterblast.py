@@ -229,6 +229,17 @@ for variable in config['INTERPROSCAN']:
                 " -" + str(variable) + " " + str(interpro.get(variable))
         )
 
+
+run_info = True
+
+# Check if there are result from interproscan
+
+if os.path.isfile(str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")) == 0:
+	os.system("touch " + str(AnnotaBasename + "_interproscan_hypothetical_output.gff3"))
+	logger.warn("Interproscan give no results for hyphotetical proteins")
+	run_info = False
+
+
 logger.info(str(interpro_command_line))
 
 subprocess.getoutput(interpro_command_line)
@@ -244,7 +255,7 @@ fasta_fetcher(str(args.seq),
               "Annotated_Products.fasta")
 
 logger.info("InterProScan Annotated Proteins file preparation complete")
-os.remove("Temp_annotated_products.txt")
+#os.remove("Temp_annotated_products.txt")
 
 logger.info("Running INTERPROSCAN with Annotated Proteins")
 # INTERPROSCAN: commandline
@@ -263,6 +274,13 @@ for variable in config['INTERPROSCAN']:
         interpro_command_line += (
                 " -" + str(variable) + " " + str(interpro.get(variable))
         )
+
+# Check if there are result from interproscan
+if os.path.isfile(str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")) == 0:
+        os.system("touch " + str(AnnotaBasename + "_interproscan_hypothetical_output.gff3"))
+        logger.warn("Interproscan give no results for annotated proteins")
+        run_info = False
+
 
 logger.info(str(interpro_command_line))
 
@@ -348,62 +366,65 @@ subprocess.run([
     str(AnnotaBasename)
 ]
 )
-
-os.remove("Annotated_Products.fasta")
-os.remove("Hypothetical_Products.fasta")
-os.remove("hmmscan.err")
-os.rmdir("temp/")
+if run_info == True:
+	os.remove("Annotated_Products.fasta")
+else:
+	os.remove("Annotated_Products.fasta")
+	os.remove("Hypothetical_Products.fasta")
+	os.remove("hmmscan.err")
+	os.rmdir("temp/")
 
 logger.info("INTERPROSCAN, HMMSCAN and RPSBLAST execution and parsing is finished")
 
 
 # -----------------------------------------------------------------------
 
-logger.info("Preparing file for protein annotation")
+if run_info == True:
+	logger.info("Preparing file for protein annotation")
 
-subprocess.run([
-    "python3",
-    str("info_parser.py"),
-    "-ipr1",
-    str(AnnotaBasename + "_interproscan_annotated_output.gff3"),
-    "-ipr2",
-    str(AnnotaBasename + "_interproscan_hypothetical_output.gff3"),
-    "-a",
-    str(AnnotaBasename + "_annotated_products.txt"),
-    "-hy",
-    str(AnnotaBasename + "_hypothetical_products.txt"),
-    "-nh",
-    str(AnnotaBasename + "_no_hit_products.txt")
-]
-)
-
-logger.info("All_Annotated_Products.txt file is complete")
-
-logger.info("Generating fasta file from All_Annotated_Products.txt")
-
-if args.gff != 0:
-    try:
-    	subprocess.run([
+	subprocess.run([
     		"python3",
-    		str("gfftofasta_parser.py"),
-    		"-gff",
-    		str(args.gff),
-    		"-annot",
-    		str("All_annotation_products.txt"),
-    		"-b",
-    		str(AnnotaBasename),
-    		"-faf",
-    		str(args.seq),
-    		"-org",
-    		str('"%s"' % str(AnnotaPipeline.get('organism')))
-    	]
-    	)
-    except:
-    	logger.info("Cannot reannote gff file --> skipping")
-    	pass
+    		str("info_parser.py"),
+    		"-ipr1",
+    		str(AnnotaBasename + "_interproscan_annotated_output.gff3"),
+    		"-ipr2",
+    		str(AnnotaBasename + "_interproscan_hypothetical_output.gff3"),
+    		"-a",
+    		str(AnnotaBasename + "_annotated_products.txt"),
+    		"-hy",
+    		str(AnnotaBasename + "_hypothetical_products.txt"),
+    		"-nh",
+    		str(AnnotaBasename + "_no_hit_products.txt")
+	]
+	)
 
-os.system("sort -V All_annotation_products.txt -o All_Annotated_Products.txt")
-os.remove("All_annotation_products.txt")
+	logger.info("All_Annotated_Products.txt file is complete")
+
+	logger.info("Generating fasta file from All_Annotated_Products.txt")
+
+	if args.gff != 0:
+		try:
+    			subprocess.run([
+    				"python3",
+    				str("gfftofasta_parser.py"),
+    				"-gff",
+    				str(args.gff),
+    				"-annot",
+    				str("All_annotation_products.txt"),
+    				"-b",
+    				str(AnnotaBasename),
+    				"-faf",
+    				str(args.seq),
+    				"-org",
+    				str('"%s"' % str(AnnotaPipeline.get('organism')))
+    			]
+    			)
+		except:
+    			logger.info("Cannot reannote gff file --> skipping")
+		pass
+
+		os.system("sort -V All_annotation_products.txt -o All_Annotated_Products.txt")
+		os.remove("All_annotation_products.txt")
 
 logger.info("Annota annotated the annotations on the annoted file.")
 
