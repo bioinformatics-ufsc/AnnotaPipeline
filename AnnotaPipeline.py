@@ -610,14 +610,17 @@ logger.info("All_Annotated_Products.txt file is complete")
 
 logger.info("Generating fasta file from All_Annotated_Products.txt")
 
-# Defining what file will be used
-if args.gff is not None and args.prot is not None:
+# ------------  Defining what file will be used ---------------------------
+if args.gff is not None and args.prot is not None:	# User give protein file and gff file
 	gff_file = pathlib.Path(args.gff).absolute()
-else:
+	# Run parser to generate fasta_file
+	gfftofasta()
+elif args.prot is not None and args.gff is None:	# User give only protein file
+	pass
+else:												# User choose run Augustus
 	gff_file = augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".gff"
 
-# Run parser to generate fasta_file
-gfftofasta()
+
 
 try:
 	os.system("sort -V All_annotation_products.txt -o All_Annotated_Products.txt")
