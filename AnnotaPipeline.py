@@ -157,7 +157,7 @@ def check_parameters(sections):
 	for section in sections:  # get box of variables
 		for key in config[str(section)]:  # get variable for each box
 			# check if it's not empty
-			if args.prot is not None and key is config['AUGUSTUS']:
+			if args.protein is not None and key is config['AUGUSTUS']:
 				pass
 			else:
 				if (len(config[str(section)].get(key))) < 1:
@@ -329,7 +329,7 @@ os.chdir(augustus_folder)
 
 # ===========================================================================
 # Run augustus or start with protein file?
-if args.prot is not None:
+if args.protein is not None:
 	augustus_run()
 else:
 	aug_parsing = pathlib.Path(args.protein).absolute()
@@ -611,11 +611,11 @@ logger.info("All_Annotated_Products.txt file is complete")
 logger.info("Generating fasta file from All_Annotated_Products.txt")
 
 # ------------  Defining what file will be used ---------------------------
-if args.gff is not None and args.prot is not None:	# User gave protein file and gff file
+if args.gff is not None and args.protein is not None:	# User gave protein file and gff file
 	gff_file = pathlib.Path(args.gff).absolute()
 	# Run parser to generate fasta_file
 	gfftofasta()
-elif args.prot is not None and args.gff is None:	# User gave only protein file
+elif args.protein is not None and args.gff is None:	# User gave only protein file
 	pass
 else:												# User selected run Augustus
 	gff_file = augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".gff"
