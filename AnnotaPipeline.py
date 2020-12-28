@@ -1,4 +1,4 @@
-#!/usr/bin/python3.6
+# !/usr/bin/python3.6
 
 ####################################################
 ###                PRIMARY SCRIPT                ###
@@ -39,25 +39,32 @@ parser = argparse.ArgumentParser(
     Input sequence with [-s] (modify other parameters in AnnotaPipeline.config)
     Make sure all required parameters are given
     More instructions are in AnnotaPipeline.config
-    
+
     If you already have protein file, give it through the flag -p, this way, Augustus prediction will be
     ignored. If you have a gff file for this protein file, give it throuth -gff flag to get complete annotations.
-    
+
     ''',
-	epilog="""And shall these hopeful words bring love inside your heart...""",
+	epilog=""" >>>> -s and -p are mutually exclusive arguments <<<<
+	
+And shall these hopeful words bring love inside your heart...""",
 	formatter_class=argparse.RawTextHelpFormatter
 )
 
-requiredNamed = parser.add_argument_group('required arguments')
+# requiredNamed = parser.add_argument_group('required arguments')
 optionalNamed = parser.add_argument_group('optional arguments')
 
 # mandatory arguments
 #   type (default): string
-requiredNamed.add_argument(
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument(
 	'-s', '--seq', dest='seq',
 	metavar='[protein_file]',
 	help='input sequence file',
-	required=True
+)
+group.add_argument(
+	'-p', '--prot', dest='protein',
+	metavar='proteins.aa',
+	help='Protein file'
 )
 
 # optional arguments
@@ -68,12 +75,6 @@ optionalNamed.add_argument(
 	metavar='[AnnotaPipeline.config]',
 	default=pipeline_pwd / "AnnotaPipeline.config",
 	help='configuration file for AnnotaPipeline'
-)
-
-optionalNamed.add_argument(
-	'-p', '--prot', dest='protein',
-	metavar='proteins.aa',
-	help='Protein file'
 )
 
 optionalNamed.add_argument(
@@ -105,6 +106,7 @@ class StreamToLogger(object):
 	"""
     Fake file-like stream object that redirects writes to a logger instance.
     """
+
 
 	def __init__(self, logger, log_level=logging.INFO):
 		self.logger = logger
@@ -611,16 +613,14 @@ logger.info("All_Annotated_Products.txt file is complete")
 logger.info("Generating fasta file from All_Annotated_Products.txt")
 
 # ------------  Defining what file will be used ---------------------------
-if args.gff is not None and args.protein is not None:	# User gave protein file and gff file
+if args.gff is not None and args.protein is not None:  # User gave protein file and gff file
 	gff_file = pathlib.Path(args.gff).absolute()
 	# Run parser to generate fasta_file
 	gfftofasta()
-elif args.protein is not None and args.gff is None:	# User gave only protein file
+elif args.protein is not None and args.gff is None:  # User gave only protein file
 	pass
-else:												# User selected run Augustus
+else:  # User selected run Augustus
 	gff_file = augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".gff"
-
-
 
 try:
 	os.system("sort -V All_annotation_products.txt -o All_Annotated_Products.txt")
