@@ -282,7 +282,7 @@ def gfftofasta():
                 "-b",
                 str(AnnotaBasename),
                 "-faf",
-                str(augustus_folder / str("Clear_" + aug_parsing + ".aa")),
+                str(augustus_folder / str("Clear_" + aug_parsing)),
                 "-org",
                 str('"%s"' % str(AnnotaPipeline.get('organism')))
         ]
@@ -355,7 +355,7 @@ sequence_cleaner(str(aug_parsing), int(seq_cleaner.get('minsize_seq')))
 # Check if expected file exists
 check_file(str("Clear_" + aug_parsing))
 
-logger.info("SEQUENCE CLEANER is finished. Please check Clear_" + aug_parsing + ".aa")
+logger.info("SEQUENCE CLEANER is finished. Please check Clear_" + aug_parsing)
 
 os.chdir(annota_pwd)
 
@@ -457,7 +457,7 @@ annotated_file = str(blast_folder / str(AnnotaBasename + "_annotated_products.tx
 os.system("cat " + annotated_file + " | cut -f 1 > Temp_annotated_products.txt")  # Using only IDs from the file
 annotated_id = [line.strip() for line in open("Temp_annotated_products.txt", "r")]
 
-fasta_fetcher(str(augustus_folder / str("Clear_" + aug_parsing + ".aa")),
+fasta_fetcher(str(augustus_folder / str("Clear_" + aug_parsing)),
                           annotated_id,
                           "Annotated_Products.fasta")
 
