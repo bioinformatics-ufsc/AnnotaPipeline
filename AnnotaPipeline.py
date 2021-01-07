@@ -298,14 +298,15 @@ sections_config = config.sections()
 check_parameters(sections_config)
 
 # --- PREPARING SOME VARIABLES -------------------------------------------------
-
+# \\ Check if user pass protein and gff file -> if it is, redirect variables
 if args.seq is not None:
         seq_file = pathlib.Path(args.seq).absolute()
 if args.protein is not None:
         prot_path = pathlib.Path(args.protein).absolute()
 if args.gff is not None:
-        gff_file = pathlib.Path(args.gff).absolute()
+        gff_path = pathlib.Path(args.gff).absolute()
 
+# Parameters from config file, each line is one script/software configuration
 AnnotaPipeline = config['EssentialParameters']
 AnnotaBasename = AnnotaPipeline['basename']
 keyword_list = config['EssentialParameters']['key_words']
@@ -341,6 +342,7 @@ os.chdir(augustus_folder)
 if args.protein is None:
         augustus_run()
 else:
+        # Copy protein file to AUGUSTUS path and padronize variable to run Annotapipeline after augustus
         shutil.copy2(prot_path, augustus_folder)
         aug_parsing = args.protein
 
@@ -614,7 +616,14 @@ subprocess.run([
 )
 
 # Check if expected file exists
-check_file("All_Annotated_Products.txt")
+check_file("All_annotation_products.txt")
+
+try:
+        # Sort annotations
+        os.system("sort -V All_annotation_products.txt -o All_Annotated_Products.txt")
+        os.remove("All_annotation_products.txt")
+except:
+        pass
 
 logger.info("All_Annotated_Products.txt file is complete")
 
@@ -625,15 +634,11 @@ if args.gff is not None and args.protein is not None:  # User gave protein file 
         # Run parser to generate fasta_file
         gfftofasta()
 elif args.protein is not None and args.gff is None:  # User gave only protein file
+        logger.info("GfftoFasta parser can't run without gff file, skipping this step")
         pass
 else:  # User selected run Augustus
         gff_file = augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".gff"
         gfftofasta()
-try:
-        os.system("sort -V All_annotation_products.txt -o All_Annotated_Products.txt")
-        os.remove("All_annotation_products.txt")
-except:
-        pass
 
 logger.info("Annota annotated the annotations on the annoted file.")
 
