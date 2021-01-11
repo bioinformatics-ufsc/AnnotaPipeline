@@ -276,7 +276,7 @@ def gfftofasta():
                 "python3",
                 str(pipeline_pwd / "gfftofasta_parser.py"),
                 "-gff",
-                str(str(gff_file)),
+                str(gff_file),
                 "-annot",
                 str("All_annotation_products.txt"),
                 "-b",
@@ -632,12 +632,13 @@ logger.info("Generating fasta file from All_Annotated_Products.txt")
 # ------------  Defining what file will be used ---------------------------
 if args.gff is not None and args.protein is not None:  # User gave protein file and gff file
         # Run parser to generate fasta_file
+        gff_file = str(gff_path)
         gfftofasta()
 elif args.protein is not None and args.gff is None:  # User gave only protein file
         logger.info("GfftoFasta parser can't run without gff file, skipping this step")
         pass
 else:  # User selected run Augustus
-        gff_file = augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".gff"
+        gff_file = augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".gff")
         gfftofasta()
 
 logger.info("Annota annotated the annotations on the annoted file.")
