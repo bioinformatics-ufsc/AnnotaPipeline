@@ -644,3 +644,4 @@ else:  # User selected run Augustus
 logger.info("Annota annotated the annotations on the annoted file.")
 
 # -----------------------------------------------------------------------
+#testop
