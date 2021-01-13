@@ -278,7 +278,7 @@ def gfftofasta():
                 "-gff",
                 str(gff_file),
                 "-annot",
-                str("All_annotation_products.txt"),
+                str("All_Annotated_Products.txt"),
                 "-b",
                 str(AnnotaBasename),
                 "-faf",
