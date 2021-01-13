@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import os.path
 
 parser = argparse.ArgumentParser(
-    add_help=False,  # removes original [--help]
-    description='''Script to create annotations of hypothetical proteins with info from hmmer, interproscan and rpsblast
+        add_help=False,  # removes original [--help]
+        description='''Script to create annotations of hypothetical proteins with info from hmmer, interproscan and rpsblast
 
 Input  - Sorted Terms [file_preparsed]
 Ouput  - File with Id and annotation in the following way:
 
-id	Hypothetical protein (IPR[...],GO[...])
+id      Hypothetical protein (IPR[...],GO[...])
 
-    ''',
-    epilog="""Rise to fame, your time has come!""", formatter_class=argparse.RawTextHelpFormatter
+''',
+        epilog="""Rise to fame, your time has come!""", formatter_class=argparse.RawTextHelpFormatter
 )
 
 requiredNamed = parser.add_argument_group('required arguments')
@@ -21,214 +22,244 @@ optionalNamed = parser.add_argument_group('optional arguments')
 # mandatory arguments
 #   type (default): string
 requiredNamed.add_argument(
-    '-ipr1', '--ipr1', dest='ipr1',
-    metavar='[InterProScan_Out.txt]',
-    help=('Output Interpro'),
-    required=True
+        '-ipr1', '--ipr1', dest='ipr1',
+        metavar='[InterProScan_Out.txt]',
+        help=('Output Interpro'),
+        required=True
 )
 
 requiredNamed.add_argument(
-    '-ipr2', '--ipr2', dest='ipr2',
-    metavar='[InterProScan_Out.txt]',
-    help=('Output Interpro Info'),
-    required=True
+        '-ipr2', '--ipr2', dest='ipr2',
+        metavar='[InterProScan_Out.txt]',
+        help=('Output Interpro Info'),
+        required=True
 )
 
 requiredNamed.add_argument(
-    '-a', '--annotated', dest='annot',
-    metavar='[Annotated_products.txt]',
-    help=('File with id and annotations'),
-    required=True
+        '-a', '--annotated', dest='annot',
+        metavar='[Annotated_products.txt]',
+        help=('File with id and annotations'),
+        required=True
 )
 
 requiredNamed.add_argument(
-    '-nh', '--no_hit', dest='nohit',
-    metavar='[No_hits.txt]',
-    help=('File with id of sequences with no hit in blast'),
-    required=True
+        '-nh', '--no_hit', dest='nohit',
+        metavar='[No_hits.txt]',
+        help=('File with id of sequences with no hit in blast'),
+        required=True
 )
 
 requiredNamed.add_argument(
-    '-hy', '--hypothetical', dest='hypo',
-    metavar='[Hypothetical_products.txt]',
-    help=('File with id of hypothetical proteins'),
-    required=True
+        '-hy', '--hypothetical', dest='hypo',
+        metavar='[Hypothetical_products.txt]',
+        help=('File with id of hypothetical proteins'),
+        required=True
 )
 
 # custom [--help] argument
 optionalNamed.add_argument(
-    '-h', '-help', '--help',
-    action='help',
-    default=argparse.SUPPRESS,  # hidden argument
-    help='Ooh, Life is good... \
-    As good as you wish!'
+        '-h', '-help', '--help',
+        action='help',
+        default=argparse.SUPPRESS,  # hidden argument
+        help='Ooh, Life is good... \
+        As good as you wish!'
 )
 
-
 # Parsear o resultado do parser p2,
-# seria este o p3? 
+# seria este o p3?
 # Espero não pegar REC
-'''Output must be 
+'''Output must be
 id \t Hypothetical protein (InterPro:IPR039726,GO:0004308,GO:0009405)
 '''
 # Só hypo
 # Input format fields
-# id	DB	Acession	Annot	IPR	GO	
-#-------------------------------------------
+# id    DB      Acession        Annot   IPR     GO
+# -------------------------------------------
 
 # arguments saved here
 args = parser.parse_args()
 
-def temporary_query(arq):
-	# temporary adding a line to the BLAST analysis
-	#   so it accounts for the last query found by the BLAST algorithm
-	temp = arq[-1].split("\t")
-	del temp[0]
-	temp.insert(0, "QueryTemp")
-	arq.append("\t".join(temp))
 
-#------------------------------------------
+def temporary_query(arq):
+        # temporary adding a line to the BLAST analysis
+        #   so it accounts for the last query found by the BLAST algorithm
+        temp = arq[-1].split("\t")
+        del temp[0]
+        temp.insert(0, "QueryTemp")
+        arq.append("\t".join(temp))
+
+
+# ------------------------------------------
 
 def parser_interproscan(arq_entrada, arq_ipr):
-    entrada = open(str(arq_entrada), "r").read().split("##FASTA")  # SPLITTING THE GFF3 FILE IN TWO CATEGORIES
-    interp = entrada[0].split("##sequence-region")  # WE'LL BE USING ONLY THE FIRST PART OF THE GFF3 OUTPUT FILE
-    del interp[0]
-    ipr = open(str(arq_ipr), "a")
+        entrada = open(str(arq_entrada), "r").read().split("##FASTA")  # SPLITTING THE GFF3 FILE IN TWO CATEGORIES
+        interp = entrada[0].split("##sequence-region")  # WE'LL BE USING ONLY THE FIRST PART OF THE GFF3 OUTPUT FILE
+        del interp[0]
+        ipr = open(str(arq_ipr), "a")
 
-    lista = ["Coils", "MobiDBLite"]  # THIS IS SPECIFIC TO MY ANALYSIS: I'M NOT LOOKING FOR STRUCTURAL EVIDENCE
+        lista = ["Coils", "MobiDBLite"]  # THIS IS SPECIFIC TO MY ANALYSIS: I'M NOT LOOKING FOR STRUCTURAL EVIDENCE
 
-    # TREATING EACH QUERY, RETRIEVING THE INFORMATION THAT WILL BE WRITTEN ON THE FIRST OUTPUT FILE
-    for seq_reg in interp:
-        seq_reg = seq_reg.splitlines()
-        for linha in seq_reg:
-            if linha == seq_reg[0]:
-                linha = linha.split(" ")
-                del linha[0]
-                # nome_query = linha[0]
-                # start_query = linha[1]
-                # stop_query = linha[2]
-            elif linha == seq_reg[1]:  # IGNORING THE FIRST LINE ON EACH GROUP OF QUERIES, AS IT'S NON-INFORMATIVE
-                pass
-            else:
-                ontologia = str(None)
-                anotacao_db = str(None)
-                name = str(None)
-                interpro = str(None)
-                linha = linha.split("\t")
-                # start_query = linha[3]
-                # stop_query = linha[4]
-                nome_subject = linha[0]
-                db = linha[1]
-                try:
-                    evalue = str(linha[5]).replace(",",".").lower()
-                except:
-                    evalue = str(linha[5])
-                if not any(s in db for s in lista):
-                    db_certo = db
-                    anotacao = linha[-1].split(";")
-                    for a in anotacao:
-                        if "Ontology" in a:
-                            ontologia = a.replace('"', "").replace("Ontology_term=", "")
-                        if "signature_" in a:
-                            anotacao_db = a.replace("signature_desc=", "")
-                        if "Name" in a:
-                            name = a.replace('"', "").replace("Name=", "")
-                        if "Dbxref" in a:
-                            interpro = a.replace('"', "").replace("Dbxref=", "")
-                    ipr.write(str(nome_subject) + "\t" + str(db_certo) + "\t" + str(name) + "\t" + str(evalue) + "\t" +
-                              str(anotacao_db) + "\t" + str(interpro) + "\t" + str(ontologia) + "\n")
-    ipr.close()
+        # TREATING EACH QUERY, RETRIEVING THE INFORMATION THAT WILL BE WRITTEN ON THE FIRST OUTPUT FILE
+        for seq_reg in interp:
+                seq_reg = seq_reg.splitlines()
+                for linha in seq_reg:
+                        if linha == seq_reg[0]:
+                                linha = linha.split(" ")
+                                del linha[0]
+                        # nome_query = linha[0]
+                        # start_query = linha[1]
+                        # stop_query = linha[2]
+                        elif linha == seq_reg[1]:  # IGNORING THE FIRST LINE ON EACH GROUP OF QUERIES, AS IT'S NON-INFORMATIVE
+                                pass
+                        else:
+                                ontologia = str(None)
+                                anotacao_db = str(None)
+                                name = str(None)
+                                interpro = str(None)
+                                linha = linha.split("\t")
+                                # start_query = linha[3]
+                                # stop_query = linha[4]
+                                nome_subject = linha[0]
+                                db = linha[1]
+                                try:
+                                        evalue = str(linha[5]).replace(",", ".").lower()
+                                except:
+                                        evalue = str(linha[5])
+                                if not any(s in db for s in lista):
+                                        db_certo = db
+                                        anotacao = linha[-1].split(";")
+                                        for a in anotacao:
+                                                if "Ontology" in a:
+                                                        ontologia = a.replace('"', "").replace("Ontology_term=", "")
+                                                if "signature_" in a:
+                                                        anotacao_db = a.replace("signature_desc=", "")
+                                                if "Name" in a:
+                                                        name = a.replace('"', "").replace("Name=", "")
+                                                if "Dbxref" in a:
+                                                        interpro = a.replace('"', "").replace("Dbxref=", "")
+                                        ipr.write(str(nome_subject) + "\t" + str(db_certo) + "\t" + str(name) + "\t" + str(evalue) + "\t" +
+                                                        str(anotacao_db) + "\t" + str(interpro) + "\t" + str(ontologia) + "\n")
+        ipr.close()
+
+
+# Function to write ids with no ipr and no GO (no result from InterproScan)
+def write_no_ipr():
+        # If there's any id without hit in interproscan file
+        # It's will write here, without IPR or GO
+        if len(ids_dict.keys()) > 0:
+                # print(len(ids_dict.keys()))
+                for anot in ids_dict.keys():
+                        output.write(str(anot) + "\t" + str(ids_dict.get(anot)).strip() + "\n")
+        if len(hypo) > 0:
+                for hyp in hypo:
+                        output.write(str(hyp) + "\tHypothetical protein\n")
+        if len(nohit) > 0:
+                for hyp in nohit:
+                        output.write(str(hyp) + "\tHypothetical protein\n")
+        output.close()
+
+
+# Function to join IPRs and GOs from InterproScan with IDs hypothetical or without hits
+def intepro_process():
+        # File pre-precessed with IDs, IPRs and GOs
+        interpro_out = open("Interpro_out_tmp.txt", "r").read().splitlines()
+        temporary_query(interpro_out)
+
+        old_id = interpro_out[0].split("\t")  # recebe a primeira query para começar a contagem
+        old_id = old_id[0]
+
+        # Initialize lists
+        gos = []
+        iprs = []
+        for query in interpro_out:
+                title = query.split("\t")
+                new_id = title[0]
+                ipr = title[5]
+                go = title[6]
+                if old_id != new_id:
+                        # Check if interpro_result is in annotated
+                        if old_id in ids_dict.keys():
+                                if (len(iprs) > 0) and (len(gos) > 0):
+                                        output.write(
+                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + " (" + str(",".join(iprs)) + "," + str(
+                                                        ",".join(gos)) + ")\n")
+                                elif (len(iprs) > 0) and (len(gos) == 0):
+                                        output.write(
+                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + " (" + str(",".join(iprs)) + ")\n")
+                                elif (len(iprs) == 0) and (len(gos) > 0):
+                                        output.write(
+                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + " (" + str(",".join(gos)) + ")\n")
+                                else:
+                                        output.write(str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + "\n")
+                                del ids_dict[old_id]
+                        # Else, interpro_result must be in hyphotetical
+                        elif old_id in hypo:
+                                if (len(iprs) > 0) and (len(gos) > 0):
+                                        output.write(
+                                                str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + "," + str(
+                                                        ",".join(gos)) + ")\n")
+                                elif (len(iprs) > 0) and (len(gos) == 0):
+                                        output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + ")\n")
+                                elif (len(iprs) == 0) and (len(gos) > 0):
+                                        output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(gos)) + ")\n")
+                                else:
+                                        output.write(str(old_id) + "\tHypothetical protein\n")
+                                hypo.remove(old_id)
+                        else:
+                                if (len(iprs) > 0) and (len(gos) > 0):
+                                        output.write(
+                                                str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + "," + str(
+                                                        ",".join(gos)) + ")\n")
+                                elif (len(iprs) > 0) and (len(gos) == 0):
+                                        output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + ")\n")
+                                elif (len(iprs) == 0) and (len(gos) > 0):
+                                        output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(gos)) + ")\n")
+                                else:
+                                        output.write(str(old_id) + "\tHypothetical protein\n")
+                                nohit.remove(old_id)
+                        gos.clear()
+                        iprs.clear()
+                else:
+                        if (ipr != "None") and (ipr not in iprs):
+                                iprs.append(ipr)
+                        if (go != "None") and (go not in gos):
+                                gos.append(go)
+                old_id = new_id
+
+        write_no_ipr()
+        os.remove("Interpro_out_tmp.txt")
 
 
 # ---------------------- Create organized file with iprs and gos -----------------------
-parser_interproscan(args.ipr1, "Interpro_out_tmp.txt")
-parser_interproscan(args.ipr2, "Interpro_out_tmp.txt")
-interpro_out = open("Interpro_out_tmp.txt", "r").read().splitlines()
-temporary_query(interpro_out)
-
-old_id = interpro_out[0].split("\t")  # recebe a primeira query para começar a contagem
-old_id = old_id[0]
+if (os.path.getsize(args.ipr1) == 0) and (os.path.getsize(args.ipr2) == 0):
+        # Can't process empty file
+        pass
+else:
+        # Almost one file has result - but, if one of them hasn't parser will crash
+        if os.path.getsize(args.ipr1) != 0:
+                parser_interproscan(args.ipr1, "Interpro_out_tmp.txt")
+        if os.path.getsize(args.ipr2) != 0:
+                parser_interproscan(args.ipr2, "Interpro_out_tmp.txt")
 
 # ---------------------- Pre-parse annotated products -------------------------
 annot = open(args.annot, "r").read().splitlines()
 ids = []
 desc = []
 for anot in annot:
-	anot = anot.split("\t")
-	ids.append(anot[0])
-	desc.append(anot[1])
+        anot = anot.split("\t")
+        ids.append(anot[0])
+        desc.append(anot[1])
 
-ids_dict = dict(zip(ids, desc))		# Create dictionary with id as key and annotation as value
+ids_dict = dict(zip(ids, desc))  # Create dictionary with id as key and annotation as value
 
 # ---------------------- Create list with hypothetical ids -----------------
 hypo = open(args.hypo, "r").read().splitlines()
 # ---------------------- Create list with no_hits ids -----------------
 nohit = open(args.nohit, "r").read().splitlines()
 # Create output
-output = open("All_annotation_products.txt","w")
+output = open("All_annotation_products.txt", "w")
 
-# Initialize lists
-gos = []
-iprs = []
-
-for query in interpro_out:
-	title = query.split("\t")
-	new_id = title[0]
-	ipr = title[5]
-	go = title[6]
-	if old_id != new_id:
-		# Check if interpro_result is in annotated
-		if old_id in ids_dict.keys():
-			if (len(iprs) > 0) and (len(gos) > 0):
-				output.write(str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + " ("+ str(",".join(iprs)) + "," + str(",".join(gos)) + ")\n")
-			elif (len(iprs) > 0) and (len(gos) == 0):
-				output.write(str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + " ("+ str(",".join(iprs)) + ")\n")
-			elif (len(iprs) == 0) and (len(gos) > 0):
-				output.write(str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + " ("+ str(",".join(gos)) + ")\n")
-			else:
-				output.write(str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + "\n")
-			del ids_dict[old_id]
-		# Else, interpro_result must be in hyphotetical
-		elif old_id in hypo:	
-			if (len(iprs) > 0) and (len(gos) > 0):
-				output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + "," + str(",".join(gos)) + ")\n")
-			elif (len(iprs) > 0) and (len(gos) == 0):
-				output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + ")\n")
-			elif (len(iprs) == 0) and (len(gos) > 0):
-				output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(gos)) + ")\n")
-			else:
-				output.write(str(old_id) + "\tHypothetical protein\n")
-			hypo.remove(old_id)
-		else:
-			if (len(iprs) > 0) and (len(gos) > 0):
-				output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + "," + str(",".join(gos)) + ")\n")
-			elif (len(iprs) > 0) and (len(gos) == 0):
-				output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + ")\n")
-			elif (len(iprs) == 0) and (len(gos) > 0):
-				output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(gos)) + ")\n")
-			else:
-				output.write(str(old_id) + "\tHypothetical protein\n")
-			nohit.remove(old_id)		
-		gos.clear()
-		iprs.clear()
-	else:
-		if (ipr !="None") and (ipr not in iprs):
-			iprs.append(ipr)
-		if (go != "None") and (go not in gos):
-			gos.append(go)
-	old_id = new_id
-	
-# If there's any id without hit in interproscan file
-# It's will write here, without IPR or GO
-if len(ids_dict.keys()) > 0:
-	#print(len(ids_dict.keys()))
-	for anot in ids_dict.keys():
-		output.write(str(anot) + "\t" + str(ids_dict.get(anot)).strip() + "\n")
-if len(hypo) > 0:
-	for hyp in hypo:
-		output.write(str(hyp) + "\tHypothetical protein\n")
-if len(nohit) > 0:
-	for hyp in nohit:
-		output.write(str(hyp) + "\tHypothetical protein\n")
-output.close()
-os.remove("Interpro_out_tmp.txt")
+if os.path.getsize(args.ipr1) == 0 and os.path.getsize(args.ipr2) == 0:
+        write_no_ipr()
+else:
+        intepro_process()
