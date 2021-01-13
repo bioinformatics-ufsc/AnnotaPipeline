@@ -108,7 +108,6 @@ class StreamToLogger(object):
     Fake file-like stream object that redirects writes to a logger instance.
     """
 
-
         def __init__(self, logger, log_level=logging.INFO):
                 self.logger = logger
                 self.log_level = log_level
@@ -541,10 +540,10 @@ logger.info("Running RPSBLAST with Hypothetical Proteins")
 
 # General
 rpsblast_command_line = "rpsblast -query Hypothetical_Products.fasta -out " \
-                                                + str(AnnotaBasename + "_rpsblast_output.outfmt6") + \
-                                                " -db " + str(AnnotaPipeline.get('cdd')) + \
-                                                " -outfmt \"6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle\"" + \
-                                                " -num_threads " + str(AnnotaPipeline.get("threads"))
+                        + str(AnnotaBasename + "_rpsblast_output.outfmt6") + \
+                        " -db " + str(AnnotaPipeline.get('cdd')) + \
+                        " -outfmt \"6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle\"" + \
+                        " -num_threads " + str(AnnotaPipeline.get("threads"))
 # Optionals
 for variable in config['RPSBLAST']:
         if str(rpsblast.get(variable)).lower() == "flag":
@@ -635,8 +634,20 @@ if args.gff is not None and args.protein is not None:  # User gave protein file 
         gff_file = str(gff_path)
         gfftofasta()
 elif args.protein is not None and args.gff is None:  # User gave only protein file
-        logger.info("GfftoFasta parser can't run without gff file, skipping this step")
-        pass
+        logger.info("Running fasta_simple.py")
+        subprocess.run([
+                "python3",
+                str(pipeline_pwd / "fasta_simple.py"),
+                "-annot",
+                str("All_Annotated_Products.txt"),
+                "-b",
+                str(AnnotaBasename),
+                "-faf",
+                str(augustus_folder / str("Clear_" + aug_parsing)),
+                "-org",
+                str('"%s"' % str(AnnotaPipeline.get('organism')))
+        ]
+        )
 else:  # User selected run Augustus
         gff_file = augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".gff")
         gfftofasta()
