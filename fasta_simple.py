@@ -5,11 +5,12 @@ import warnings
 
 parser = argparse.ArgumentParser(
 	add_help=False,  # removes original [--help]
-	description='''Script to write gff info into fasta sequences
+	description='''Script to join sequence and annotations in a simple way (alternative to gff_to fasta, if you don't
+have a gff file)
 Squence's headers will be like this:
-><sequence_id> | Organism: <given organism> | Location: <scaffold/chromossome> | Start: <info> | End: <info> | Strand: <+/-> | Description: <info>
+><sequence_id> | Organism: <given organism> | Description: <info>
 Example:
->g1.t1 | Organism: Homo sapiens | Location: scaffold1 | Start: 12768 | End: 14450 | Strand: + | Description: Glucose-6-phosphate 1
+>g1.t1 | Organism: Homo sapiens | Description: Glucose-6-phosphate 1
 -dehydrogenase 5, cytoplasmic		 ''',
 	epilog="""We stand before the dawn of a new world.""", formatter_class=argparse.RawTextHelpFormatter
 )
@@ -19,12 +20,6 @@ optionalNamed = parser.add_argument_group('optional arguments')
 
 # mandatory arguments
 #   type (default): string
-requiredNamed.add_argument(
-	'-gff', dest='gff',
-	metavar='[augustus_prediction.gff]',
-	help='Augustus prediction file',
-	required=True
-)
 
 requiredNamed.add_argument(
 	'-annot', '--annotations', dest='annot',
@@ -64,27 +59,11 @@ optionalNamed.add_argument(
 
 # --------------------------------------------------------
 
-
 # arguments saved here
 args = parser.parse_args()
 
-# Info from transcript products will be stored here
-trans = {}
 # Info from annotation will be stored here
 ant = {}
-
-# ============================= Extract info from gff =========================
-gff = open(str(args.gff), "r").read().split("# start gene ")
-# Delete header with information of model and other blablabla
-del gff[0]
-
-for gene in gff:
-	# Get second line - transcript atributes
-	gene = gene.split("\n")
-	gene_features = gene[2].split()
-	# Save all info into a dictionary
-	trans[gene_features[-1]] = {"scaff": str(gene_features[0]), "start": str(gene_features[3]),
-								"end": str(gene_features[4]), "strand": str(gene_features[6])}
 
 # ============================= Extract annotations ==========================
 
@@ -104,9 +83,7 @@ for sequence in fasta:
 	sequence = sequence.split("\n")
 	id = sequence[0]
 	try:
-		out.write(">" + str(id) + " | Organism: " + str(args.org) + " | Location: " + str(
-			trans[id]['scaff']) + " | Start: " + str(trans[id]['start']) + " | End: " + str(
-			trans[id]['end']) + " | Strand: " + str(trans[id]['strand']) + " | Description: " + str(ant[id]) + "\n")
+		out.write(">" + str(id) + " | Organism: " + str(args.org) + " | Description: " + str(ant[id]) + "\n")
 		out.write(str("\n".join(sequence[1:])))
 	except:
 		ids_warn.append(id)
