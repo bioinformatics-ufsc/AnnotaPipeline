@@ -292,6 +292,7 @@ def gfftofasta():
 is_tool("blastp")
 is_tool("perl")
 is_tool("rpsblast")
+is_tool("sed")
 
 sections_config = config.sections()
 check_parameters(sections_config)
