@@ -16,14 +16,15 @@ import subprocess
 import logging
 import sys
 import re
+import os
 from shutil import which
 
 '''---ARGUMENTS AND [--help / -help / -h]------------------------------------'''
 
 parser = argparse.ArgumentParser(
     add_help=False,  # removes original [--help]
-    description='''Scritp to run and parse output from Swissprot and other database [NR or Trytrip],
-    Please give at least one, through flags -tr or -nr''',
+    description='''Script to run blast when you already have predicted proteins for your genome,
+    run this script and Annota_Pipeline_after_blast to have your annotations''',
     epilog="""Poof, you're a sandwich!"""
 )
 
@@ -54,17 +55,12 @@ requiredNamed.add_argument(
     required=True
 )
 
-optionalNamed.add_argument(
-    '-spdb', '--specificdb', dest='trytp',
-    metavar='[SpecificDB_database]',
-    help='destination to specific database, in EupathDB format',
-)
+requiredNamed.add_argument("-spdb", choices=("trembl", "eupathdb","nr"),
+                           dest='choice',
+                           help='Chose witch format you will use as secondary database')
 
-optionalNamed.add_argument(
-    '-nr', '--nrdb', dest='nr',
-    metavar='[NR_database]',
-    help='destination to other database',
-)
+requiredNamed.add_argument("-spdb_path", dest='path_db',
+                           help='destination to specificdb, in format given through -spdb')
 # optional arguments
 #   no argument: uses default
 #   type (default): string
@@ -243,7 +239,7 @@ keyword_list = args.keywords.split(",")
 # #    (further parsed by another script)
 
 
-def parser_trytrip(basename, result_blast, identidade, positividade, cov):
+def parser_eupath(basename, result_blast, identidade, positividade, cov):
     ## Parser start
 
     swiss = open(str(result_blast), "r").read().splitlines()
@@ -314,6 +310,92 @@ def parser_trytrip(basename, result_blast, identidade, positividade, cov):
                         classification.append("hypothetical")
                     else:
                         annots.append(hit(str(desc), float(title[3])))
+                        desc_list.append(str(desc))
+                        classification.append("non_hypothetical")
+                    # Check annotations, if any word match with keywords, is considered hypothetical
+                else:
+                    classification.append("hypothetical")
+            else:
+                pass
+        # saving the information that will be written in the .txt files
+        old_id = new_id
+
+    hyp.close()
+    nhyp.close()
+    all_anot.close()
+
+
+def parser_trembl(basename, result_blast, identidade, positividade, cov):
+    ## Parser start
+
+    swiss = open(str(result_blast), "r").read().splitlines()
+
+    hyp = open(str(basename) + "_hypothetical_products.txt", "w")
+    nhyp = open(str(basename) + "_annotated_products.txt", "a")
+    all_anot = open(str(basename) + "_SpecifiedDB_annotations.txt", "w")
+    # temporary adding a line
+    #   so it accounts for the last query found by the BLAST analysis
+    temporary_query(swiss)
+
+    # creating the lists and counter that will be used
+    #   to make sure the script goes through each HSP in every query
+    # it's important that these lists are set back to NULL
+    #   and the counter is set to zero before we start
+    old_id = swiss[0].split("\t")  # recebe a primeira query para começar a contagem
+    old_id = old_id[0]
+    annots = []
+    nhyp_list = []
+    classification = []
+    desc_list = []
+
+    for query in swiss:
+        line_split = query.split("\t")
+        title = line_split[-1]  # get description
+        title_split = title.split(" ", 1)[-1]  # get last part of description
+        desc = title_split.split("OS=")[0].strip().rstrip()  # get only description
+        new_id = line_split[0]
+        # defining which file will receive each HSP depending on the counter number
+        #   the script will write each HSP on its corresponding .txt file
+        # IMPORTANT: the first time this loop runs it will add an empty line ("\n")
+        #            to the first line of the hyp_file.txt
+        if old_id != new_id:
+            if "non_hypothetical" in ' '.join(classification):
+                nhyp.write(str(old_id))
+                nhyp.write(str('\t'))
+                # Sort annotations by identity
+                annots.sort()
+                # Get best identity, first position of array
+                nhyp.write(str(annots[0].desc))
+                nhyp.write(str('\n'))
+                nhyp_list.append(str(old_id))
+
+                all_anot.write(str(old_id + "\t" + str(len(desc)) + " Annotation(s): [" + ";".join(desc_list) + "]"))
+                all_anot.write(str('\n'))
+            # instead of writing to a .txt file immediately
+            #   it will append the pseudogene results to a list
+            #     that will be treated further down the script
+            else:
+                hyp.write(str(old_id))
+                hyp.write(str('\n'))
+            # this just resets the count back to zero, before it starts again
+            classification.clear()
+            annots.clear()
+            desc_list.clear()
+        # if the HSP is a pseudogene (based on its title)
+        #   it's counted separately from the other two
+        else:
+            if float(line_split[7]) > float(cov):
+                # Check annotations, if any word doesn't match with keywords
+                if not any(s in desc.lower() for s in keyword_list):
+                    # Results that doesn't have match with keyword_list pass
+                    # Check positivity and identity with subject
+                    # If it's lower than threshold, it's not trustworthy, so, it's considered hypothetical
+                    if float(line_split[5]) <= float(positividade) \
+                            and float(line_split[6]) <= float(identidade):
+                        # If annotation is strong, is considered as non_hypothetical
+                        classification.append("hypothetical")
+                    else:
+                        annots.append(hit(str(desc), float(line_split[3])))
                         desc_list.append(str(desc))
                         classification.append("non_hypothetical")
                     # Check annotations, if any word match with keywords, is considered hypothetical
@@ -508,10 +590,10 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
     nhyp.close()
 
 
-def no_hit(basename, all_anot, blast6):
+def no_hit(basename, blast6):
    
     # =============================== Parser sequences with no hit =============================
-    # Get hit headers 
+    # Get headers of hits against db
     list_hit = subprocess.getoutput("cat " + str(blast6) + " | cut -f 1 | uniq")
     list_hit = list_hit.strip().split()
 
@@ -519,18 +601,17 @@ def no_hit(basename, all_anot, blast6):
     list_all = subprocess.getoutput("grep '>' " + str(basename) + "_BLASTp_AA_SwissProted.fasta") 
     list_all = list_all.replace(">", "").strip().split() 
 
-    no_hit = open(str(basename) + "_no_hit_products.txt", "w")
+    no_hit_file = open(str(basename) + "_no_hit_products.txt", "w")
     for a in list_hit:
         if a in list_all:
             list_all.remove(a)
-    no_hit.write("\n".join(list_all) + "\n")
-    no_hit.close()
+    no_hit_file.write("\n".join(list_all) + "\n")
+    no_hit_file.close()
     
     # =========================================================================================
 
 
-def swiss_run():
-    swiss_out = str(args.basename) + "_BLASTp_AAvsSwissProt.outfmt6"
+def swiss_run(swiss_out):
     logger.info("Running blast against swissprot")
     blast(args.seq, swiss_out, args.spdb)
     logger.info("Running parser")
@@ -538,40 +619,46 @@ def swiss_run():
     logger.info("Parser swissprot done")
 
 
-if args.trytp is None and args.nr is None:
-    logger.error("Other database not identificated, please inform this parameter through -nr or -tr")
-    exit("DATABASE ERROR")
+# ------------------------MAIN----------------------
+is_tool("blastp")
+swiss_out = str(args.basename) + "_BLASTp_AAvsSwissProt.outfmt6"
+if os.path.isfile(swiss_out) == 0:
+    swiss_run(swiss_out)
 else:
-    if args.trytp is None:
-        is_tool("blastp")
-        swiss_run()
-        #odb_out_name_7 = str(args.basename + "_BLASTp_AAvsNRDB.outfmt7")
-        odb_out_name = str(args.basename + "_BLASTp_AAvsNRDB.outfmt6")
-        logger.info("Running blast against specificdb")
-        # Use the file above without sequences already annotated by swissprot
-        blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta",odb_out_name , args.nr)
-        #blast7(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name_7, args.nr)
-        # ------------------------------
-        logger.info("Running parser")
-        parser_nr(args.basename, odb_out_name, args.id, args.pos, args.cov)
-        no_hit(str(args.basename), str(args.basename) + "_NR_annotations.txt", odb_out_name)
-        # ----------Pseudotrat--------------
-        logger.info("blast format 7 done")
+    logger.info("Found result from previous blast against Swissprot ---> skipping blast")
+    logger.info("Running parser")
+    process_swiss(args.basename, args.seq, swiss_out, args.id, args.pos, args.cov)
+    logger.info("Parser swissprot done")
 
-    else:
-        is_tool("blastp")
-        swiss_run()
-        #odb_out_name_7 = str(args.basename + "_BLASTp_AAvsTriTrypDB.outfmt7")
-        odb_out_name = str(args.basename + "_BLASTp_AAvsSpecifiedDB.outfmt6")
-        odb = args.trytp
-        # Use the file above without sequences already annotated by swissprot
-        blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta",odb_out_name , args.trytp)
-        #blast7(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name_7, args.trytp)
-        # ------------------------------
-        logger.info("Running parser")
-        parser_trytrip(args.basename, odb_out_name, args.id, args.pos, args.cov)
-        logger.info("Parser specific db done")
-        # ----------Pseudotrat--------------
-        no_hit(str(args.basename), str(args.basename) + "_SpecifiedDB_annotations.txt", odb_out_name)
+odb_out_name = str(args.basename + "_BLASTp_AAvsSpecifiedDB.outfmt6")
+# Use the file above without sequences already annotated by swissprot
+if os.path.isfile(str(args.basename + "_BLASTp_AAvsSpecifiedDB.outfmt6")) == 0:
+    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta",odb_out_name , args.path_db)
+else:
+    logger.info("Found result from previous blast against specificdb ---> skipping blast")
+    logger.warn("If you want to change the specificdb, please rename this file: "
+                + str(args.basename + "_BLASTp_AAvsSpecifiedDB.outfmt6"))
 
+# ------------------------------
+logger.info("Running parser")
+if args.choice == "eupath":
+    logger.info("Specificdb defined as eupathdb")
+    parser_eupath(args.basename, odb_out_name, args.id, args.pos, args.cov)
+elif args.choice == "trembl":
+    logger.info("Specificdb defined as trembl")
+    parser_trembl(args.basename, odb_out_name, args.id, args.pos, args.cov)
+elif args.choice == "nr":
+    logger.info("Specificdb defined as nr")
+    parser_nr(args.basename, odb_out_name, args.id, args.pos, args.cov)
+else:
+    logger.error("Specific db must be one of the following: eupath, tremblr or nr")
+    logger.info("Please check this argument and try again")
+    logging.shutdown()
+    sys.exit(1)
+
+logger.info("Parser specific db done")
+# ----------No hits--------------
+logger.info("Seeking for proteins without hit")
+no_hit(str(args.basename), odb_out_name)
+logger.info("Parser done")
 # ------------------------------

@@ -1,7 +1,6 @@
 # _*_ coding: utf-8 _*_
 
 import re
-import datetime
 import logging
 import os
 import argparse
