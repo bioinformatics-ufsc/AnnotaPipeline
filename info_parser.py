@@ -177,6 +177,13 @@ def intepro_process():
                 ipr = title[5]
                 go = title[6]
                 if old_id != new_id:
+                        # Sort IPRs and GOs
+                        try:
+                                iprs.sort(key=lambda item: item.split("IPR")[1])
+                                gos.sort(key=lambda item: item.split("GO")[1])
+                        except:
+                                pass
+
                         # Check if interpro_result is in annotated
                         if old_id in ids_dict.keys():
                                 if (len(iprs) > 0) and (len(gos) > 0):
