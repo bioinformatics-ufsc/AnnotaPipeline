@@ -156,6 +156,10 @@ config.sections()  # get sections of each program
 
 
 def check_parameters(sections):
+	# Variables to check databases
+	sp_verify = True
+	nr_verify = True
+	trembl_verify = True
 	for section in sections:  # get box of variables
 		for key in config[str(section)]:  # get variable for each box
 			# check if it's not empty
@@ -163,17 +167,34 @@ def check_parameters(sections):
 				pass
 			else:
 				if (len(config[str(section)].get(key))) < 1:
-					logger.error(
-						"Variable [" + key + "]"
-						+ " from section [" + str(section) + "]"
-						+ " is null"
-					)
-					logger.info("Exiting")
-					exit(
-						"Variable [" + key + "]"
-						+ " from section [" + str(section) + "]"
-						+ " is null"
-					)
+					# Check if any secondary database were given
+					if str(section) == "EssentialParameters" and key == "specific_path_db":
+						sp_verify = False
+					elif str(section) == "EssentialParameters" and key == "nr_db_path":
+						nr_verify = False
+					elif str(section) == "EssentialParameters" and key == "trembl_db_path":
+						trembl_verify = False
+					else:
+						logger.error(
+							"Variable [" + key + "]"
+							+ " from section [" + str(section) + "]"
+							+ " is null"
+						)
+						logger.info("Exiting")
+						exit(
+							"Variable [" + key + "]"
+							+ " from section [" + str(section) + "]"
+							+ " is null"
+						)
+	# Exit and report error if there is more than one database or if there is no one
+	if sum([sp_verify, nr_verify, trembl_verify]) == 0:
+		logger.error("Error, there is no Secondary database, please review config file!")
+		logger.info("Exiting")
+		exit("Error, there is no Secondary database, please review config file!")
+	if sum([sp_verify, nr_verify, trembl_verify]) == 2:
+		logger.error("Error, there is two secondary databases, select one of them in config file")
+		logger.info("Exiting")
+		exit("Error, there is two secondary databases, select one of them in config file")
 
 
 def fasta_fetcher(input_fasta, id_list, fetcher_output):
@@ -201,6 +222,11 @@ def check_file(file):
 		logging.error("File " + str(file) + " does not exist, please check earlier steps")
 		logging.shutdown()
 		sys.exit(1)
+	elif os.path.getsize(file) == 0:
+		logging.warning("File " + str(file) + " is empty, please check earlier steps")
+		logging.warning("Trying to continue, but failures may occur")
+		logger.info("Sometimes things don't work as we expect ...and that's ok. "
+					"But, seriously, check your inputs and outputs and rerun")
 
 
 def is_tool(name):
@@ -288,6 +314,20 @@ def gfftofasta():
 	)
 
 
+def run_fasta_to_GFF():
+	subprocess.run([
+		"python3",
+		str(pipeline_pwd / "fasta_to_GFF.py"),
+		"-gff",
+		str(gff_file),
+		"-all",
+		str("All_Annotated_Products.txt"),
+		"-b",
+		str(AnnotaBasename)
+	]
+	)
+
+
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
 is_tool("blastp")
 is_tool("perl")
@@ -366,6 +406,17 @@ os.chdir(blast_folder)
 # BLAST: command line
 logger.info("BLAST execution and parsing has started")
 
+# Select secondary database from config file
+if (len(AnnotaPipeline.get("specific_path_db"))) > 1:
+	spdb_path = AnnotaPipeline.get("specific_path_db")
+	flag_spdb = "-spdb"
+elif (len(AnnotaPipeline.get("nr_db_path"))) > 1:
+	spdb_path = AnnotaPipeline.get("nr_db_path")
+	flag_spdb = "-nr"
+elif (len(AnnotaPipeline.get("trembl_db_path"))) > 1:
+	spdb_path = AnnotaPipeline.get("trembl_db_path")
+	flag_spdb = "-trbl"
+
 subprocess.run([
 	"python3",
 	str(str(pipeline_pwd / "blastp_parser.py")),
@@ -375,8 +426,8 @@ subprocess.run([
 	str(AnnotaPipeline.get('swissprot_path_db')),
 	"-basename",
 	str(AnnotaBasename),
-	"-spdb",
-	str(AnnotaPipeline.get('specific_path_db')),
+	str(flag_spdb),  # Flag for databse
+	str(spdb_path),  # path to database
 	"-id",
 	str(blast.get('identity')),
 	"-pos",
@@ -415,8 +466,8 @@ data1 = [line.strip() for line in open(hypothetical_id, "r")]
 data2 = [line.strip() for line in open(no_hit_id, "r")]
 
 fasta_fetcher(str(augustus_folder / str("Clear_" + aug_parsing)),
-			(data1 + data2),
-			"Hypothetical_Products.fasta")
+			  (data1 + data2),
+			  "Hypothetical_Products.fasta")
 
 # Check if expected file exists
 check_file("Hypothetical_Products.fasta")
@@ -455,8 +506,8 @@ os.system("cat " + annotated_file + " | cut -f 1 > Temp_annotated_products.txt")
 annotated_id = [line.strip() for line in open("Temp_annotated_products.txt", "r")]
 
 fasta_fetcher(str(augustus_folder / str("Clear_" + aug_parsing)),
-			annotated_id,
-			"Annotated_Products.fasta")
+			  annotated_id,
+			  "Annotated_Products.fasta")
 
 # Check if expected file exists
 check_file("Annotated_Products.fasta")
@@ -498,8 +549,8 @@ logger.info("Running HMMSCAN with Hypothetical Proteins")
 # General
 hmmscan_command_line = str(AnnotaPipeline.get('hmm_exe')) + " --cpu " + str(
 	AnnotaPipeline.get("threads")) + " --tblout " \
-					+ str(AnnotaBasename + "_hmmscan_output.txt") + \
-					" --noali"
+					   + str(AnnotaBasename + "_hmmscan_output.txt") + \
+					   " --noali"
 
 # Optionals
 for variable in config['HMMSCAN']:
@@ -629,7 +680,11 @@ if args.gff is not None and args.protein is not None:  # User gave protein file 
 	# Run parser to generate fasta_file
 	gff_file = str(gff_path)
 	gfftofasta()
+	logger.info("Running fasta_to_GFF to get gff file annotated")
+	run_fasta_to_GFF()
+	logger.info("GFF file is ready - Check" + str(AnnotaBasename) + "_Annotated_GFF.gff")
 elif args.protein is not None and args.gff is None:  # User gave only protein file
+	logger.info("GFF file wasn't given, fasta file will have only annotations")
 	logger.info("Running fasta_simple.py")
 	subprocess.run([
 		"python3",
@@ -644,9 +699,14 @@ elif args.protein is not None and args.gff is None:  # User gave only protein fi
 		str('"%s"' % str(AnnotaPipeline.get('organism')))
 	]
 	)
+	logger.info("GFF filw wasn't given, skipping script fasta_to_GFF")
 else:  # User selected run Augustus
 	gff_file = augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".gff")
 	gfftofasta()
+	logger.info("Running fasta_to_GFF to get gff file annotated")
+	run_fasta_to_GFF()
+	logger.info("GFF file is ready")
+
 
 # Remove double quotes from organism
 try:
