@@ -631,7 +631,7 @@ if args.nr is not None:
     odb_out_name = str(args.basename + "_BLASTp_AAvsNRDB.outfmt6")
     logger.info("Running blast against specificdb")
     # Use the file above without sequences already annotated by swissprot
-    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta",odb_out_name , args.nr)
+    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.nr)
     # ------------------------------
     logger.info("Running parser")
     parser_nr(args.basename, odb_out_name, args.id, args.pos, args.cov)
@@ -641,7 +641,7 @@ if args.trembl is not None:
     odb_out_name = str(args.basename + "_BLASTp_AAvsTrembl.outfmt6")
     odb = args.trembl
     # Use the file above without sequences already annotated by swissprot
-    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta",odb_out_name , args.trembl)
+    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.trembl)
     # ------------------------------
     logger.info("Running parser")
     parser_trembl(args.basename, odb_out_name, args.id, args.pos, args.cov)
@@ -653,7 +653,7 @@ if args.trytp is not None:
     odb_out_name = str(args.basename + "_BLASTp_AAvsSpecifiedDB.outfmt6")
     odb = args.trytp
     # Use the file above without sequences already annotated by swissprot
-    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta",odb_out_name , args.trytp)
+    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.trytp)
     # ------------------------------
     logger.info("Running parser")
     parser_trytrip(args.basename, odb_out_name, args.id, args.pos, args.cov)
