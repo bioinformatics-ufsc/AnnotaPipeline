@@ -24,35 +24,35 @@ optionalNamed = parser.add_argument_group('optional arguments')
 requiredNamed.add_argument(
         '-ipr1', '--ipr1', dest='ipr1',
         metavar='[InterProScan_Out.txt]',
-        help=('Output Interpro'),
+        help='Output Interpro',
         required=True
 )
 
 requiredNamed.add_argument(
         '-ipr2', '--ipr2', dest='ipr2',
         metavar='[InterProScan_Out.txt]',
-        help=('Output Interpro Info'),
+        help='Output Interpro Info',
         required=True
 )
 
 requiredNamed.add_argument(
         '-a', '--annotated', dest='annot',
         metavar='[Annotated_products.txt]',
-        help=('File with id and annotations'),
+        help='File with id and annotations',
         required=True
 )
 
 requiredNamed.add_argument(
         '-nh', '--no_hit', dest='nohit',
         metavar='[No_hits.txt]',
-        help=('File with id of sequences with no hit in blast'),
+        help='File with id of sequences with no hit in blast',
         required=True
 )
 
 requiredNamed.add_argument(
         '-hy', '--hypothetical', dest='hypo',
         metavar='[Hypothetical_products.txt]',
-        help=('File with id of hypothetical proteins'),
+        help='File with id of hypothetical proteins',
         required=True
 )
 
@@ -109,7 +109,8 @@ def parser_interproscan(arq_entrada, arq_ipr):
                         # nome_query = linha[0]
                         # start_query = linha[1]
                         # stop_query = linha[2]
-                        elif linha == seq_reg[1]:  # IGNORING THE FIRST LINE ON EACH GROUP OF QUERIES, AS IT'S NON-INFORMATIVE
+                        elif linha == seq_reg[1]:
+                                # IGNORING THE FIRST LINE ON EACH GROUP OF QUERIES, AS IT'S NON-INFORMATIVE
                                 pass
                         else:
                                 ontologia = str(None)
@@ -188,14 +189,17 @@ def intepro_process():
                         if old_id in ids_dict.keys():
                                 if (len(iprs) > 0) and (len(gos) > 0):
                                         output.write(
-                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + " (" + str(",".join(iprs)) + "," + str(
+                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() +
+                                                " (" + str(",".join(iprs)) + "," + str(
                                                         ",".join(gos)) + ")\n")
                                 elif (len(iprs) > 0) and (len(gos) == 0):
                                         output.write(
-                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + " (" + str(",".join(iprs)) + ")\n")
+                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + " (" +
+                                                str(",".join(iprs)) + ")\n")
                                 elif (len(iprs) == 0) and (len(gos) > 0):
                                         output.write(
-                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + " (" + str(",".join(gos)) + ")\n")
+                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() +
+                                                " (" + str(",".join(gos)) + ")\n")
                                 else:
                                         output.write(str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + "\n")
                                 del ids_dict[old_id]
@@ -203,24 +207,28 @@ def intepro_process():
                         elif old_id in hypo:
                                 if (len(iprs) > 0) and (len(gos) > 0):
                                         output.write(
-                                                str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + "," + str(
-                                                        ",".join(gos)) + ")\n")
+                                                str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + ","
+                                                + str(",".join(gos)) + ")\n")
                                 elif (len(iprs) > 0) and (len(gos) == 0):
-                                        output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + ")\n")
+                                        output.write(str(old_id) + "\tHypothetical protein ("
+                                                     + str(",".join(iprs)) + ")\n")
                                 elif (len(iprs) == 0) and (len(gos) > 0):
-                                        output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(gos)) + ")\n")
+                                        output.write(str(old_id) + "\tHypothetical protein ("
+                                                     + str(",".join(gos)) + ")\n")
                                 else:
                                         output.write(str(old_id) + "\tHypothetical protein\n")
                                 hypo.remove(old_id)
                         else:
                                 if (len(iprs) > 0) and (len(gos) > 0):
                                         output.write(
-                                                str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + "," + str(
-                                                        ",".join(gos)) + ")\n")
+                                                str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + "," +
+                                                str(",".join(gos)) + ")\n")
                                 elif (len(iprs) > 0) and (len(gos) == 0):
-                                        output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + ")\n")
+                                        output.write(str(old_id) + "\tHypothetical protein (" +
+                                                     str(",".join(iprs)) + ")\n")
                                 elif (len(iprs) == 0) and (len(gos) > 0):
-                                        output.write(str(old_id) + "\tHypothetical protein (" + str(",".join(gos)) + ")\n")
+                                        output.write(str(old_id) + "\tHypothetical protein (" +
+                                                     str(",".join(gos)) + ")\n")
                                 else:
                                         output.write(str(old_id) + "\tHypothetical protein\n")
                                 nohit.remove(old_id)
