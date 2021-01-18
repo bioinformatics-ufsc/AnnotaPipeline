@@ -16,7 +16,6 @@ import subprocess
 import logging
 import sys
 import re
-import os
 from shutil import which
 
 '''---ARGUMENTS AND [--help / -help / -h]------------------------------------'''
