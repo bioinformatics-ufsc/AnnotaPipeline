@@ -608,6 +608,7 @@ def no_hit(basename, blast6):
 
 
 def swiss_run():
+    swiss_out = str(args.basename) + "_BLASTp_AAvsSwissProt.outfmt6"
     logger.info("Running blast against swissprot")
     blast(args.seq, swiss_out, args.spdb)
     logger.info("Running parser")
@@ -615,16 +616,6 @@ def swiss_run():
 
 # Check BLAST, run Swissprot and parser it's results
 is_tool("blastp")
-
-# Check if there are old results from blast against swissprot
-swiss_out = str(args.basename) + "_BLASTp_AAvsSwissProt.outfmt6"
-if os.path.getsize(swiss_out) == 0:
-    swiss_run()
-else:
-    logger.info("Found result from previous blast against Swissprot ---> skipping blast")
-    logger.info("Running parser")
-    process_swiss(args.basename, args.seq, swiss_out, args.id, args.pos, args.cov)
-    logger.info("Parser swissprot done")
 
 # Secondary database
 if args.nr is not None:
@@ -637,7 +628,7 @@ if args.nr is not None:
     parser_nr(args.basename, odb_out_name, args.id, args.pos, args.cov)
     no_hit(str(args.basename), odb_out_name)
 
-if args.trembl is not None:
+elif args.trembl is not None:
     odb_out_name = str(args.basename + "_BLASTp_AAvsTrembl.outfmt6")
     odb = args.trembl
     # Use the file above without sequences already annotated by swissprot
@@ -649,7 +640,7 @@ if args.trembl is not None:
     # ----------Pseudotrat--------------
     no_hit(str(args.basename), odb_out_name)
 
-if args.trytp is not None:
+elif args.trytp is not None:
     odb_out_name = str(args.basename + "_BLASTp_AAvsSpecifiedDB.outfmt6")
     odb = args.trytp
     # Use the file above without sequences already annotated by swissprot
