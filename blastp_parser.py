@@ -65,7 +65,7 @@ group.add_argument(
 )
 
 group.add_argument(
-    '-spdb', '--specificdb', dest='trytp',
+    '-spdb', '--specificdb', dest='specificdb',
     metavar='[SpecificDB_database]',
     help='destination to specific database, in EupathDB format',
 )
@@ -607,7 +607,6 @@ def no_hit(basename, blast6):
 
 
 def swiss_run():
-    swiss_out = str(args.basename) + "_BLASTp_AAvsSwissProt.outfmt6"
     logger.info("Running blast against swissprot")
     blast(args.seq, swiss_out, args.spdb)
     logger.info("Running parser")
@@ -615,6 +614,11 @@ def swiss_run():
 
 # Check BLAST, run Swissprot and parser it's results
 is_tool("blastp")
+
+# Run BLAST against swissprotDB
+swiss_out = str(args.basename) + "_BLASTp_AAvsSwissProt.outfmt6"
+swiss_run()
+process_swiss(args.basename, args.seq, swiss_out, args.id, args.pos, args.cov)
 
 # Secondary database
 if args.nr is not None:
@@ -625,6 +629,7 @@ if args.nr is not None:
     # ------------------------------
     logger.info("Running parser")
     parser_nr(args.basename, odb_out_name, args.id, args.pos, args.cov)
+    # -------------No hit-----------
     no_hit(str(args.basename), odb_out_name)
 
 elif args.trembl is not None:
@@ -636,19 +641,20 @@ elif args.trembl is not None:
     logger.info("Running parser")
     parser_trembl(args.basename, odb_out_name, args.id, args.pos, args.cov)
     logger.info("Parser specific db done")
-    # ----------Pseudotrat--------------
+    # ----------No hit--------------
     no_hit(str(args.basename), odb_out_name)
 
-elif args.trytp is not None:
+# EupathDB
+elif args.specificdb is not None:
     odb_out_name = str(args.basename + "_BLASTp_AAvsSpecifiedDB.outfmt6")
-    odb = args.trytp
+    odb = args.specificdb
     # Use the file above without sequences already annotated by swissprot
-    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.trytp)
+    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.specificdb)
     # ------------------------------
     logger.info("Running parser")
     parser_trytrip(args.basename, odb_out_name, args.id, args.pos, args.cov)
     logger.info("Parser specific db done")
-    # ----------Pseudotrat--------------
+    # ----------No hit--------------
     no_hit(str(args.basename), odb_out_name)
 else:
     logger.error("Can't find any secondary database")
