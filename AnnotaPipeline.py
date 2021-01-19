@@ -496,9 +496,13 @@ logger.info(str(interpro_command_line))
 
 subprocess.getoutput(interpro_command_line)
 
-# Check if expected file exists
-check_file(str(AnnotaBasename + "_interproscan_hypothetical_output.gff3"))
+# INTERPROSCAN parser (info_parser.py) can run without this result, but must be a valid file.
+if os.path.isfile(str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")) == 0:
+	# Generate valid file
+	subprocess.run(["touch", str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")])
+	logger.info("Interproscan analysis return no results, moving on without this results.")
 
+logger.info("INTERPROSCAN finished for hypothetical proteins")
 logger.info("Preparing file for InterProScan Annotated Proteins execution")
 
 annotated_file = str(blast_folder / str(AnnotaBasename + "_annotated_products.txt"))
@@ -537,10 +541,13 @@ logger.info(str(interpro_command_line))
 
 subprocess.getoutput(interpro_command_line)
 
-# Check if expected file exists
-check_file(str(AnnotaBasename + "_interproscan_annotated_output.gff3"))
+# INTERPROSCAN parser (info_parser.py) can run without this result, but must be a valid file.
+if os.path.isfile(str(AnnotaBasename + "_interproscan_annotated_output.gff3")) == 0:
+	# Generate valid file
+	subprocess.run(["touch", str(AnnotaBasename + "_interproscan_annotated_output.gff3")])
+	logger.info("Interproscan analysis return no results, moving on without this results.")
 
-logger.info("INTERPROSCAN finished")
+logger.info("INTERPROSCAN finished for annotated proteins")
 
 # --------------------------------------------------------------------
 
@@ -699,7 +706,7 @@ elif args.protein is not None and args.gff is None:  # User gave only protein fi
 		str('"%s"' % str(AnnotaPipeline.get('organism')))
 	]
 	)
-	logger.info("GFF filw wasn't given, skipping script fasta_to_GFF")
+	logger.info("GFF file wasn't given, skipping script fasta_to_GFF")
 else:  # User selected run Augustus
 	gff_file = augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".gff")
 	gfftofasta()
