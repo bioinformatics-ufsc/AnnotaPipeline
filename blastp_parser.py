@@ -597,11 +597,12 @@ def no_hit(basename, blast6):
     list_all = list_all.replace(">", "").strip().split()
 
     no_hit_file = open(str(basename) + "_no_hit_products.txt", "w")
-    for a in list_hit:
-        if a in list_all:
-            list_all.remove(a)
-    no_hit_file.write("\n".join(list_all) + "\n")
-    no_hit_file.close()
+    for annotated in list_hit:
+        if annotated in list_all:
+            list_all.remove(annotated)
+    if len(list_all) > 0:
+        no_hit_file.write("\n".join(list_all) + "\n")
+        no_hit_file.close()
 
     # =========================================================================================
 

@@ -268,9 +268,15 @@ for anot in annot:
 ids_dict = dict(zip(ids, desc))  # Create dictionary with id as key and annotation as value
 
 # ---------------------- Create list with hypothetical ids -----------------
-hypo = open(args.hypo, "r").read().splitlines()
+if os.path.getsize(args.hypo) != 0:
+        hypo = open(args.hypo, "r").read().splitlines()
+else:
+        hypo = []
 # ---------------------- Create list with no_hits ids -----------------
-nohit = open(args.nohit, "r").read().splitlines()
+if os.path.getsize(args.nohit) != 0:
+        nohit = open(args.nohit, "r").read().splitlines()
+else:
+        nohit = []
 # Create output
 output = open("All_annotation_products.txt", "w")
 
