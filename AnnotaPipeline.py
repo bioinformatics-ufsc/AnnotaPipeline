@@ -501,6 +501,7 @@ if os.path.isfile(str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")
 	# Generate valid file
 	subprocess.run(["touch", str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")])
 	logger.info("Interproscan analysis return no results, moving on without this results.")
+	logger.warning("Check if your sequences have special characters (like *), remove it and rerun")
 
 logger.info("INTERPROSCAN finished for hypothetical proteins")
 logger.info("Preparing file for InterProScan Annotated Proteins execution")
@@ -546,6 +547,7 @@ if os.path.isfile(str(AnnotaBasename + "_interproscan_annotated_output.gff3")) =
 	# Generate valid file
 	subprocess.run(["touch", str(AnnotaBasename + "_interproscan_annotated_output.gff3")])
 	logger.info("Interproscan analysis return no results, moving on without this results.")
+	logger.warning("Check if your sequences have special characters (like *), remove it and rerun")
 
 logger.info("INTERPROSCAN finished for annotated proteins")
 
