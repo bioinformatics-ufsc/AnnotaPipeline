@@ -1,5 +1,6 @@
 # AnnotaPipeline
 Integrated tool to annotate hypothetical proteins
+
 developed by the Laboratorio de Bioinformatica at the Universidade Federal de Santa Catarina, in Brazil.
 
 # How To Run
