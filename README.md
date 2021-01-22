@@ -10,7 +10,7 @@ You will also need to install Augustus (available at https://github.com/Gaius-Au
 Before executing, please, modify the necessary fields in the AnnotaPipeline.config file.  
 
 # How to run
-To initiate the pipeline, you can run the annotapipeline.py script with three different options:  
+To initiate the pipeline, you can run the ```AnnotaPipeline.py``` script with three different options:  
 ```python3 AnnotaPipeline.py -p protein_sequences.fasta```  
 This is the most simple version of AnnotaPipeline execution.  
 The annotation process will begin with the submitted ```protein_sequences.fasta``` and the only missing output will be the ```(basename)_Annotated_GFF.gff``` file at the end.  
