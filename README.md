@@ -1,8 +1,15 @@
 # AnnotaPipeline
 Integrated tool to annotate hypothetical proteins developed by the Laboratorio de Bioinformatica at the Universidade Federal de Santa Catarina, in Brazil.  
 
-# How To Run
-Before using, please, modify the necessary fields in the AnnotaPipeline.config file.  
+# How to setup
+The AnnotaPipeline requires the following software to run properly:  
+BLAST and RPSblast (available at https://ftp.ncbi.nih.gov/blast/executables/blast+/LATEST/)  
+InterProScan (available at https://interproscan-docs.readthedocs.io/en/latest/HowToDownload.html)  
+HMMER (available at http://hmmer.org/download.html)  
+You will also need to install Augustus (available at https://github.com/Gaius-Augustus/Augustus) if you want to run this pipeline starting from gene and protein prediction.   
+Before executing, please, modify the necessary fields in the AnnotaPipeline.config file.  
+
+# How to run
 To initiate the pipeline, you can run the annotapipeline.py script with three different options:  
 ```python3 AnnotaPipeline.py -p protein_sequences.fasta```  
 This is the most simple version of AnnotaPipeline execution.  
