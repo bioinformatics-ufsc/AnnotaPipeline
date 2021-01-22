@@ -1,6 +1,6 @@
 # AnnotaPipeline
 Integrated tool to annotate hypothetical proteins developed by the Laboratorio de Bioinformatica at the Universidade Federal de Santa Catarina, in Brazil.  
-If you have questions about the pipeline or difficulties with its execution, please do not hesitate to contact our team here on GitHub or to contact my by email: Guilherme Maia <guiaugmaia@gmail.com>
+If you have questions about the pipeline or difficulties with its execution, please do not hesitate to contact our team here on GitHub or to contact me by email: Guilherme Maia <guiaugmaia@gmail.com>
 
 # How to setup
 The AnnotaPipeline requires the following software to run properly:  
