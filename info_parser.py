@@ -65,13 +65,9 @@ optionalNamed.add_argument(
         As good as you wish!'
 )
 
-# Parsear o resultado do parser p2,
-# seria este o p3?
-# Espero não pegar REC
 '''Output must be
 id \t hypothetical protein (InterPro:IPR039726,GO:0004308,GO:0009405)
 '''
-# Só hypo
 # Input format fields
 # id    DB      Acession        Annot   IPR     GO
 # -------------------------------------------
