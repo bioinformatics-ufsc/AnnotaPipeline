@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(
 Input  - Sorted Terms [file_preparsed]
 Ouput  - File with Id and annotation in the following way:
 
-id      Hypothetical protein (IPR[...],GO[...])
+id      hypothetical protein (IPR[...],GO[...])
 
 ''',
         epilog="""Rise to fame, your time has come!""", formatter_class=argparse.RawTextHelpFormatter
@@ -51,7 +51,7 @@ requiredNamed.add_argument(
 
 requiredNamed.add_argument(
         '-hy', '--hypothetical', dest='hypo',
-        metavar='[Hypothetical_products.txt]',
+        metavar='[hypothetical_products.txt]',
         help='File with id of hypothetical proteins',
         required=True
 )
@@ -69,7 +69,7 @@ optionalNamed.add_argument(
 # seria este o p3?
 # Espero não pegar REC
 '''Output must be
-id \t Hypothetical protein (InterPro:IPR039726,GO:0004308,GO:0009405)
+id \t hypothetical protein (InterPro:IPR039726,GO:0004308,GO:0009405)
 '''
 # Só hypo
 # Input format fields
@@ -153,10 +153,10 @@ def write_no_ipr():
                         output.write(str(anot) + "\t" + str(ids_dict.get(anot)).strip() + "\n")
         if len(hypo) > 0:
                 for hyp in hypo:
-                        output.write(str(hyp) + "\tHypothetical protein\n")
+                        output.write(str(hyp) + "\thypothetical protein\n")
         if len(nohit) > 0:
                 for hyp in nohit:
-                        output.write(str(hyp) + "\tHypothetical protein\n")
+                        output.write(str(hyp) + "\thypothetical protein\n")
         output.close()
 
 
@@ -207,30 +207,30 @@ def intepro_process():
                         elif old_id in hypo:
                                 if (len(iprs) > 0) and (len(gos) > 0):
                                         output.write(
-                                                str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + ","
+                                                str(old_id) + "\thypothetical protein (" + str(",".join(iprs)) + ","
                                                 + str(",".join(gos)) + ")\n")
                                 elif (len(iprs) > 0) and (len(gos) == 0):
-                                        output.write(str(old_id) + "\tHypothetical protein ("
+                                        output.write(str(old_id) + "\thypothetical protein ("
                                                      + str(",".join(iprs)) + ")\n")
                                 elif (len(iprs) == 0) and (len(gos) > 0):
-                                        output.write(str(old_id) + "\tHypothetical protein ("
+                                        output.write(str(old_id) + "\thypothetical protein ("
                                                      + str(",".join(gos)) + ")\n")
                                 else:
-                                        output.write(str(old_id) + "\tHypothetical protein\n")
+                                        output.write(str(old_id) + "\thypothetical protein\n")
                                 hypo.remove(old_id)
                         else:
                                 if (len(iprs) > 0) and (len(gos) > 0):
                                         output.write(
-                                                str(old_id) + "\tHypothetical protein (" + str(",".join(iprs)) + "," +
+                                                str(old_id) + "\thypothetical protein (" + str(",".join(iprs)) + "," +
                                                 str(",".join(gos)) + ")\n")
                                 elif (len(iprs) > 0) and (len(gos) == 0):
-                                        output.write(str(old_id) + "\tHypothetical protein (" +
+                                        output.write(str(old_id) + "\thypothetical protein (" +
                                                      str(",".join(iprs)) + ")\n")
                                 elif (len(iprs) == 0) and (len(gos) > 0):
-                                        output.write(str(old_id) + "\tHypothetical protein (" +
+                                        output.write(str(old_id) + "\thypothetical protein (" +
                                                      str(",".join(gos)) + ")\n")
                                 else:
-                                        output.write(str(old_id) + "\tHypothetical protein\n")
+                                        output.write(str(old_id) + "\thypothetical protein\n")
                                 nohit.remove(old_id)
                         gos.clear()
                         iprs.clear()
