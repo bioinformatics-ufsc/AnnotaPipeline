@@ -59,13 +59,13 @@ optionalNamed = parser.add_argument_group('optional arguments')
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument(
 	'-s', '--seq', dest='seq',
-	metavar='[protein_file]',
-	help='input sequence file',
+	metavar='[genomic_file]',
+	help='input genomic sequence file',
 )
 group.add_argument(
 	'-p', '--prot', dest='protein',
-	metavar='proteins.aa',
-	help='Protein file'
+	metavar='[protein_file]',
+	help='input proteic sequence file'
 )
 
 # optional arguments
