@@ -65,7 +65,7 @@ group.add_argument(
 group.add_argument(
 	'-p', '--prot', dest='protein',
 	metavar='[protein_file]',
-	help='input proteic sequence file'
+	help='input protein sequence file'
 )
 
 # optional arguments
