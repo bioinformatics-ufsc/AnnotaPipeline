@@ -95,6 +95,11 @@ optionalNamed.add_argument(
 # arguments saved here
 args = parser.parse_args()
 
+#if len(args.kallisto_reads) > 2:
+		#logger.error("Error, Kallisto requires single end or paired end files, more than 2 datasets were given!")
+		#logger.info("Exiting")
+		#exit("Error, Kallisto requires single end or paired end files, more than 2 datasets were given")
+
 # --- CREATE LogFile -----------------------------------------------------------
 
 logger = logging.getLogger('AnnotaPipeline')
@@ -326,6 +331,14 @@ def run_fasta_to_GFF():
 		str(AnnotaBasename)
 	]
 	)
+
+
+def kallisto_run():
+	# Kallisto command line
+	#subprocess.run()
+	a =1
+	# Kallisto parser
+
 
 
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
@@ -727,6 +740,10 @@ try:
 except:
 	pass
 
-logger.info("Annota annotated the annotations on the annoted file.")
+logger.info("Annota annotated the annotations on the annotated file.")
 
 # -----------------------------------------------------------------------
+# ---------------------- Kallisto ---------------------------------------
+
+# if /./////
+	#kalisto_run()

@@ -11,9 +11,9 @@ import pandas as pd
 parser = argparse.ArgumentParser(
     add_help=False,
     description='''
-Dad, can you make me a sandwich?
+Script to parse Kallisto output based on TPM threshold
     ''',
-    epilog="""Poof, you're a sandwich.""",
+    epilog="""Default TPM threshold is 1""",
     formatter_class=argparse.RawTextHelpFormatter
 )
 
@@ -28,11 +28,21 @@ required_args.add_argument(
     required=True
 )
 
-required_args.add_argument(
-    "-tpm", "--tpm-threshold", dest="tpm",
-    metavar="[TPM threshold]",
-    help="TPM threshold value to filter Kallisto output",
-    required=True
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument(
+	"-tpmavg", "--tpm-average",  dest="tpm_avg", action="store_true",
+	help='use TPM average as threshold'
+)
+
+group.add_argument(
+	"-tpmmd", "--tpm-median", dest="tpm_median", action="store_true",
+	help="use TPM median as threshold"
+)
+
+group.add_argument(
+	"-tpmval", "--tpm-threshold", dest="tpm_value",
+	metavar="-tpmth 100",
+	help="use a specific number as threshold for tpm"
 )
 
 # custom [--help] argument
@@ -40,7 +50,7 @@ optional_args.add_argument(
     "-h", "-help", "--help",
     action="help",
     default=argparse.SUPPRESS,
-    help="What kind of sorcery is this?"
+    help=""
 )
 
 # arguments saved here
@@ -48,11 +58,7 @@ args = parser.parse_args()
 
 # SET FILE LOCATION ------------------------------------------------------------
 
-files_dir = Path("/mnt/bfe2b7ea-8d6d-4d3e-ae29-96991c6abfaf/mestrado/AnnotaPipeline")
-
-# FILES ------------------------------------------------------------------------
-
-kallisto_file = Path(files_dir / "abundance.tsv")
+kallisto_file = Path(args.ktfile).absolute()
 
 # OPEN DATAFRAMES --------------------------------------------------------------
 
@@ -60,8 +66,24 @@ df_kallisto = pd.read_csv(kallisto_file, sep="\t")
 
 # PARSE DATAFRAMES -------------------------------------------------------------
 
-tpm_avg = df_kallisto["tpm"].mean()
-tpm_median = df_kallisto["tpm"].median()
+if args.tpm_avg == True:
+    tpm = df_kallisto["tpm"].mean()
+    print(f"Average TPM: {tpm}")
+    df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
+    # df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
+elif args.tpm_median == True:
+    tpm = df_kallisto["tpm"].median()
+    print(f"Median TPM: {tpm}")
+    df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
+    # df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
+else:
+    tpm = float(args.tpm_value)
+    print(f"Chosen TPM value: {tpm}")
+    df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
+    # df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
 
-df_avg = df_kallisto.loc[df_kallisto["tpm"] >= tpm_avg]
-df_median = df_kallisto.loc[df_kallisto["tpm"] >= tpm_median]
+kallisto_parsed = Path(kallisto_file).stem
+df_kt_threshold.to_csv(f"parsed_{kallisto_parsed}.tsv", sep="\t", index=False)
+
+# Precisa mesmo deixar apenas as 2 colunas ?
+# Ah e ai?
