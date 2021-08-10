@@ -639,8 +639,6 @@ subprocess.run([
 
 # Cleaning the house
 try:
-	os.remove("Annotated_Products.fasta")
-	os.remove("Hypothetical_Products.fasta")
 	os.remove("hmmscan.err")
 	os.rmdir("temp/")
 except:
