@@ -267,7 +267,7 @@ def check_parameters(sections):
             logger.error("Error, there is more than one method selected to parse kallisto ouput. Please, review .config file.")
             log_quit()
         else:
-            #is_tool("kalisto")
+            is_tool("kalisto")
             logging.info(f"Kallisto will run with method: {kallisto_check[1]}")
             # Pass method, to use further
             kallisto_method = kallisto_check[1]
