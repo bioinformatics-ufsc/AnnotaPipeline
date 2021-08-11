@@ -589,14 +589,20 @@ def no_hit(basename, blast6):
 
     # =============================== Parser sequences with no hit =============================
     # Get hit headers
-    list_hit = subprocess.getoutput("cat " + str(blast6) + " | cut -f 1 | uniq")
-    list_hit = list_hit.strip().split()
+    # list_hit = subprocess.getoutput("cat " + str(blast6) + " | cut -f 1 | uniq")
+    # list_hit = list_hit.strip().split()
+    list_hit = set([line.strip().split()[0] for line in open(blast6, "r")])
 
     # Get all headers
-    list_all = subprocess.getoutput("grep '>' " + str(basename) + "_BLASTp_AA_SwissProted.fasta")
-    list_all = list_all.replace(">", "").strip().split()
+    # list_all = subprocess.getoutput("grep '>' " + str(basename) + "_BLASTp_AA_SwissProted.fasta")
+    # list_all = [query.replace(">", "").strip().split() for query in list_all]
+    list_all = [
+        line.strip().replace(">", "")
+        for line in open(f"{str(basename)}_BLASTp_AA_SwissProted.fasta", "r")
+        if line.startswith(">")
+    ]
 
-    no_hit_file = open(str(basename) + "_no_hit_products.txt", "w")
+    no_hit_file = open(f"{str(basename)}_no_hit_products.txt", "w")
     for annotated in list_hit:
         if annotated in list_all:
             list_all.remove(annotated)
@@ -624,7 +630,7 @@ process_swiss(args.basename, args.seq, swiss_out, args.id, args.pos, args.cov)
 # Secondary database
 if args.nr is not None:
     odb_out_name = str(args.basename + "_BLASTp_AAvsNRDB.outfmt6")
-    logger.info("Running blast against specificdb")
+    logger.info("Running BLAST against SpecificDB")
     # Use the file above without sequences already annotated by swissprot
     blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.nr)
     # ------------------------------
@@ -641,7 +647,7 @@ elif args.trembl is not None:
     # ------------------------------
     logger.info("Running parser")
     parser_trembl(args.basename, odb_out_name, args.id, args.pos, args.cov)
-    logger.info("Parser specific db done")
+    logger.info("Parser SpecificDB done")
     # ----------No hit--------------
     no_hit(str(args.basename), odb_out_name)
 

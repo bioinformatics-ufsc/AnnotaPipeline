@@ -28,6 +28,13 @@ required_args.add_argument(
     required=True
 )
 
+required_args.add_argument(
+    "-basename", dest="basename",
+    metavar="[It\'s a boy, and will be called Jonas]",
+    help=basename,
+    required=True
+)
+
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument(
 	"-tpmavg", "--tpm-average",  dest="tpm_avg", action="store_true",
@@ -70,20 +77,17 @@ if args.tpm_avg == True:
     tpm = df_kallisto["tpm"].mean()
     print(f"Average TPM: {tpm}")
     df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
-    # df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
+    df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
 elif args.tpm_median == True:
     tpm = df_kallisto["tpm"].median()
     print(f"Median TPM: {tpm}")
     df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
-    # df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
+    df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
 else:
     tpm = float(args.tpm_value)
     print(f"Chosen TPM value: {tpm}")
     df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
-    # df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
+    df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
 
 kallisto_parsed = Path(kallisto_file).stem
-df_kt_threshold.to_csv(f"parsed_{kallisto_parsed}.tsv", sep="\t", index=False)
-
-# Precisa mesmo deixar apenas as 2 colunas ?
-# Ah e ai?
+df_kt_threshold.to_csv(f"{args.basename}_parsed.txt", sep="\t", index=False)

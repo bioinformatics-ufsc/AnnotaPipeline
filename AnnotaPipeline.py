@@ -36,6 +36,31 @@ home_dir_pwd = pathlib.Path.cwd()
 parser = argparse.ArgumentParser(
     add_help=False,
     description='''
+
+   _           _                     _    __       _             _      
+  | |         | |                   | |  /_/      (_)           | |     
+  | |     __ _| |__   ___  _ __ __ _| |_ ___  _ __ _  ___     __| | ___ 
+  | |    / _` | '_ \ / _ \| '__/ _` | __/ _ \| '__| |/ _ \   / _` |/ _ \
+  | |___| (_| | |_) | (_) | | | (_| | || (_) | |  | | (_) | | (_| |  __/
+  |______\__,_|_.__/ \___/|_|  \__,_|\__\___/|_|  |_|\___/   \__,_|\___|
+                                                                        
+                                                                        
+   ____  _       _        __                       __  _   _            
+  |  _ \(_)     (_)      / _|                     /_/ | | (_)           
+  | |_) |_  ___  _ _ __ | |_ ___  _ __ _ __ ___   __ _| |_ _  ___ __ _  
+  |  _ <| |/ _ \| | '_ \|  _/ _ \| '__| '_ ` _ \ / _` | __| |/ __/ _` | 
+  | |_) | | (_) | | | | | || (_) | |  | | | | | | (_| | |_| | (_| (_| | 
+  |____/|_|\___/|_|_| |_|_| \___/|_|  |_| |_| |_|\__,_|\__|_|\___\__,_| 
+                                                                        
+                                                                        
+                      _    _ ______ _____  _____                        
+                     | |  | |  ____/ ____|/ ____|                       
+                     | |  | | |__ | (___ | |                            
+                     | |  | |  __| \___ \| |                            
+                     | |__| | |    ____) | |____                        
+                      \____/|_|   |_____/ \_____|                       
+                                                                        
+
     AnnotaPipeline
     Input sequence with [-s] (modify other parameters in AnnotaPipeline.config)
     Make sure all required parameters are given
@@ -43,37 +68,6 @@ parser = argparse.ArgumentParser(
 
     If you already have protein file, give it through the flag -p, this way, Augustus prediction will be
     ignored. If you have a gff file for this protein file, give it throuth -gff flag to get complete annotations.
-
-Hobbes      $$$$$$$$              $$$$$$
-           m$$$$$$$$$          m$"""" "$$m             
-           $$$$$$$$$$         $" m$$$$m""$m           
-          mm$$$$$$$$$$$$$$$"" $     "$$mm$$           
-          m""        """$$$$$mm      "$$$$$           
-      mmm$$m$$m$$mmmmm   """"$$$"    m$$$"            
-    ""$m   $$$""""""$$$mm            $$$$m            
-       $                ""           mm$$$$           
-     mm"                      mm$$$$$$$$$$$           
-     $                      m$$$$""    ""$$$          
-     $                      $$""       m "$$m         
-    $                      """   mm$$$$$$$$$$         
-    $                          m$$$$$""""$$$"         
-     $  mm    mm               $$"       "$$          
-     $ $"$$  $"$$                         "$""""      
-      $"m"   "m$"                           m""""     
-     m$ m"""m                                "mmm""   
-    $ mmmm                                   ""       
- mmm$$""""""$$                                m""""$  
-m$$"  mm$$$$$$$                                mm     
-$$  $$$$$$$$$$$$         mmm                "$m "$m   
-"$$$$$$$$$$$$$$$         m$m"                m     "  
- ""$$$$$$$$$$$$"       m$$$$                 ""mm     
-   $""$$$$$""         m$$$$                m mmm "    
-   "m              m$$$$$$            mm$mmmm  ""     
-    ""mmm     mmm$$""$$$"            $$""m   "        
-         """""   "$mm$"     m        $$               
-                m         m$"        $$               
-                "$$$$$mm$""          ""               
-                   """"                               
 
 ''',
     epilog=""" >>>> -s and -p are mutually exclusive arguments <<<<
@@ -225,9 +219,9 @@ def check_parameters(sections):
                     if argument == "rnaseq-data":
                         if len(config[str('KALLISTO')].get("rnaseq-data").split()) > 2:
                             logger.error(
-								"Error, there are more arguments than required for rnaseq-data (KALLISTO). " \
+                                "Error, there are more arguments than required for rnaseq-data (KALLISTO). " \
                             	"Pass one if your data is from single-end, " \
-								"and two files if your data is from paired end!"
+                                "and two files if your data is from paired end!"
 							)
                             log_quit()
                     # Check if argument is Empty
@@ -267,10 +261,20 @@ def check_parameters(sections):
             logger.error("Error, there is more than one method selected to parse kallisto ouput. Please, review .config file.")
             log_quit()
         else:
-            #is_tool("kalisto")
+            is_tool("kallisto")
             logging.info(f"Kallisto will run with method: {kallisto_check[1]}")
             # Pass method, to use further
             kallisto_method = kallisto_check[1]
+
+
+def kallisto_run():
+    pass
+# kallisto index -i transcripts.idx transcripts.fasta
+ 
+# kallisto quant -i transcripts.idx -o output -b 100 reads_1.fastq reads_2.fastq
+
+# # se for rodar com single read:
+# kallisto quant -i transcripts.idx -o output -b 100 --single -l 180 -s 20 reads_1.fastq
 
 
 
@@ -464,7 +468,7 @@ sequence_cleaner(str(aug_parsing), int(seq_cleaner.get('minsize_seq')))
 # Check if expected file exists
 check_file(str("Clear_" + aug_parsing))
 
-logger.info("SEQUENCE CLEANER is finished. Please check Clear_" + aug_parsing)
+logger.info(f"SEQUENCE CLEANER is finished. Please check Clear_{aug_parsing}")
 
 os.chdir(annota_pwd)
 
@@ -553,7 +557,7 @@ logger.info("Running INTERPROSCAN with Hypothetical Proteins")
 interpro_command_line = (
     f"{str(AnnotaPipeline.get('interpro_exe'))} -i Hypothetical_Products.fasta "
     f"-o {str(AnnotaBasename)}_interproscan_hypothetical_output.gff3 "
-    f" -f GFF3 -t p -goterms -iprlookup"
+    f"-f GFF3 -t p -goterms -iprlookup"
 )
 
 # Optionals
@@ -570,7 +574,8 @@ subprocess.getoutput(interpro_command_line)
 # INTERPROSCAN parser (info_parser.py) can run without this result, but must be a valid file.
 if os.path.isfile(str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")) == 0:
     # Generate valid file
-    subprocess.run(["touch", str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")])
+    open(f"{str(AnnotaBasename)}_interproscan_hypothetical_output.gff3", "w").close()
+    # subprocess.run(["touch", str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")])
     logger.info("Interproscan analysis return no results, moving on without this results.")
     logger.warning("Check if your sequences have special characters (like *), remove it and rerun")
 
@@ -583,7 +588,7 @@ annotated_file = str(blast_folder / str(AnnotaBasename + "_annotated_products.tx
 # Using only IDs from the file
 # os.system(f"cut -f 1 {annotated_file} > Temp_annotated_products.txt")
 # annotated_id = [line.strip() for line in open("Temp_annotated_products.txt", "r")]
-annotated_id = print([line.strip().split()[0] for line in open(annotated_file, "r")])
+annotated_id = [line.strip().split()[0] for line in open(annotated_file, "r")]
 # os.remove("Temp_annotated_products.txt")
 ### --------------------------------
 
@@ -604,7 +609,7 @@ logger.info("Running INTERPROSCAN with Annotated Proteins")
 interpro_command_line = (
     f"{str(AnnotaPipeline.get('interpro_exe'))} -i Hypothetical_Products.fasta "
     f"-o {str(AnnotaBasename)}_interproscan_annotated_output.gff3 "
-    f" -f GFF3 -t p -goterms -iprlookup"
+    f"-f GFF3 -t p -goterms -iprlookup"
 )
 
 for variable in config['INTERPROSCAN']:
@@ -620,7 +625,8 @@ subprocess.getoutput(interpro_command_line)
 # INTERPROSCAN parser (info_parser.py) can run without this result, but must be a valid file.
 if os.path.isfile(str(AnnotaBasename + "_interproscan_annotated_output.gff3")) == 0:
     # Generate valid file
-    subprocess.run(["touch", str(AnnotaBasename + "_interproscan_annotated_output.gff3")])
+    open(f"{str(AnnotaBasename)}_interproscan_annotated_output.gff3", "w").close()
+    # subprocess.run(["touch", str(AnnotaBasename + "_interproscan_annotated_output.gff3")])
     logger.info("Interproscan analysis return no results, moving on without this results.")
     logger.warning("Check if your sequences have special characters (like *), remove it and rerun")
 
