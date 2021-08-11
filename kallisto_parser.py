@@ -31,7 +31,7 @@ required_args.add_argument(
 required_args.add_argument(
     "-basename", dest="basename",
     metavar="[It\'s a boy, and will be called Jonas]",
-    help=basename,
+    help="basename",
     required=True
 )
 
@@ -90,4 +90,4 @@ else:
     df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
 
 kallisto_parsed = Path(kallisto_file).stem
-df_kt_threshold.to_csv(f"{args.basename}_parsed.txt", sep="\t", index=False)
+df_kt_threshold.to_csv(f"{args.basename}_transcript_evidence.txt", sep="\t", index=False)

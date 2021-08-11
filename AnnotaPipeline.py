@@ -183,7 +183,6 @@ config.sections()  # get sections of each program
 
 # --- FUNCTIONS ----------------------------------------------------------------
 
-
 def log_quit():
     logger.info("Exiting")
     logging.shutdown()
@@ -196,6 +195,121 @@ def is_tool(name):
         log_quit()
 
 
+def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_path):
+    
+    kallisto_command_index = f"{kallisto_exe} index -i {basename}_transcripts.idx {fasta}"
+    logging.info("Runing Kallisto index")
+    logging.info(f"{kallisto_command_index}")
+    subprocess.run([kallisto_exe, "index", "-i", ""
+    ])
+
+    # kallisto index -i transcripts.idx transcripts.fasta
+    if paired_end == True:
+        if len(kallisto.get("l")) != 0:
+            l_flag = f"-l {kallisto.get('l')}"
+            logging.info(f"Kallisto will run with -l {kallisto.get('l')}")
+        else:
+            l_flag = ""
+        if len(kallisto.get("s")) != 0:
+            s_flag = f"-s {kallisto.get('s')}"
+            logging.info(f"Kallisto will run with -s {kallisto.get('s')}")
+        else:
+            s_flag = ""
+       
+        kallisto_command_quant = (
+            f"{kallisto_exe} -i {basename}_transcripts.idx "
+            f"{s_flag} {l_flag} "
+            f"-o {kallisto_path} -b {bootstrap} {kallisto.get('rnaseq-data')}"
+        )
+        # kallisto quant -i transcripts.idx -o output -b 100 reads_1.fastq reads_2.fastq
+    else:
+        pass
+        kallisto_command_quant = (
+            f"{kallisto_exe} -i {basename}_transcripts.idx "
+            f"{s_flag} {l_flag} --single "
+            f"-o {kallisto_path} -b {bootstrap} {kallisto.get('rnaseq-data')}"
+        )
+        # kal
+        # kallisto quant -i transcripts.idx -o output -b 100 --single -l 180 -s 20 reads_1.fastq
+
+    # Define method to parse
+    if method == "median":
+        kallisto_parser_flag = "-tpmmd"
+    elif method == "mean":
+        kallisto_parser_flag = "-tpmavg"
+    else:
+        kallisto_parser_flag = f"-tpmval {kallisto.get(method)}"
+    
+    # Run parser
+
+
+def kallisto_check_parameters():
+    # kallisto method indicate wich method to parse (mean, median, value) 
+    # kallisto paired_end indicate rnaseq type (important to run kallisto)
+    global kallisto_method, kallisto_paired_end
+    # This variable will store method to parse kallisto output
+    kallisto_method = None
+    # if kallisto path were given, check other arguments, if not pass.
+    if len(config[str('KALLISTO')].get("kallisto_path")) == 0:
+        logger.info("Arguments for Kallisto are empty. This step will be skipped.")
+    else:
+        kallisto_check = []
+        for argument in ("rnaseq-data", "median", "mean", "value"):
+            if argument == "rnaseq-data":
+                if len(config[str('KALLISTO')].get("rnaseq-data").split()) > 2:
+                    logger.error(
+                        "Error, there are more arguments than required for rnaseq-data (KALLISTO). " \
+                        "Pass one if your data is from single-end, " \
+                        "and two files if your data is from paired end!"
+                    )
+                    log_quit()
+                ###### This box check how many files were given in rnaseq-data #####
+                elif len(config['KALLISTO'].get("rnaseq-data").split()) == 2:
+                    kallisto_paired_end = True
+                    logger.info(f"Kallisto will run with paired end data")
+                    kallisto_check.append(argument)
+                elif len(config['KALLISTO'].get("rnaseq-data").split()) == 1:
+                    kallisto_paired_end = False
+                    # Check required arguments for single end data
+                    if len(config['KALLISTO'].get('l')) == 0:
+                        logger.error("Error. Mandatory argument for single end data 'l' is empty")
+                        log_quit()
+                    elif len(config['KALLISTO'].get('s')) == 0:
+                        logger.error("Error. Mandatory argument for single end data 's' is empty")
+                        log_quit()                        
+                    logger.info(f"Kallisto will run with single end data")
+                    kallisto_check.append(argument)
+                else:
+                    logger.error(
+                        "Error, check values for rnaseq-data (KALLISTO). " \
+                        "Pass one if your data is from single-end, " \
+                        "and two files if your data is from paired end!"
+                    )
+                    log_quit()
+                ####################################################################
+            # Check if argument is Empty
+            elif len(config[str('KALLISTO')].get(argument)) == 0:
+                pass
+            else:
+                # If it's not empty, save argument
+                kallisto_check.append(argument)
+        # Check kallisto arguments
+        # If all kallisto arguments are empty, then don't run this guy
+        if len(kallisto_check) == 0:
+            logger.info("Arguments for Kallisto are empty. This step will be skipped.")
+            kallisto_method = None
+        # Rna-seq data is required for calisto
+        if 'rnaseq-data' in kallisto_check:
+            # if there is rna-seq data, check if method is correctly given
+            if len(kallisto_check) > 2:
+                logger.error("Error, there is more than one method selected to parse kallisto ouput. Please, review .config file.")
+                log_quit()
+            else:
+                logger.info(f"Kallisto will run with method: {kallisto_check[1]}")
+                # Pass method, to use further
+                kallisto_method = kallisto_check[1]                    
+
+
 def check_parameters(sections):
     # Variables to check databases
     # swissprot database
@@ -205,44 +319,28 @@ def check_parameters(sections):
     # trembl database
     trembl_verify = True
     for section in sections:  # get box of variables
-        for key in config[str(section)]:  # get variable for each box
-            # check if it's not empty
-            if args.protein is not None and key is config['AUGUSTUS']:
-                pass
-            # Check kallisto optional arguments
-            if str(section) == "KALLISTO":
-                kallisto_check = []
-                global kallisto_method
-                # This variable will store method to parse kallisto output
-                kallisto_method = None
-                for argument in ("rnaseq-data", "median", "mean", "value"):
-                    if argument == "rnaseq-data":
-                        if len(config[str('KALLISTO')].get("rnaseq-data").split()) > 2:
-                            logger.error(
-                                "Error, there are more arguments than required for rnaseq-data (KALLISTO). " \
-                            	"Pass one if your data is from single-end, " \
-                                "and two files if your data is from paired end!"
-							)
+        # Check kallisto optional arguments
+        if str(section) == "KALLISTO":
+            kallisto_check_parameters()  
+        else:  
+            for key in config[str(section)]:  # get variable for each box
+                # Arguments for agutustus don't need to be checked if protein file were given
+                if args.protein is not None and key is config['AUGUSTUS']:
+                    pass                       
+                else:
+                    if (len(config[str(section)].get(key))) < 1:
+                        # Check if any secondary database were given
+                        if str(section) == "EssentialParameters" and key == "specific_path_db":
+                            sp_verify = False
+                        elif str(section) == "EssentialParameters" and key == "nr_db_path":
+                            nr_verify = False
+                        elif str(section) == "EssentialParameters" and key == "trembl_db_path":
+                            trembl_verify = False
+                        # Any other parameter checked
+                        else:
+                            # Crash pipeline if some required variable is empty
+                            logger.error(f"Variable [{key}] from section [{str(section)}] is null")
                             log_quit()
-                    # Check if argument is Empty
-                    if (len(config[str('KALLISTO')].get(argument))) < 1:
-                        pass
-                    else:
-                        # If it's not empty, save argument
-                        kallisto_check.append(argument)
-            else:
-                if (len(config[str(section)].get(key))) < 1:
-                    # Check if any secondary database were given
-                    if str(section) == "EssentialParameters" and key == "specific_path_db":
-                        sp_verify = False
-                    elif str(section) == "EssentialParameters" and key == "nr_db_path":
-                        nr_verify = False
-                    elif str(section) == "EssentialParameters" and key == "trembl_db_path":
-                        trembl_verify = False
-                    else:
-                        # Crash pipeline if some required variable is empty
-                        logger.error(f"Variable [{key}] from section [{str(section)}] is null")
-                        log_quit()
     # Exit and report error if there is more than one database or if there is no one
     if sum([sp_verify, nr_verify, trembl_verify]) == 0:
         logger.error("Error, there is no Secondary database, please review config file!")
@@ -250,32 +348,6 @@ def check_parameters(sections):
     if sum([sp_verify, nr_verify, trembl_verify]) == 2:
         logger.error("Error, there is two secondary databases, select one of them in config file")
         log_quit()
-    # Check kallisto arguments
-    # If all kallisto arguments are empty, then don't run this guy
-    if len(kallisto_check) == 0:
-        logging.info("Arguments for Kallisto are empty. This step will be skipped.")
-    # Rna-seq data is required for calisto
-    if 'rnaseq-data' in kallisto_check:
-        # if there is rna-seq data, check if method is correctly given
-        if len(kallisto_check) > 2:
-            logger.error("Error, there is more than one method selected to parse kallisto ouput. Please, review .config file.")
-            log_quit()
-        else:
-            is_tool("kallisto")
-            logging.info(f"Kallisto will run with method: {kallisto_check[1]}")
-            # Pass method, to use further
-            kallisto_method = kallisto_check[1]
-
-
-def kallisto_run():
-    pass
-# kallisto index -i transcripts.idx transcripts.fasta
- 
-# kallisto quant -i transcripts.idx -o output -b 100 reads_1.fastq reads_2.fastq
-
-# # se for rodar com single read:
-# kallisto quant -i transcripts.idx -o output -b 100 --single -l 180 -s 20 reads_1.fastq
-
 
 
 def fasta_fetcher(input_fasta, id_list, fetcher_output):
@@ -320,7 +392,7 @@ def augustus_run():
 
     # AUGUSTUS: command line
     aug_config = f"--AUGUSTUS_CONFIG_PATH={str(augustus_config)}"
-    aug_command = f"{str(augustus_bin)} {str(augustus_config)}"
+    aug_command = f"{str(augustus_bin)} {str(aug_config)}"
 
     for variable in config['AUGUSTUS']:
         if variable != "augustus_path":
@@ -395,20 +467,11 @@ def run_fasta_to_GFF():
     )
 
 
-def kallisto_run():
-    # Kallisto command line
-    #subprocess.run()
-    pass
-    # Kallisto parser
-
-
-
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
 is_tool("blastp")
 is_tool("perl")
 is_tool("rpsblast")
-is_tool("sed")
-# Kallisto is checked inside check_parameters function
+#is_tool("sed")
 
 sections_config = config.sections()
 check_parameters(sections_config)
@@ -796,32 +859,25 @@ else:  # User selected run Augustus
     logger.info("GFF file is ready")
 
 
-# Remove double quotes from organism
-try:
-    subprocess.run([
-        "sed",
-        "-i",
-        's/\"//g',
-        str("Annota_" + str(AnnotaBasename) + ".fasta")
-        ]
-    )
-except:
-    pass
+# # Remove double quotes from organism
+# try:
+#     subprocess.run([
+#         "sed",
+#         "-i",
+#         's/\"//g',
+#         str("AnnotaPipeline_" + str(AnnotaBasename) + ".fasta")
+#         ]
+#     )
+# except:
+#     pass
 
 logger.info("Annota annotated the annotations on the annotated file.")
 
 # -----------------------------------------------------------------------
 # ---------------------- Kallisto ---------------------------------------
-
 if kallisto_method == None:
     pass
 else:
-    if kallisto_method == "median":
-        kallisto_parser_flag = "-tpmmd"
-    elif kallisto_method == "mean":
-        kallisto_parser_flag = "-tpmavg"
-    else:
-        kallisto_parser_flag = f"-tpmval {kallisto.get(kallisto_method)}"
-    print(kallisto_parser_flag)
-    # PROGRAME ESSA PARTE
-    kallisto_run(kallisto_parser_flag)
+    # Criar pasta
+    # change dir
+    kallisto_run(kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method)
