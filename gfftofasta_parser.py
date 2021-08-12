@@ -117,9 +117,6 @@ with open(f"AnnotaPipeline_{str(args.basename)}.fasta", "w") as annotafile:
                 f"Strand: {str(trans[id]['strand'])} | "
                 f"Description: {str(ant[id])}\n"
             )
-                # ">" + str(id) + " | Organism: " + str(args.org) + " | Location: " + str(
-                # trans[id]['scaff']) + " | Start: " + str(trans[id]['start']) + " | End: " + str(
-                # trans[id]['end']) + " | Strand: " + str(trans[id]['strand']) + " | Description: " + str(ant[id]) + "\n")
             annotafile.write(str("\n".join(sequence[1:])))
         except:
             ids_warn.append(id)
