@@ -178,12 +178,12 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_pat
     if paired_end == True:
         if len(kallisto.get("l")) != 0:
             l_flag = f"-l {kallisto.get('l')}"
-            logging.info(f"Kallisto will run with -l {kallisto.get('l')}")
+            logger.info(f"Kallisto will run with -l {kallisto.get('l')}")
         else:
             l_flag = ""
         if len(kallisto.get("s")) != 0:
             s_flag = f"-s {kallisto.get('s')}"
-            logging.info(f"Kallisto will run with -s {kallisto.get('s')}")
+            logger.info(f"Kallisto will run with -s {kallisto.get('s')}")
         else:
             s_flag = ""
        
@@ -288,6 +288,9 @@ def kallisto_check_parameters():
             # if there is rna-seq data, check if method is correctly given
             if len(kallisto_check) > 2:
                 logger.error("Error, there is more than one method selected to parse kallisto ouput. Please, review .config file.")
+                log_quit()
+            elif len(config[str('KALLISTO')].get("bootstrap")) == 0:
+                logger.error("Kallisto bootstrap is empty, default value is 0. At least pass this value")
                 log_quit()
             else:
                 logger.info(f"Kallisto will run with method: {kallisto_check[1]}")
