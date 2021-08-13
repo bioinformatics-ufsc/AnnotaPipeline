@@ -166,14 +166,75 @@ def log_quit():
     sys.exit(1)
 
 
-def kallisto_check_parameters():
-    # if kallisto path were given, check other arguments, if not pass.
+def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_path):
+    
+    kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index.idx {fasta}"
+    logger.info("Runing Kallisto index")
+    logger.info(f"{kallisto_command_index}")
+    subprocess.getoutput(kallisto_command_index)
 
+    # Standart command line for kallisto index
+    # kallisto index -i transcripts.idx transcripts.fasta
+    if paired_end == True:
+        if len(kallisto.get("l")) != 0:
+            l_flag = f"-l {kallisto.get('l')}"
+            logging.info(f"Kallisto will run with -l {kallisto.get('l')}")
+        else:
+            l_flag = ""
+        if len(kallisto.get("s")) != 0:
+            s_flag = f"-s {kallisto.get('s')}"
+            logging.info(f"Kallisto will run with -s {kallisto.get('s')}")
+        else:
+            s_flag = ""
+       
+        kallisto_command_quant = (
+            f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
+            f"{s_flag} {l_flag} "
+            f"-o {kallisto_path} -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+        )
+        logger.info("Runing Kallisto quant")
+        logger.info(kallisto_command_quant)
+        subprocess.getoutput(kallisto_command_quant)
+        # Standart command line for kallisto quant paired end
+        # kallisto quant -i transcripts.idx -o output -b 100 reads_1.fastq reads_2.fastq
+    else:
+        kallisto_command_quant = (
+            f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
+            f"-l {kallisto.get('s')} -s {kallisto.get('l')} --single "
+            f"-o {kallisto_path} -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+        )
+        logger.info("Runing Kallisto quant")
+        logger.info(kallisto_command_quant)
+        subprocess.getoutput(kallisto_command_quant)
+        # Standart command line for kallisto quant single end
+        # kallisto quant -i transcripts.idx -o output -b 100 --single -l 180 -s 20 reads_1.fastq
+
+    # Define method to parse
+    if method == "median":
+        kallisto_parser_flag = "-tpmmd"
+    elif method == "mean":
+        kallisto_parser_flag = "-tpmavg"
+    else:
+        kallisto_parser_flag = f'-tpmval {kallisto.get("value")}'
+    # Run parser
+    subprocess.run(["python3", 
+        "kallisto_parser.py", 
+        "-ktfile",
+         str(args.seq),
+        "-basename", 
+        AnnotaBasename,
+        str(kallisto_parser_flag)
+        ])
+
+
+
+def kallisto_check_parameters():
     # kallisto method indicate wich method to parse (mean, median, value) 
     # kallisto paired_end indicate rnaseq type (important to run kallisto)
     global kallisto_method, kallisto_paired_end
     # This variable will store method to parse kallisto output
     kallisto_method = None
+    # if kallisto path were given, check other arguments, if not pass.
     if len(config[str('KALLISTO')].get("kallisto_path")) == 0:
         logger.info("Arguments for Kallisto are empty. This step will be skipped.")
     else:
@@ -187,12 +248,20 @@ def kallisto_check_parameters():
                         "and two files if your data is from paired end!"
                     )
                     log_quit()
-                elif len(config[str('KALLISTO')].get("rnaseq-data").split()) == 2:
+                ###### This box check how many files were given in rnaseq-data #####
+                elif len(config['KALLISTO'].get("rnaseq-data").split()) == 2:
                     kallisto_paired_end = True
                     logger.info(f"Kallisto will run with paired end data")
                     kallisto_check.append(argument)
-                elif len(config[str('KALLISTO')].get("rnaseq-data").split()) == 1:
+                elif len(config['KALLISTO'].get("rnaseq-data").split()) == 1:
                     kallisto_paired_end = False
+                    # Check required arguments for single end data
+                    if len(config['KALLISTO'].get('l')) == 0:
+                        logger.error("Error. Mandatory argument for single end data 'l' is empty")
+                        log_quit()
+                    elif len(config['KALLISTO'].get('s')) == 0:
+                        logger.error("Error. Mandatory argument for single end data 's' is empty")
+                        log_quit()                        
                     logger.info(f"Kallisto will run with single end data")
                     kallisto_check.append(argument)
                 else:
@@ -202,8 +271,9 @@ def kallisto_check_parameters():
                         "and two files if your data is from paired end!"
                     )
                     log_quit()
+                ####################################################################
             # Check if argument is Empty
-            elif len(config[str('KALLISTO')].get(argument)) < 1:
+            elif len(config[str('KALLISTO')].get(argument)) == 0:
                 pass
             else:
                 # If it's not empty, save argument
@@ -212,6 +282,7 @@ def kallisto_check_parameters():
         # If all kallisto arguments are empty, then don't run this guy
         if len(kallisto_check) == 0:
             logger.info("Arguments for Kallisto are empty. This step will be skipped.")
+            kallisto_method = None
         # Rna-seq data is required for calisto
         if 'rnaseq-data' in kallisto_check:
             # if there is rna-seq data, check if method is correctly given
@@ -250,6 +321,7 @@ def check_parameters(sections):
                             nr_verify = False
                         elif str(section) == "EssentialParameters" and key == "trembl_db_path":
                             trembl_verify = False
+                        # Any other parameter checked
                         else:
                             # Crash pipeline if some required variable is empty
                             logger.error(f"Variable [{key}] from section [{str(section)}] is null")
@@ -302,14 +374,6 @@ def is_tool(name):
         sys.exit(1)
 
 
-def kallisto_run():
-    # Kallisto command line
-    #subprocess.run()
-    pass
-    # Kallisto parser
-
-
-
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
 
 sections_config = config.sections()
@@ -337,17 +401,11 @@ blast = config['BLAST']
 rpsblast = config['RPSBLAST']
 kallisto = config['KALLISTO']
 
-# if kallisto_method == None:
-#     print("nao roda kalistop")
-# else:
-#     if kallisto_paired_end == True:
-#         print("paired_end")
-#     if kallisto_method == "median":
-#         kallisto_parser_flag = "-tpmmd"
-#     elif kallisto_method == "mean":
-#         kallisto_parser_flag = "-tpmavg"
-#     else:
-#         kallisto_parser_flag = f"-tpmval {kallisto.get(kallisto_method)}"
-#     print(f"roda kallisto com {kallisto_parser_flag}")
-    # PROGRAME ESSA PARTE
-print(kallisto.get('rnaseq-data'))
+# Adicionar Pathlib no Annota
+kallisto_output_path = "kallisto_out"
+
+# Run kallisto
+if kallisto_method == None:
+    pass
+else:
+    kallisto_run(kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method, AnnotaBasename, args.seq,  kallisto_output_path)
