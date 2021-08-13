@@ -169,7 +169,7 @@ def log_quit():
 def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_path):
     
     kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index.idx {fasta}"
-    logger.info("Runing Kallisto index")
+    logger.info("Running Kallisto index")
     logger.info(f"{kallisto_command_index}")
     subprocess.getoutput(kallisto_command_index)
 
@@ -192,7 +192,7 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_pat
             f"{s_flag} {l_flag} "
             f"-o {kallisto_path} -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
-        logger.info("Runing Kallisto quant")
+        logger.info("Running Kallisto quant")
         logger.info(kallisto_command_quant)
         subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant paired end
@@ -203,7 +203,7 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_pat
             f"-l {kallisto.get('s')} -s {kallisto.get('l')} --single "
             f"-o {kallisto_path} -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
-        logger.info("Runing Kallisto quant")
+        logger.info("Running Kallisto quant")
         logger.info(kallisto_command_quant)
         subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant single end
@@ -405,6 +405,7 @@ rpsblast = config['RPSBLAST']
 kallisto = config['KALLISTO']
 
 # Adicionar Pathlib no Annota
+# mudar path augustus
 kallisto_output_path = "kallisto_out"
 
 # Run kallisto
