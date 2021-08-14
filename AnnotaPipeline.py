@@ -624,7 +624,7 @@ interpro_command_line = (
 )
 
 # Optionals
-for variable in config['INTERPROSCAN']:
+for variable in interpro:
     if str(interpro.get(variable)).lower() == "flag":
         interpro_command_line += f" -{str(variable)}"
     else:
@@ -708,7 +708,7 @@ hmmscan_command_line = (
 )
 
 # Optionals
-for variable in config['HMMSCAN']:
+for variable in hmmscan:
     if str(hmmscan.get(variable)).lower() == "flag":
         hmmscan_command_line += f" --{str(variable)}"
     else:
@@ -748,7 +748,7 @@ rpsblast_command_line = (
 )
 
 # Optionals
-for variable in config['RPSBLAST']:
+for variable in rpsblast:
     if str(rpsblast.get(variable)).lower() == "flag":
         rpsblast_command_line += f" -{str(variable)}"
     else:
