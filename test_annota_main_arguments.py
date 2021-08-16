@@ -474,6 +474,6 @@ else:
     # Return to AnnotaPipeline basedir
     os.chdir(pipeline_pwd)
 
-
+# test commit
 # if rodou kallisto  > pasta = nome 5
 # if nao rodou pasta > nome 4
