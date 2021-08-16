@@ -189,7 +189,7 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_pat
         )
         logger.info("Running Kallisto quant")
         logger.info(kallisto_command_quant)
-        subprocess.getoutput(kallisto_command_quant)
+        # subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant paired end
         # kallisto quant -i transcripts.idx -o output -b 100 reads_1.fastq reads_2.fastq
     else:
@@ -200,7 +200,7 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_pat
         )
         logger.info("Running Kallisto quant")
         logger.info(kallisto_command_quant)
-        subprocess.getoutput(kallisto_command_quant)
+        # subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant single end
         # kallisto quant -i transcripts.idx -o output -b 100 --single -l 180 -s 20 reads_1.fastq
 
