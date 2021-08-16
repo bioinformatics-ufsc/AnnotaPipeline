@@ -217,14 +217,10 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_pat
     else:
         kallisto_parser_flag = f'-tpmval {kallisto.get("value")}'
     # Run parser
-    subprocess.run(["python3", 
-        "kallisto_parser.py", 
-        "-ktfile",
-         str(args.seq),
-        "-basename", 
-        AnnotaBasename,
-        str(kallisto_parser_flag)
-        ])
+    kallisto_parser_command = f"python3 kallisto_parser.py -ktfile {args.seq} -basename {AnnotaBasename} {kallisto_parser_flag}"
+    logger.info("Running Parser for Kallisto")
+    logger.info(kallisto_parser_command)
+    subprocess.getoutput(kallisto_parser_command)
 
 
 
