@@ -259,7 +259,6 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, output_type)
     subprocess.getoutput(kallisto_parser_command)
 
 
-
 def kallisto_check_parameters():
     # kallisto method indicate wich method to parse (mean, median, value) 
     # kallisto paired_end indicate rnaseq type (important to run kallisto)
@@ -491,6 +490,7 @@ def run_fasta_to_GFF():
 is_tool("blastp")
 is_tool("perl")
 is_tool("rpsblast")
+# ------------------------------------------------------------------------------
 
 sections_config = config.sections()
 check_parameters(sections_config)

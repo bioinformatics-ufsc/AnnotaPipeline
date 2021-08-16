@@ -399,20 +399,6 @@ blast = config['BLAST']
 rpsblast = config['RPSBLAST']
 kallisto = config['KALLISTO']
 
-# Run kallisto
-if kallisto_method == None:
-    pass
-else:
-    kallisto_output_path = pathlib.Path(pipeline_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
-    pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
-    # Go to /4_TranscriptQuantification_
-    os.chdir(kallisto_output_path)
-    # Seq file precisa ser uma path absoluta
-    kallisto_run(kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method, AnnotaBasename, seq_file)
-    # Return to main
-    os.chdir(pipeline_pwd)
-
-
 # -----------------------------------------------------------------------
 # ---------------------- Kallisto ---------------------------------------
 # Run kallisto
