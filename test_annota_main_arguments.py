@@ -258,7 +258,7 @@ def kallisto_check_parameters():
                         log_quit()
                     elif len(config['KALLISTO'].get('s')) == 0:
                         logger.error("Error. Mandatory argument for single end data 's' is empty")
-                        log_quit()                        
+                        log_quit()
                     logger.info(f"Kallisto will run with single end data")
                     kallisto_check.append(argument)
                 else:
@@ -404,13 +404,16 @@ kallisto = config['KALLISTO']
 if kallisto_method == None:
     pass
 else:
-    kallisto_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
+    kallisto_output_path = pathlib.Path(pipeline_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
     pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
     # Go to /4_TranscriptQuantification_
     os.chdir(kallisto_output_path)
     kallisto_run(kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method, AnnotaBasename, args.seq)
     # Return to main
-    os.chdir(annota_pwd)
+    os.chdir(pipeline_pwd)
+
+
+
 
 # if rodou kallisto  > pasta = nome 5
 # if nao rodou pasta > nome 4
