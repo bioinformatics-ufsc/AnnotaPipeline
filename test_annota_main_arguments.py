@@ -95,11 +95,6 @@ optionalNamed.add_argument(
 # arguments saved here
 args = parser.parse_args()
 
-#if len(args.kallisto_reads) > 2:
-        #logger.error("Error, Kallisto requires single end or paired end files, more than 2 datasets were given!")
-        #logger.info("Exiting")
-        #exit("Error, Kallisto requires single end or paired end files, more than 2 datasets were given")
-
 # --- CREATE LogFile -----------------------------------------------------------
 
 logger = logging.getLogger('AnnotaPipeline')
