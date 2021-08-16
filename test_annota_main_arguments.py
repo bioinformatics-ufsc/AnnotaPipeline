@@ -161,7 +161,7 @@ def log_quit():
     sys.exit(1)
 
 
-def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_path):
+def kallisto_run(kallisto_exe, paired_end, method, basename, fasta):
     
     kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index.idx {fasta}"
     logger.info("Running Kallisto index")
@@ -185,7 +185,7 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_pat
         kallisto_command_quant = (
             f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
             f"{s_flag} {l_flag} "
-            f"-o {kallisto_path} -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+            f"-o kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
         logger.info("Running Kallisto quant")
         logger.info(kallisto_command_quant)
@@ -196,7 +196,7 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_pat
         kallisto_command_quant = (
             f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
             f"-l {kallisto.get('s')} -s {kallisto.get('l')} --single "
-            f"-o {kallisto_path} -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+            f"-o kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
         logger.info("Running Kallisto quant")
         logger.info(kallisto_command_quant)
@@ -212,7 +212,13 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_pat
     else:
         kallisto_parser_flag = f'-tpmval {kallisto.get("value")}'
     # Run parser
-    kallisto_parser_command = f"python3 kallisto_parser.py -ktfile abundance.tsv -basename {AnnotaBasename} {kallisto_parser_flag}"
+    # inside 4_Transcript_Quantification_
+    kallisto_parser_path =  str(pipeline_pwd / "kallisto_parser.py")
+    kallisto_parser_command = (
+        f"python3 {kallisto_parser_path} "
+        f"-ktfile kallisto_output/abundance.tsv "
+        f"-basename {AnnotaBasename} {kallisto_parser_flag}"
+    )
     logger.info("Running Parser for Kallisto")
     logger.info(kallisto_parser_command)
     subprocess.getoutput(kallisto_parser_command)
@@ -373,7 +379,6 @@ def is_tool(name):
 sections_config = config.sections()
 check_parameters(sections_config)
 
-
 # --- PREPARING SOME VARIABLES -------------------------------------------------
 # \\ Check if user pass protein and gff file -> if it is, redirect variables
 if args.seq is not None:
@@ -395,12 +400,17 @@ blast = config['BLAST']
 rpsblast = config['RPSBLAST']
 kallisto = config['KALLISTO']
 
-# Adicionar Pathlib no Annota
-# mudar path augustus
-kallisto_output_path = "kallisto_out"
-
 # Run kallisto
 if kallisto_method == None:
     pass
 else:
-    kallisto_run(kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method, AnnotaBasename, args.seq,  kallisto_output_path)
+    kallisto_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
+    pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
+    # Go to /4_TranscriptQuantification_
+    os.chdir(kallisto_output_path)
+    kallisto_run(kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method, AnnotaBasename, args.seq)
+    # Return to main
+    os.chdir(annota_pwd)
+
+# if rodou kallisto  > pasta = nome 5
+# if nao rodou pasta > nome 4
