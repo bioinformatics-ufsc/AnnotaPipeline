@@ -166,7 +166,7 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_pat
     kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index.idx {fasta}"
     logger.info("Running Kallisto index")
     logger.info(f"{kallisto_command_index}")
-    subprocess.getoutput(kallisto_command_index)
+    # subprocess.getoutput(kallisto_command_index)
 
     # Standart command line for kallisto index
     # kallisto index -i transcripts.idx transcripts.fasta
@@ -212,7 +212,7 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, kallisto_pat
     else:
         kallisto_parser_flag = f'-tpmval {kallisto.get("value")}'
     # Run parser
-    kallisto_parser_command = f"python3 kallisto_parser.py -ktfile {args.seq} -basename {AnnotaBasename} {kallisto_parser_flag}"
+    kallisto_parser_command = f"python3 kallisto_parser.py -ktfile abundance.tsv -basename {AnnotaBasename} {kallisto_parser_flag}"
     logger.info("Running Parser for Kallisto")
     logger.info(kallisto_parser_command)
     subprocess.getoutput(kallisto_parser_command)
