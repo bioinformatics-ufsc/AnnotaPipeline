@@ -196,12 +196,12 @@ def is_tool(name):
 
 
 
-def kallisto_run(kallisto_exe, paired_end, method, basename, fasta):
+def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, output_type):
     
-    kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index.idx {fasta}"
-    logger.info("Running Kallisto index")
+    kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index_{output_type}.idx {fasta}"
+    logger.info(f"Running Kallisto index with {output_type}")
     logger.info(f"{kallisto_command_index}")
-    # subprocess.getoutput(kallisto_command_index)
+    subprocess.getoutput(kallisto_command_index)
 
     # Standart command line for kallisto index
     # kallisto index -i transcripts.idx transcripts.fasta
@@ -218,24 +218,24 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta):
             s_flag = ""
        
         kallisto_command_quant = (
-            f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
+            f"{kallisto_exe} quant -i {basename}_kallisto_index_{output_type}.idx "
             f"{s_flag} {l_flag} "
-            f"-o kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+            f"-o kallisto_output_{output_type} -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
-        logger.info("Running Kallisto quant")
+        logger.info(f"Running Kallisto quant with {output_type}")
         logger.info(kallisto_command_quant)
-        # subprocess.getoutput(kallisto_command_quant)
+        subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant paired end
         # kallisto quant -i transcripts.idx -o output -b 100 reads_1.fastq reads_2.fastq
     else:
         kallisto_command_quant = (
-            f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
+            f"{kallisto_exe} quant -i {basename}_kallisto_index_{output_type}.idx "
             f"-l {kallisto.get('s')} -s {kallisto.get('l')} --single "
-            f"-o kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+            f"-o kallisto_output_{output_type} -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
-        logger.info("Running Kallisto quant")
+        logger.info(f"Running Kallisto quant with {output_type}")
         logger.info(kallisto_command_quant)
-        # subprocess.getoutput(kallisto_command_quant)
+        subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant single end
         # kallisto quant -i transcripts.idx -o output -b 100 --single -l 180 -s 20 reads_1.fastq
 
@@ -252,9 +252,9 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta):
     kallisto_parser_command = (
         f"python3 {kallisto_parser_path} "
         f"-ktfile kallisto_output/abundance.tsv "
-        f"-basename {AnnotaBasename} {kallisto_parser_flag}"
+        f"-basename {AnnotaBasename}_{output_type} {kallisto_parser_flag}"
     )
-    logger.info("Running Parser for Kallisto")
+    logger.info(f"Running Parser for Kallisto with {output_type}")
     logger.info(kallisto_parser_command)
     subprocess.getoutput(kallisto_parser_command)
 
@@ -620,11 +620,11 @@ logger.info("Preparing file for InterProScan Hypothetical Proteins execution")
 
 hypothetical_id = str(blast_folder / str(AnnotaBasename + "_hypothetical_products.txt"))
 no_hit_id = str(blast_folder / str(AnnotaBasename + "_no_hit_products.txt"))
-data1 = [line.strip() for line in open(hypothetical_id, "r")]
-data2 = [line.strip() for line in open(no_hit_id, "r")]
+hypothetical_id_strip = [line.strip() for line in open(hypothetical_id, "r")]
+no_hit_id_strip = [line.strip() for line in open(no_hit_id, "r")]
 
 fasta_fetcher(str(augustus_folder / str("Clear_" + aug_parsing)),
-              (data1 + data2),
+              (hypothetical_id_strip + no_hit_id_strip),
               "Hypothetical_Products.fasta")
 
 # Check if expected file exists
@@ -675,7 +675,6 @@ check_file("Annotated_Products.fasta")
 
 logger.info("InterProScan Annotated Proteins file preparation complete")
 
-
 logger.info("Running INTERPROSCAN with Annotated Proteins")
 
 # INTERPROSCAN: commandline
@@ -701,7 +700,6 @@ subprocess.getoutput(interpro_command_line)
 if os.path.isfile(str(AnnotaBasename + "_interproscan_annotated_output.gff3")) == 0:
     # Generate valid file
     open(f"{str(AnnotaBasename)}_interproscan_annotated_output.gff3", "w").close()
-    # subprocess.run(["touch", str(AnnotaBasename + "_interproscan_annotated_output.gff3")])
     logger.info("Interproscan analysis return no results, moving on without this results.")
     logger.warning("Check if your sequences have special characters (like *), remove it and rerun")
 
@@ -875,15 +873,55 @@ logger.info("Annota annotated the annotations on the annotated file.")
 # -----------------------------------------------------------------------
 # ---------------------- Kallisto ---------------------------------------
 # Run kallisto
-if kallisto_method == None:
+# If kalisto_method is empty, lack arguments for kallisto >> skip
+# If proteins were given, lack cdscexon files >> skip
+if kallisto_method == None or args.protein is not None:
     pass
 else:
     kallisto_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
     pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
     # Go to /4_TranscriptQuantification_
     os.chdir(kallisto_output_path)
-    kallisto_run(kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method, AnnotaBasename, args.seq)
-    # Return to main
+    # parser cdsexons
+    # Path para arquivo: augustus_folder / f"AUGUSTUS_{str(AnnotaBasename)}.cdsexons"
+    
+    '''
+    VARIABLES:
+      hypothetical_id = str(blast_folder / str(AnnotaBasename + "_hypothetical_products.txt"))
+      no_hit_id = str(blast_folder / str(AnnotaBasename + "_no_hit_products.txt"))
+      annotated_file = str(blast_folder / str(AnnotaBasename + "_annotated_products.txt"))
+    LISTS:  
+      hypothetical_id_strip = [line.strip() for line in open(hypothetical_id, "r")]
+      no_hit_id_strip = [line.strip() for line in open(no_hit_id, "r")]
+      annotated_id = [line.strip().split()[0] for line in open(annotated_file, "r")]
+    '''
+
+    # hypothetical_id_strip and no_hit_id_strip were created during blast parser
+    logger.info("Parsing Kallisto results")
+    fasta_fetcher(
+        str(augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".cdsexons"),
+        (hypothetical_id_strip + no_hit_id_strip),
+        "Hypothetical_Products.cdsexons"
+    )
+    kallisto_run(
+        kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
+        AnnotaBasename, "Hypothetical_Products.cdsexons", "Hyphothetical"
+    )
+
+    # annotated_id was created during blast parser
+    fasta_fetcher(
+        str(augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".cdsexons"),
+        annotated_id,
+        "Annotated_Products.cdsexons"
+    )
+    # Annotated_Products.cdsexon 
+    kallisto_run(
+        kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
+        AnnotaBasename, "Annotated_Products.cdsexons", "Annotated"
+    )
+    logger.info("Finished Kallisto parsing")
+
+    # Return to AnnotaPipeline basedir
     os.chdir(annota_pwd)
 
 
