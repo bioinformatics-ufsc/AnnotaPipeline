@@ -408,7 +408,8 @@ else:
     pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
     # Go to /4_TranscriptQuantification_
     os.chdir(kallisto_output_path)
-    kallisto_run(kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method, AnnotaBasename, args.seq)
+    # Seq file precisa ser uma path absoluta
+    kallisto_run(kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method, AnnotaBasename, seq_file)
     # Return to main
     os.chdir(pipeline_pwd)
 
