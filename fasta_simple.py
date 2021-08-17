@@ -85,7 +85,7 @@ for sequence in fasta:
 	try:
 		out.write(">" + str(id) + " | Organism: " + str(args.org) + " | Description: " + str(ant[id]) + "\n")
 		out.write(str("\n".join(sequence[1:])))
-	except:
+	except Exception as warn:
 		ids_warn.append(id)
 		pass
 

@@ -795,7 +795,9 @@ subprocess.run([
 try:
     os.remove("hmmscan.err")
     os.rmdir("temp/")
-except:
+except Exception as warn:
+    logger.warning("Failed to remove hmmscan log and temp dir.")
+    logger.warning(warn)
     pass
 
 logger.info("INTERPROSCAN, HMMSCAN and RPSBLAST execution and parsing is finished")
@@ -829,7 +831,8 @@ try:
     # Sort annotations
     os.system("sort -V All_annotation_products.txt -o All_Annotated_Products.txt")
     os.remove("All_annotation_products.txt")
-except:
+except Exception as warn:
+    logger.warning("Failed to sort All_annotation_products.txt")
     pass
 
 logger.info("All_Annotated_Products.txt file is complete")

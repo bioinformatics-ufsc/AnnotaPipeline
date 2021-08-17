@@ -2,6 +2,7 @@
 import argparse
 import os
 import os.path
+from shutil import ExecError
 
 parser = argparse.ArgumentParser(
         add_help=False,  # removes original [--help]
@@ -120,7 +121,8 @@ def parser_interproscan(arq_entrada, arq_ipr):
                                 db = linha[1]
                                 try:
                                         evalue = str(linha[5]).replace(",", ".").lower()
-                                except:
+                                except Exception:
+                                        # Type of evalue format
                                         evalue = str(linha[5])
                                 if not any(s in db for s in lista):
                                         db_certo = db
@@ -178,7 +180,8 @@ def intepro_process():
                         try:
                                 iprs.sort(key=lambda item: item.split("IPR")[1])
                                 gos.sort(key=lambda item: item.split("GO")[1])
-                        except:
+                        except Exception:
+                                # No GO or IP for this protein (not a true warning)
                                 pass
 
                         # Check if interpro_result is in annotated

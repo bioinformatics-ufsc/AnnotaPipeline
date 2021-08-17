@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
+import warnings
 
 # --- PARSER ARGUMENTS ---------------------------------------------------------
 
@@ -66,7 +67,8 @@ while True:
         try:
                 anots.append(array_anot[1])
                 ids.append(array_anot[0])
-        except Exception:
+        except Exception as warn:
+                warnings.warn("Failed to get annotations and ids from line")
                 pass
         if not line:
                 break

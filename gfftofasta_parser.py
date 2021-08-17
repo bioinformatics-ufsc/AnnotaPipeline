@@ -118,7 +118,8 @@ with open(f"AnnotaPipeline_{str(args.basename)}.fasta", "w") as annotafile:
                 f"Description: {str(ant[id])}\n"
             )
             annotafile.write(str("\n".join(sequence[1:])))
-        except:
+        except Exception as warn:
+            # warn ignored, user will be informed all at once
             ids_warn.append(id)
             pass
 
