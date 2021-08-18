@@ -370,8 +370,9 @@ def check_parameters(sections):
 
 
 def fasta_fetcher(input_fasta, id_list, fetcher_output):
-    wanted = set(id_list)
+    wanted = sorted(set(id_list))
     records = (r for r in SeqIO.parse(input_fasta, "fasta") if r.id in wanted)
+    # records = (seq for seq in SeqIO.parse(input_fasta, "fasta") for r in wanted if r in seq.id)
     count = SeqIO.write(records, fetcher_output, "fasta")
     if count < len(wanted):
         logger.info("IDs not found in input FASTA file")
@@ -885,8 +886,8 @@ else:
     pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
     # Go to /4_TranscriptQuantification_
     os.chdir(kallisto_output_path)
-    # parser cdsexons
-    # Path para arquivo: augustus_folder / f"AUGUSTUS_{str(AnnotaBasename)}.cdsexons"
+    # parser codingseq
+    # Path para arquivo: augustus_folder / f"AUGUSTUS_{str(AnnotaBasename)}.codingseq"
     
     '''
     VARIABLES:
@@ -902,25 +903,25 @@ else:
     # hypothetical_id_strip and no_hit_id_strip were created during blast parser
     logger.info("Parsing Kallisto results")
     fasta_fetcher(
-        str(augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".cdsexons"),
+        str(augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".codingseq"),
         (hypothetical_id_strip + no_hit_id_strip),
-        "Hypothetical_Products.cdsexons"
+        "Hypothetical_Products.codingseq"
     )
     kallisto_run(
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
-        AnnotaBasename, "Hypothetical_Products.cdsexons", "Hyphothetical"
+        AnnotaBasename, "Hypothetical_Products.codingseq", "Hyphothetical"
     )
 
     # annotated_id was created during blast parser
     fasta_fetcher(
-        str(augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".cdsexons"),
+        str(augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".codingseq"),
         annotated_id,
-        "Annotated_Products.cdsexons"
+        "Annotated_Products.codingseq"
     )
     # Annotated_Products.cdsexon 
     kallisto_run(
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
-        AnnotaBasename, "Annotated_Products.cdsexons", "Annotated"
+        AnnotaBasename, "Annotated_Products.codingseq", "Annotated"
     )
     logger.info("Finished Kallisto parsing")
 

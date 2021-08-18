@@ -333,17 +333,13 @@ def check_parameters(sections):
         logger.error("Error, there is two secondary databases, select one of them in config file")
         log_quit()
 
-# *.g1.t1
-# g1.t1 
-# NC_SNAISNDAISD_.g1.t1
+
 def fasta_fetcher(input_fasta, id_list, fetcher_output):
-    wanted = set(id_list)
-    # records = (r for r in SeqIO.parse(input_fasta, "fasta") if r.id in wanted)
-    fasta = SeqIO.parse(input_fasta, "fasta")
-    records = [seq for r in wanted for seq in fasta if r in seq.id]
+    wanted = sorted(set(id_list))
+    records = (seq for seq in SeqIO.parse(input_fasta, "fasta") for r in wanted if r in seq.id)
     count = SeqIO.write(records, fetcher_output, "fasta")
     if count < len(wanted):
-        logger.info("IDs not found in input FASTA file")
+        logger.warning("IDs not found in input FASTA file")
 
 
 def sequence_cleaner(fasta_file, min_length=0, por_n=100):
@@ -415,8 +411,8 @@ else:
     pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
     # Go to /4_TranscriptQuantification_
     os.chdir(kallisto_output_path)
-    # parser cdsexons
-    # Path para arquivo: augustus_folder / f"AUGUSTUS_{str(AnnotaBasename)}.cdsexons"
+    # parser codingseq
+    # Path para arquivo: augustus_folder / f"AUGUSTUS_{str(AnnotaBasename)}.codingseq"
     
     '''
     VARIABLES:
@@ -442,15 +438,15 @@ else:
 
     logger.info("Parsing Kallisto results")
     fasta_fetcher(
-        pipeline_pwd / "AUGUSTUS_Trangeli.cdsexons",
+        pipeline_pwd / "AUGUSTUS_Trangeli.codingseq",
         (hypothetical_id_strip + no_hit_id_strip),
-        "Hypothetical_Products.cdsexons"
+        "Hypothetical_Products.codingseq"
     )
 
 
     kallisto_run(
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
-        AnnotaBasename, "Hypothetical_Products.cdsexons", "Hyphothetical"
+        AnnotaBasename, "Hypothetical_Products.codingseq", "Hyphothetical"
     )
 
     # Using only IDs from the file
@@ -458,14 +454,14 @@ else:
 
     # annotated_id was created during blast parser
     fasta_fetcher(
-        pipeline_pwd / "AUGUSTUS_Trangeli.cdsexons",
+        pipeline_pwd / "AUGUSTUS_Trangeli.codingseq",
         annotated_id,
-        "Annotated_Products.cdsexons"
+        "Annotated_Products.codingseq"
     )
     # Annotated_Products.cdsexon 
     kallisto_run(
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
-        AnnotaBasename, "Annotated_Products.cdsexons", "Annotated"
+        AnnotaBasename, "Annotated_Products.codingseq", "Annotated"
     )
     logger.info("Finished Kallisto parsing")
 
