@@ -333,10 +333,14 @@ def check_parameters(sections):
         logger.error("Error, there is two secondary databases, select one of them in config file")
         log_quit()
 
-
+# *.g1.t1
+# g1.t1 
+# NC_SNAISNDAISD_.g1.t1
 def fasta_fetcher(input_fasta, id_list, fetcher_output):
     wanted = set(id_list)
-    records = (r for r in SeqIO.parse(input_fasta, "fasta") if r.id in wanted)
+    # records = (r for r in SeqIO.parse(input_fasta, "fasta") if r.id in wanted)
+    fasta = SeqIO.parse(input_fasta, "fasta")
+    records = [seq for r in wanted for seq in fasta if r in seq.id]
     count = SeqIO.write(records, fetcher_output, "fasta")
     if count < len(wanted):
         logger.info("IDs not found in input FASTA file")
@@ -424,10 +428,18 @@ else:
       no_hit_id_strip = [line.strip() for line in open(no_hit_id, "r")]
       annotated_id = [line.strip().split()[0] for line in open(annotated_file, "r")]
     '''
+    # line => g1.t1 
 
-    hypothetical_id_strip = [line.strip() for line in open("../Trangeli_hypothetical_products.txt", "r")]
+    hypothetical_id_strip =[line.strip() for line in open("../Trangeli_hypothetical_products.txt", "r")]
     no_hit_id_strip = [line.strip() for line in open("../Trangeli_no_hit_products.txt", "r")]
-    
+
+    # Adicionar um *g1.t1 antes de cada linha 
+    # Quando o augustus roda com um modelo default (rodado por eles)
+    # o .coding seq adiciona um id na frente do identificador 
+    # ex >>. NC_03121.1.g1.t1
+    # fazer regex *.g1.t1
+
+
     logger.info("Parsing Kallisto results")
     fasta_fetcher(
         pipeline_pwd / "AUGUSTUS_Trangeli.cdsexons",
