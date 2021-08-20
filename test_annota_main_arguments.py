@@ -425,7 +425,7 @@ else:
       annotated_id = [line.strip().split()[0] for line in open(annotated_file, "r")]
     '''
     # line => g1.t1 
-
+    
     hypothetical_id_strip =[line.strip() for line in open("../Trangeli_hypothetical_products.txt", "r")]
     no_hit_id_strip = [line.strip() for line in open("../Trangeli_no_hit_products.txt", "r")]
 

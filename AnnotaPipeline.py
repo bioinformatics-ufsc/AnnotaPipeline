@@ -371,8 +371,8 @@ def check_parameters(sections):
 
 def fasta_fetcher(input_fasta, id_list, fetcher_output):
     wanted = sorted(set(id_list))
-    records = (r for r in SeqIO.parse(input_fasta, "fasta") if r.id in wanted)
-    # records = (seq for seq in SeqIO.parse(input_fasta, "fasta") for r in wanted if r in seq.id)
+    #records = (r for r in SeqIO.parse(input_fasta, "fasta") if r.id in wanted)
+    records = (seq for seq in SeqIO.parse(input_fasta, "fasta") for r in wanted if r in seq.id)
     count = SeqIO.write(records, fetcher_output, "fasta")
     if count < len(wanted):
         logger.info("IDs not found in input FASTA file")
