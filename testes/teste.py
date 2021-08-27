@@ -23,7 +23,7 @@ def annotate_codingseq(aa_fasta, codingseq_fasta):
 
     id_dict  = SeqIO.to_dict(SeqIO.parse(codingseq_fasta, "fasta"))
 
-    corrected_fasta = str("corrected_annotated_seqs.fasta")
+    corrected_fasta = str("celegans_annotated_seqs.fasta")
 
     with open(corrected_fasta, "w") as corrected:
         for key, record in id_dict.items():
@@ -36,5 +36,5 @@ def annotate_codingseq(aa_fasta, codingseq_fasta):
                     record.description = ""
                     SeqIO.write(record, corrected, "fasta")
 
-annotate_codingseq("Annota_Trangeli.fasta", "AUGUSTUS_Trangeli.codingseq")
+annotate_codingseq("Teste_caenorhabditis.aa", "Teste_caenorhabditis.codingseq")
 
