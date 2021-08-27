@@ -741,7 +741,7 @@ logger.info(str(hmmscan_command_line))
 subprocess.getoutput(hmmscan_command_line)
 
 # Check if expected file exists
-check_file(f"{str(AnnotaBasename)}__hmmscan_output.txt")
+check_file(f"{str(AnnotaBasename)}_hmmscan_output.txt")
 
 logger.info("HMMSCAN finished")
 
