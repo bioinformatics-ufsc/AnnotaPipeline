@@ -12,7 +12,7 @@
 # file into array of lines
 from Bio import SeqIO
 
-def annotate_codingseq(aa_fasta, codingseq_fasta):
+def annotate_codingseq(aa_fasta, codingseq_fasta, basename):
     # Linha de anotacao completa
     anno_all = [line.strip() for line in open(aa_fasta) if ">" in line]
     anno_all = [sub.replace(">", "") for sub in anno_all]
@@ -23,18 +23,16 @@ def annotate_codingseq(aa_fasta, codingseq_fasta):
 
     id_dict  = SeqIO.to_dict(SeqIO.parse(codingseq_fasta, "fasta"))
 
-    corrected_fasta = str("celegans_annotated_seqs.fasta")
+    corrected_fasta = str(f"AnnotaPipeline_{basename}_Transcripts.fasta")
 
     with open(corrected_fasta, "w") as corrected:
         for key, record in id_dict.items():
             for id_key in corrrected_ids.keys():
                 if id_key in key:
-                    # print(corrrected_ids.get(id_key))
-                    # print(key)
-                    # print(record.seq)
                     record.id = corrrected_ids.get(id_key)
                     record.description = ""
-                    SeqIO.write(record, corrected, "fasta")
+                    record.seq = record.seq.upper()
+                    SeqIO.write(record, corrected, "fasta-2line")
 
-annotate_codingseq("Teste_caenorhabditis.aa", "Teste_caenorhabditis.codingseq")
+annotate_codingseq("teste_celegans.aa", "teste_celegans.codingseq", "teste_normal")
 

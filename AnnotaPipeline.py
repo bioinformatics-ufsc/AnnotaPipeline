@@ -195,10 +195,9 @@ def is_tool(name):
         log_quit()
 
 
-def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, output_type):
+def kallisto_run(kallisto_exe, paired_end, method, basename, fasta):
     
-    kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index_{output_type}.idx {fasta}"
-    logger.info(f"Running Kallisto index with {output_type}")
+    kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index.idx {fasta}"
     logger.info(f"{kallisto_command_index}")
     subprocess.getoutput(kallisto_command_index)
 
@@ -217,22 +216,22 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, output_type)
             s_flag = ""
        
         kallisto_command_quant = (
-            f"{kallisto_exe} quant -i {basename}_kallisto_index_{output_type}.idx "
+            f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
             f"{s_flag} {l_flag} "
-            f"-o kallisto_output_{output_type} -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+            f"-o {basename}_kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
-        logger.info(f"Running Kallisto quant with {output_type}")
+        logger.info(f"Running Kallisto quant")
         logger.info(kallisto_command_quant)
         subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant paired end
         # kallisto quant -i transcripts.idx -o output -b 100 reads_1.fastq reads_2.fastq
     else:
         kallisto_command_quant = (
-            f"{kallisto_exe} quant -i {basename}_kallisto_index_{output_type}.idx "
+            f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
             f"-l {kallisto.get('s')} -s {kallisto.get('l')} --single "
-            f"-o kallisto_output_{output_type} -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+            f"-o kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
-        logger.info(f"Running Kallisto quant with {output_type}")
+        logger.info(f"Running Kallisto quant")
         logger.info(kallisto_command_quant)
         subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant single end
@@ -251,9 +250,9 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, output_type)
     kallisto_parser_command = (
         f"python3 {kallisto_parser_path} "
         f"-ktfile kallisto_output/abundance.tsv "
-        f"-basename {AnnotaBasename}_{output_type} {kallisto_parser_flag}"
+        f"-basename {AnnotaBasename} {kallisto_parser_flag}"
     )
-    logger.info(f"Running Parser for Kallisto with {output_type}")
+    logger.info(f"Running Parser for Kallisto")
     logger.info(kallisto_parser_command)
     subprocess.getoutput(kallisto_parser_command)
 
@@ -396,7 +395,8 @@ def annotate_codingseq(aa_fasta, codingseq_fasta, basename):
                 if id_key in key:
                     record.id = corrrected_ids.get(id_key)
                     record.description = ""
-                    SeqIO.write(record, corrected, "fasta")
+                    record.seq = record.seq.upper()
+                    SeqIO.write(record, corrected, "fasta-2line")
 
 
 def sequence_cleaner(fasta_file, min_length=0, por_n=100):
@@ -911,12 +911,12 @@ else:
     annotate_codingseq(annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + ".fasta"), 
                 augustus_folder / str("AUGUSTUS_" + AnnotaBasename + ".codingseq"), AnnotaBasename)
 
-
     # Annotated_Products.cdsexon 
     kallisto_run(
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
-        AnnotaBasename, "Annotated_Products.codingseq", "Annotated"
+        AnnotaBasename, f"AnnotaPipeline_{AnnotaBasename}_Transcripts.fasta"
     )
+
     logger.info("Finished Kallisto")
 
     # Return to AnnotaPipeline basedir
