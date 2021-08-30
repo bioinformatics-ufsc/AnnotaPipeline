@@ -466,8 +466,8 @@ else:
     '''
     # line => g1.t1 
     
-    annotate_codingseq(str(augustus_folder / "AUGUSTUS_" + AnnotaBasename + ".aa"), 
-                str(augustus_folder / "AUGUSTUS_" + AnnotaBasename + ".codingseq"))
+    annotate_codingseq(annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + ".fasta"), 
+                augustus_folder / str("AUGUSTUS_" + AnnotaBasename + ".codingseq"))
     
     # Adicionar um *g1.t1 antes de cada linha 
     # Quando o augustus roda com um modelo default (rodado por eles)
