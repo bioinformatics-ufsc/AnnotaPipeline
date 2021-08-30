@@ -161,6 +161,28 @@ def log_quit():
     sys.exit(1)
 
 
+def annotate_codingseq(aa_fasta, codingseq_fasta):
+    # Linha de anotacao completa
+    anno_all = [line.strip() for line in open(aa_fasta) if ">" in line]
+    anno_all = [sub.replace(">", "") for sub in anno_all]
+    # IDs simplificadas
+    anno_ids = [name.split("|")[0].strip() for name in anno_all]
+
+    corrrected_ids = dict(zip(anno_ids, anno_all))
+
+    id_dict  = SeqIO.to_dict(SeqIO.parse(codingseq_fasta, "fasta"))
+
+    corrected_fasta = str("celegans_annotated_seqs.fasta")
+
+    with open(corrected_fasta, "w") as corrected:
+        for key, record in id_dict.items():
+            for id_key in corrrected_ids.keys():
+                if id_key in key:
+                    record.id = corrrected_ids.get(id_key)
+                    record.description = ""
+                    SeqIO.write(record, corrected, "fasta")
+
+
 def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, output_type):
     
     kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index_{output_type}.idx {fasta}"
@@ -378,6 +400,18 @@ def is_tool(name):
 sections_config = config.sections()
 check_parameters(sections_config)
 
+# --- SCRIPT LOCATION ----------------------------------------------------------
+
+script_pwd = pathlib.Path(sys.argv[0]).absolute()
+
+# AnnotaPipeline location
+pipeline_pwd = script_pwd.parents[0]
+
+# initial directory
+home_dir_pwd = pathlib.Path.cwd()
+
+annota_pwd = pathlib.Path(home_dir_pwd / home_dir)
+
 # --- PREPARING SOME VARIABLES -------------------------------------------------
 # \\ Check if user pass protein and gff file -> if it is, redirect variables
 if args.seq is not None:
@@ -398,6 +432,8 @@ hmmscan = config['HMMSCAN']
 blast = config['BLAST']
 rpsblast = config['RPSBLAST']
 kallisto = config['KALLISTO']
+
+augustus_folder = pathlib.Path(annota_pwd / str("1_GenePrediction_" + AnnotaBasename))
 
 # -----------------------------------------------------------------------
 # ---------------------- Kallisto ---------------------------------------
@@ -426,44 +462,14 @@ else:
     '''
     # line => g1.t1 
     
-    hypothetical_id_strip =[line.strip() for line in open("../Trangeli_hypothetical_products.txt", "r")]
-    no_hit_id_strip = [line.strip() for line in open("../Trangeli_no_hit_products.txt", "r")]
-
+    annotate_codingseq(str(augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".aa")), 
+                str(augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".codingseq")))
+    
     # Adicionar um *g1.t1 antes de cada linha 
     # Quando o augustus roda com um modelo default (rodado por eles)
     # o .coding seq adiciona um id na frente do identificador 
     # ex >>. NC_03121.1.g1.t1
     # fazer regex *.g1.t1
-
-
-    logger.info("Parsing Kallisto results")
-    fasta_fetcher(
-        pipeline_pwd / "AUGUSTUS_Trangeli.codingseq",
-        (hypothetical_id_strip + no_hit_id_strip),
-        "Hypothetical_Products.codingseq"
-    )
-
-
-    kallisto_run(
-        kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
-        AnnotaBasename, "Hypothetical_Products.codingseq", "Hyphothetical"
-    )
-
-    # Using only IDs from the file
-    annotated_id = [line.strip().split()[0] for line in open("../Trangeli_annotated_products.txt", "r")]
-
-    # annotated_id was created during blast parser
-    fasta_fetcher(
-        pipeline_pwd / "AUGUSTUS_Trangeli.codingseq",
-        annotated_id,
-        "Annotated_Products.codingseq"
-    )
-    # Annotated_Products.cdsexon 
-    kallisto_run(
-        kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
-        AnnotaBasename, "Annotated_Products.codingseq", "Annotated"
-    )
-    logger.info("Finished Kallisto parsing")
 
     # Return to AnnotaPipeline basedir
     os.chdir(pipeline_pwd)
