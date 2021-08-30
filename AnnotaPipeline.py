@@ -377,7 +377,7 @@ def fasta_fetcher(input_fasta, id_list, fetcher_output):
         logger.info("IDs not found in input FASTA file")
 
 
-def annotate_codingseq(aa_fasta, codingseq_fasta):
+def annotate_codingseq(aa_fasta, codingseq_fasta, basename):
     # Linha de anotacao completa
     anno_all = [line.strip() for line in open(aa_fasta) if ">" in line]
     anno_all = [sub.replace(">", "") for sub in anno_all]
@@ -388,7 +388,7 @@ def annotate_codingseq(aa_fasta, codingseq_fasta):
 
     id_dict  = SeqIO.to_dict(SeqIO.parse(codingseq_fasta, "fasta"))
 
-    corrected_fasta = str("celegans_annotated_seqs.fasta")
+    corrected_fasta = str(f"AnnotaPipeline_{basename}_Transcripts.fasta")
 
     with open(corrected_fasta, "w") as corrected:
         for key, record in id_dict.items():
@@ -907,31 +907,17 @@ else:
     pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
     # Go to /4_TranscriptQuantification_
     os.chdir(kallisto_output_path)
-    # parser codingseq
-    # Path para arquivo: augustus_folder / f"AUGUSTUS_{str(AnnotaBasename)}.codingseq"
-    
-    '''
-    VARIABLES:
-      hypothetical_id = str(blast_folder / str(AnnotaBasename + "_hypothetical_products.txt"))
-      no_hit_id = str(blast_folder / str(AnnotaBasename + "_no_hit_products.txt"))
-      annotated_file = str(blast_folder / str(AnnotaBasename + "_annotated_products.txt"))
-    LISTS:  
-      hypothetical_id_strip = [line.strip() for line in open(hypothetical_id, "r")]
-      no_hit_id_strip = [line.strip() for line in open(no_hit_id, "r")]
-      annotated_id = [line.strip().split()[0] for line in open(annotated_file, "r")]
-    '''
-    annotate_codingseq(str(augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".aa")), 
-                str(augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".codingseq")))
-    
-    # hypothetical_id_strip and no_hit_id_strip were created during blast parser
-    logger.info("Parsing Kallisto results")
+
+    annotate_codingseq(annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + ".fasta"), 
+                augustus_folder / str("AUGUSTUS_" + AnnotaBasename + ".codingseq"), AnnotaBasename)
+
 
     # Annotated_Products.cdsexon 
     kallisto_run(
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
         AnnotaBasename, "Annotated_Products.codingseq", "Annotated"
     )
-    logger.info("Finished Kallisto parsing")
+    logger.info("Finished Kallisto")
 
     # Return to AnnotaPipeline basedir
     os.chdir(annota_pwd)
