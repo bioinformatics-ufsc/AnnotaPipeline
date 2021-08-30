@@ -407,10 +407,7 @@ script_pwd = pathlib.Path(sys.argv[0]).absolute()
 # AnnotaPipeline location
 pipeline_pwd = script_pwd.parents[0]
 
-# initial directory
-home_dir_pwd = pathlib.Path.cwd()
 
-annota_pwd = pathlib.Path(home_dir_pwd / home_dir)
 
 # --- PREPARING SOME VARIABLES -------------------------------------------------
 # \\ Check if user pass protein and gff file -> if it is, redirect variables
@@ -432,6 +429,13 @@ hmmscan = config['HMMSCAN']
 blast = config['BLAST']
 rpsblast = config['RPSBLAST']
 kallisto = config['KALLISTO']
+
+# initial directory
+home_dir_pwd = pathlib.Path.cwd()
+
+home_dir = f"AnnotaPipeline_{str(AnnotaBasename)}"
+
+annota_pwd = pathlib.Path(home_dir_pwd / home_dir)
 
 augustus_folder = pathlib.Path(annota_pwd / str("1_GenePrediction_" + AnnotaBasename))
 
@@ -462,8 +466,8 @@ else:
     '''
     # line => g1.t1 
     
-    annotate_codingseq(str(augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".aa")), 
-                str(augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".codingseq")))
+    annotate_codingseq(str(augustus_folder / "AUGUSTUS_" + AnnotaBasename + ".aa"), 
+                str(augustus_folder / "AUGUSTUS_" + AnnotaBasename + ".codingseq"))
     
     # Adicionar um *g1.t1 antes de cada linha 
     # Quando o augustus roda com um modelo default (rodado por eles)
