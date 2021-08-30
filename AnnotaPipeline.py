@@ -703,7 +703,7 @@ logger.info("Running INTERPROSCAN with Annotated Proteins")
 
 # General
 interpro_command_line = (
-    f"{str(AnnotaPipeline.get('interpro_exe'))} -i Hypothetical_Products.fasta "
+    f"{str(AnnotaPipeline.get('interpro_exe'))} -i Annotated_Products.fasta "
     f"-o {str(AnnotaBasename)}_interproscan_annotated_output.gff3 "
     f"-f GFF3 -t p -goterms -iprlookup"
 )
