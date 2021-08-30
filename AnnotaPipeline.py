@@ -195,7 +195,6 @@ def is_tool(name):
         log_quit()
 
 
-
 def kallisto_run(kallisto_exe, paired_end, method, basename, fasta, output_type):
     
     kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index_{output_type}.idx {fasta}"
@@ -376,6 +375,28 @@ def fasta_fetcher(input_fasta, id_list, fetcher_output):
     count = SeqIO.write(records, fetcher_output, "fasta")
     if count < len(wanted):
         logger.info("IDs not found in input FASTA file")
+
+
+def annotate_codingseq(aa_fasta, codingseq_fasta):
+    # Linha de anotacao completa
+    anno_all = [line.strip() for line in open(aa_fasta) if ">" in line]
+    anno_all = [sub.replace(">", "") for sub in anno_all]
+    # IDs simplificadas
+    anno_ids = [name.split("|")[0].strip() for name in anno_all]
+
+    corrrected_ids = dict(zip(anno_ids, anno_all))
+
+    id_dict  = SeqIO.to_dict(SeqIO.parse(codingseq_fasta, "fasta"))
+
+    corrected_fasta = str("celegans_annotated_seqs.fasta")
+
+    with open(corrected_fasta, "w") as corrected:
+        for key, record in id_dict.items():
+            for id_key in corrrected_ids.keys():
+                if id_key in key:
+                    record.id = corrrected_ids.get(id_key)
+                    record.description = ""
+                    SeqIO.write(record, corrected, "fasta")
 
 
 def sequence_cleaner(fasta_file, min_length=0, por_n=100):
@@ -899,25 +920,12 @@ else:
       no_hit_id_strip = [line.strip() for line in open(no_hit_id, "r")]
       annotated_id = [line.strip().split()[0] for line in open(annotated_file, "r")]
     '''
-
+    annotate_codingseq(str(augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".aa")), 
+                str(augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".codingseq")))
+    
     # hypothetical_id_strip and no_hit_id_strip were created during blast parser
     logger.info("Parsing Kallisto results")
-    fasta_fetcher(
-        str(augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".codingseq"),
-        (hypothetical_id_strip + no_hit_id_strip),
-        "Hypothetical_Products.codingseq"
-    )
-    kallisto_run(
-        kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
-        AnnotaBasename, "Hypothetical_Products.codingseq", "Hyphothetical"
-    )
 
-    # annotated_id was created during blast parser
-    fasta_fetcher(
-        str(augustus_folder / "AUGUSTUS_" + str(AnnotaBasename) + ".codingseq"),
-        annotated_id,
-        "Annotated_Products.codingseq"
-    )
     # Annotated_Products.cdsexon 
     kallisto_run(
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
@@ -932,18 +940,18 @@ else:
 # -----------------------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
 
-if 1==1:
-    if kallisto_method == None or args.protein is not None:
-        comet_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
-    else:
-        comet_output_path = pathlib.Path(annota_pwd / str("5_TranscriptQuantification_" + AnnotaBasename))
-        # Go to /4_TranscriptQuantification_
-    pathlib.Path(comet_output_path).mkdir(exist_ok=True)
-    os.chdir(comet_output_path)
-else:
-    pass
+# if 1==1:
+#     if kallisto_method == None or args.protein is not None:
+#         comet_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
+#     else:
+#         comet_output_path = pathlib.Path(annota_pwd / str("5_TranscriptQuantification_" + AnnotaBasename))
+#         # Go to /4_TranscriptQuantification_
+#     pathlib.Path(comet_output_path).mkdir(exist_ok=True)
+#     os.chdir(comet_output_path)
+# else:
+#     pass
 
 
 
 # Return to AnnotaPipeline basedir
-os.chdir(annota_pwd)
+# os.chdir(annota_pwd)
