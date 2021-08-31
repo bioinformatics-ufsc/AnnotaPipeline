@@ -927,17 +927,16 @@ else:
 
 # -----------------------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
-
-# if 1==1:
-#     if kallisto_method == None or args.protein is not None:
-#         comet_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
-#     else:
-#         comet_output_path = pathlib.Path(annota_pwd / str("5_TranscriptQuantification_" + AnnotaBasename))
-#         # Go to /4_TranscriptQuantification_
-#     pathlib.Path(comet_output_path).mkdir(exist_ok=True)
-#     os.chdir(comet_output_path)
-# else:
-#     pass
+if 1==1:
+    if kallisto_method == None or args.protein is not None:
+        comet_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
+    else:
+        comet_output_path = pathlib.Path(annota_pwd / str("5_TranscriptQuantification_" + AnnotaBasename))
+        # Go to /4_TranscriptQuantification_
+    pathlib.Path(comet_output_path).mkdir(exist_ok=True)
+    os.chdir(comet_output_path)
+else:
+    pass
 
 
 
