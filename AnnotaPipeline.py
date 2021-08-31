@@ -249,7 +249,7 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta):
     kallisto_parser_path =  str(annota_pwd / "kallisto_parser.py")
     kallisto_parser_command = (
         f"python3 {kallisto_parser_path} "
-        f"-ktfile kallisto_output/abundance.tsv "
+        f"-ktfile {AnnotaBasename}_kallisto_output/abundance.tsv "
         f"-basename {AnnotaBasename} {kallisto_parser_flag}"
     )
     logger.info(f"Running Parser for Kallisto")
@@ -508,6 +508,7 @@ def run_fasta_to_GFF():
     )
 
 
+# ------------------------------------------------------------------------------
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
 is_tool("blastp")
 is_tool("perl")
