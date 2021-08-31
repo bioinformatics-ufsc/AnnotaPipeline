@@ -102,7 +102,7 @@ del fasta[0]  # remove empty value
 organism = str(args.org).replace("\"", "").replace("\'", "")
 
 # annotafile = open("AnnotaPipeline_" + str(args.basename) + ".fasta", "w")
-with open(f"AnnotaPipeline_{str(args.basename)}.fasta", "w") as annotafile:
+with open(f"AnnotaPipeline_{str(args.basename)}_proteins.fasta", "w") as annotafile:
     ids_warn = []  # store ids with no annotation
     for sequence in fasta:
         sequence = sequence.split("\n")

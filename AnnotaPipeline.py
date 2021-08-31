@@ -106,7 +106,7 @@ optionalNamed.add_argument(
 optionalNamed.add_argument(
     '-gff', dest='gff',
     metavar='gff_file.gff',
-    help='Gff file of Protein file'
+    help='Gff file of protein file'
 )
 
 # custom [--help] argument
@@ -192,6 +192,7 @@ def is_tool(name):
 
 def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta):
     
+    logger.info("KALLISTO index has started")
     kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index.idx {fasta}"
     logger.info(f"{kallisto_command_index}")
     subprocess.getoutput(kallisto_command_index)
@@ -201,12 +202,12 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
     if paired_end == True:
         if len(kallisto.get("l")) != 0:
             l_flag = f"-l {kallisto.get('l')}"
-            logger.info(f"Kallisto will run with -l {kallisto.get('l')}")
+            logger.info(f"KALLISTO will run with -l {kallisto.get('l')}")
         else:
             l_flag = ""
         if len(kallisto.get("s")) != 0:
             s_flag = f"-s {kallisto.get('s')}"
-            logger.info(f"Kallisto will run with -s {kallisto.get('s')}")
+            logger.info(f"KALLISTO will run with -s {kallisto.get('s')}")
         else:
             s_flag = ""
        
@@ -215,7 +216,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
             f"{s_flag} {l_flag} "
             f"-o {basename}_kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
-        logger.info(f"Running Kallisto quant")
+        logger.info(f"KALLISTO quant has started")
         logger.info(kallisto_command_quant)
         subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant paired end
@@ -226,7 +227,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
             f"-l {kallisto.get('s')} -s {kallisto.get('l')} --single "
             f"-o kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
-        logger.info(f"Running Kallisto quant")
+        logger.info(f"KALLISTO quant has started")
         logger.info(kallisto_command_quant)
         subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant single end
@@ -247,8 +248,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
         f"-ktfile {basename}_kallisto_output/abundance.tsv " # kallisto output is always "abundance.tsv"
         f"-basename {basename} {kallisto_parser_flag}"
     )
-    logger.info(f"Running Parser for Kallisto")
-    logger.info(kallisto_parser_command)
+    logger.info(f"KALLISTO parsing has started")
     subprocess.getoutput(kallisto_parser_command)
 
 
@@ -260,39 +260,39 @@ def kallisto_check_parameters():
     kallisto_method = None
     # if kallisto path were given, check other arguments, if not pass.
     if len(config[str('KALLISTO')].get("kallisto_path")) == 0:
-        logger.info("Arguments for Kallisto are empty. This step will be skipped.")
+        logger.info("Arguments for KALLISTO are empty. This step will be skipped.")
     else:
         kallisto_check = []
         for argument in ("rnaseq-data", "median", "mean", "value"):
             if argument == "rnaseq-data":
                 if len(config[str('KALLISTO')].get("rnaseq-data").split()) > 2:
                     logger.error(
-                        "Error, there are more arguments than required for rnaseq-data (KALLISTO). " \
+                        "Error: there are more arguments than required for rnaseq-data (KALLISTO). " \
                         "Pass one if your data is from single-end, " \
-                        "and two files if your data is from paired end!"
+                        "and two files if your data is from paired-end!"
                     )
                     log_quit()
                 ###### This box check how many files were given in rnaseq-data #####
                 elif len(config['KALLISTO'].get("rnaseq-data").split()) == 2:
                     kallisto_paired_end = True
-                    logger.info(f"Kallisto will run with paired end data")
+                    logger.info(f"KALLISTO will run with paired end data")
                     kallisto_check.append(argument)
                 elif len(config['KALLISTO'].get("rnaseq-data").split()) == 1:
                     kallisto_paired_end = False
                     # Check required arguments for single end data
                     if len(config['KALLISTO'].get('l')) == 0:
-                        logger.error("Error. Mandatory argument for single end data 'l' is empty")
+                        logger.error("Error: mandatory argument for single-end data 'l' is empty")
                         log_quit()
                     elif len(config['KALLISTO'].get('s')) == 0:
-                        logger.error("Error. Mandatory argument for single end data 's' is empty")
+                        logger.error("Error: mandatory argument for single-end data 's' is empty")
                         log_quit()
-                    logger.info(f"Kallisto will run with single end data")
+                    logger.info(f"KALLISTO will run with single-end data")
                     kallisto_check.append(argument)
                 else:
                     logger.error(
-                        "Error, check values for rnaseq-data (KALLISTO). " \
+                        "Error: check values for rnaseq-data (KALLISTO). " \
                         "Pass one if your data is from single-end, " \
-                        "and two files if your data is from paired end!"
+                        "and two files if your data is from paired-end!"
                     )
                     log_quit()
                 ####################################################################
@@ -305,19 +305,19 @@ def kallisto_check_parameters():
         # Check kallisto arguments
         # If all kallisto arguments are empty, then don't run this guy
         if len(kallisto_check) == 0:
-            logger.info("Arguments for Kallisto are empty. This step will be skipped.")
+            logger.info("Arguments for KALLISTO are empty. This step will be skipped.")
             kallisto_method = None
         # Rna-seq data is required for calisto
         if 'rnaseq-data' in kallisto_check:
             # if there is rna-seq data, check if method is correctly given
             if len(kallisto_check) > 2:
-                logger.error("Error, there is more than one method selected to parse kallisto ouput. Please, review .config file.")
+                logger.error("Error: there is more than one method selected to parse KALLISTO ouput. Please, review .config file.")
                 log_quit()
             elif len(config[str('KALLISTO')].get("bootstrap")) == 0:
-                logger.error("Kallisto bootstrap is empty, default value is 0. At least pass this value")
+                logger.error("KALLISTO bootstrap is empty, default value is 0. At least pass this value")
                 log_quit()
             else:
-                logger.info(f"Kallisto will run with method: {kallisto_check[1]}")
+                logger.info(f"KALLISTO will run with method: {kallisto_check[1]}")
                 # Pass method, to use further
                 kallisto_method = kallisto_check[1]                    
 
@@ -355,10 +355,10 @@ def check_parameters(sections):
                             log_quit()
     # Exit and report error if there is more than one database or if there is no one
     if sum([sp_verify, nr_verify, trembl_verify]) == 0:
-        logger.error("Error, there is no Secondary database, please review config file!")
+        logger.error("Error: there is no secondary database. Please review config file!")
         log_quit()
     if sum([sp_verify, nr_verify, trembl_verify]) == 2:
-        logger.error("Error, there is two secondary databases, select one of them in config file")
+        logger.error("Error: there are two secondary databases. Select one of them in the config file.")
         log_quit()
 
 
@@ -382,7 +382,9 @@ def annotate_codingseq(aa_fasta, codingseq_fasta, basename):
 
     id_dict  = SeqIO.to_dict(SeqIO.parse(codingseq_fasta, "fasta"))
 
-    corrected_fasta = str(f"AnnotaPipeline_{basename}_Transcripts.fasta")
+    corrected_fasta = str(f"AnnotaPipeline_{basename}_transcripts.fasta")
+
+    logger.info(f"Generating AnnotaPipeline_{basename}_transcripts.fasta file from AnnotaPipeline_{basename}.fasta")
 
     with open(corrected_fasta, "w") as corrected:
         for key, record in id_dict.items():
@@ -417,7 +419,7 @@ def check_file(file):
                     "But, seriously, check your inputs and outputs and rerun.")
 
 
-def augustus_run():
+def augustus_run(basename):
     # create AUGUSTUS directory
 
     augustus_dir = pathlib.Path(augustus_main['augustus_path'])
@@ -438,14 +440,14 @@ def augustus_run():
             else:
                 aug_command += f" --{str(variable)}={str(augustus_main.get(variable))}"
 
-    aug_command += f" {str(seq_file)} > AUGUSTUS_{str(AnnotaBasename)}.gff"
+    aug_command += f" {str(seq_file)} > AUGUSTUS_{str(basename)}.gff"
 
     logger.info(str(aug_command))
 
     subprocess.getoutput(aug_command)
 
     # Check if expected file exists
-    check_file(f"AUGUSTUS_{str(AnnotaBasename)}.gff")
+    check_file(f"AUGUSTUS_{str(basename)}.gff")
 
     logger.info("AUGUSTUS prediction is finished")
 
@@ -454,7 +456,7 @@ def augustus_run():
 
     augustus_script = augustus_dir / "scripts" / "getAnnoFasta.pl"
 
-    aug_file = f"AUGUSTUS_{str(AnnotaBasename)}"
+    aug_file = f"AUGUSTUS_{str(basename)}"
 
     subprocess.run([
         "perl",
@@ -489,10 +491,10 @@ def gfftofasta(python_path):
     )
 
 
-def run_fasta_to_GFF(python_path):
+def run_fastatogff(python_path):
     subprocess.run([
         python_path,
-        str(pipeline_pwd / "fasta_to_GFF.py"),
+        str(pipeline_pwd / "fastatogff.py"),
         "-gff",
         str(gff_file),
         "-all",
@@ -552,7 +554,7 @@ os.chdir(augustus_folder)
 # ==============================================================================
 # Run Augustus or start with protein file?
 if args.protein is None:
-    augustus_run()
+    augustus_run(AnnotaBasename)
 else:
     # Copy protein file to AUGUSTUS path and padronize variable to run Annotapipeline after augustus
     shutil.copy2(prot_path, augustus_folder)
@@ -561,7 +563,7 @@ else:
 # ==============================================================================
 # SEQUENCE CLEANER -------------------------------------------------------------
 
-logger.info("SEQUENCE CLEANER has started")
+logger.info("Sequence Cleaner has started")
 
 # Clean only with min_size
 sequence_cleaner(str(aug_parsing), int(seq_cleaner.get('minsize_seq')))
@@ -569,7 +571,7 @@ sequence_cleaner(str(aug_parsing), int(seq_cleaner.get('minsize_seq')))
 # Check if expected file exists
 check_file(str("Clear_" + aug_parsing))
 
-logger.info(f"SEQUENCE CLEANER is finished. Please check Clear_{aug_parsing}")
+logger.info(f"Sequence Cleaner is finished. Please check Clear_{aug_parsing}")
 
 os.chdir(annota_pwd)
 
@@ -635,7 +637,7 @@ pathlib.Path(interpro_folder).mkdir(exist_ok=True)
 os.chdir(interpro_folder)
 
 # Preparing file that will be used by InteProScan
-logger.info("Preparing file for InterProScan Hypothetical Proteins execution")
+logger.info("Preparing file for INTERPROSCAN Hypothetical Proteins execution")
 
 hypothetical_id = str(blast_folder / str(AnnotaBasename + "_hypothetical_products.txt"))
 no_hit_id = str(blast_folder / str(AnnotaBasename + "_no_hit_products.txt"))
@@ -649,7 +651,7 @@ fasta_fetcher(str(augustus_folder / str("Clear_" + aug_parsing)),
 # Check if expected file exists
 check_file("Hypothetical_Products.fasta")
 
-logger.info("InterProScan Hypothetical Proteins file preparation complete")
+logger.info("INTERPROSCAN Hypothetical Proteins file preparation complete")
 
 logger.info("Running INTERPROSCAN with Hypothetical Proteins")
 # INTERPROSCAN: commandline
@@ -676,11 +678,11 @@ subprocess.getoutput(interpro_command_line)
 if os.path.isfile(str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")) == 0:
     # Generate valid file
     open(f"{str(AnnotaBasename)}_interproscan_hypothetical_output.gff3", "w").close()
-    logger.info("Interproscan analysis return no results, moving on without this results.")
+    logger.info("INTERPROSCAN analysis return no results, moving on without this results.")
     logger.warning("Check if your sequences have special characters (like *), remove it and rerun")
 
 logger.info("INTERPROSCAN finished for hypothetical proteins")
-logger.info("Preparing file for InterProScan Annotated Proteins execution")
+logger.info("Preparing file for INTERPROSCAN Annotated Proteins execution")
 
 annotated_file = str(blast_folder / str(AnnotaBasename + "_annotated_products.txt"))
 
@@ -692,7 +694,7 @@ fasta_fetcher(str(augustus_folder / str("Clear_" + aug_parsing)), annotated_id,
 # Check if expected file exists
 check_file("Annotated_Products.fasta")
 
-logger.info("InterProScan Annotated Proteins file preparation complete")
+logger.info("INTERPROSCAN Annotated Proteins file preparation complete")
 
 logger.info("Running INTERPROSCAN with Annotated Proteins")
 
@@ -719,7 +721,7 @@ subprocess.getoutput(interpro_command_line)
 if os.path.isfile(str(AnnotaBasename + "_interproscan_annotated_output.gff3")) == 0:
     # Generate valid file
     open(f"{str(AnnotaBasename)}_interproscan_annotated_output.gff3", "w").close()
-    logger.info("Interproscan analysis return no results, moving on without this results.")
+    logger.info("INTERPROSCAN analysis return no results, moving on without this results.")
     logger.warning("Check if your sequences have special characters (like *), remove it and rerun")
 
 logger.info("INTERPROSCAN finished for annotated proteins")
@@ -794,7 +796,7 @@ logger.info("RPSBLAST finished")
 
 # -----------------------------------------------------------------------
 
-logger.info("Parsing information from INTERPRO, HMMSCAN and RPSBLAST")
+logger.info("Parsing information from INTERPROSCAN, HMMSCAN and RPSBLAST")
 
 subprocess.run([
     str(python_exe),
@@ -815,7 +817,7 @@ try:
     os.remove("hmmscan.err")
     os.rmdir("temp/")
 except Exception as warn:
-    logger.warning("Failed to remove hmmscan log and temp dir.")
+    logger.warning("Failed to remove HMMSCAN log and temp dir.")
     logger.warning(warn)
     pass
 
@@ -856,19 +858,20 @@ except Exception as warn:
 
 logger.info("All_Annotated_Products.txt file is complete")
 
-logger.info("Generating fasta file from All_Annotated_Products.txt")
+logger.info(f"Generating AnnotaPipeline_{AnnotaBasename}_proteins.fasta file from All_Annotated_Products.txt")
 
 # ------------  Defining what file will be used ---------------------------
 if args.gff is not None and args.protein is not None:  # User gave protein file and gff file
     # Run parser to generate fasta_file
     gff_file = str(gff_path)
+    logger.info(f"Generating AnnotaPipeline_{AnnotaBasename}_proteins.fasta")
     gfftofasta(str(python_exe))
-    logger.info("Running fasta_to_GFF to get gff file annotated")
-    run_fasta_to_GFF(str(python_exe))
-    logger.info(f"GFF file is ready - Check {str(AnnotaBasename)}_Annotated_GFF.gff")
+    logger.info("Generating annotated.gff file")
+    run_fastatogff(str(python_exe))
+    logger.info(f"GFF file is ready - Check {AnnotaBasename}_Annotated_GFF.gff")
 elif args.protein is not None and args.gff is None:  # User gave only protein file
-    logger.info("GFF file wasn't given, fasta file will have only annotations")
-    logger.info("Running fasta_simple.py")
+    logger.info("GFF file wasn't given, FASTA file will only have annotations")
+    logger.info("Generating simple FASTA")
     subprocess.run([
         str(python_exe),
         str(pipeline_pwd / "fasta_simple.py"),
@@ -882,15 +885,20 @@ elif args.protein is not None and args.gff is None:  # User gave only protein fi
         str('"%s"' % str(AnnotaPipeline.get('organism')))
         ]
     )
-    logger.info("GFF file wasn't given, skipping script fasta_to_GFF")
+    logger.info("GFF file wasn't given, skipping script fastatogff.py")
 else:  # User selected run Augustus
     gff_file = augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".gff")
+    logger.info(f"Generating AnnotaPipeline_{AnnotaBasename}_proteins.fasta")
     gfftofasta(str(python_exe))
-    logger.info("Running fasta_to_GFF to get gff file annotated")
-    run_fasta_to_GFF(str(python_exe))
-    logger.info("GFF file is ready")
+    logger.info("Generating annotated.gff file")
+    run_fastatogff(str(python_exe))
+    logger.info(f"GFF file is ready - Check {str(AnnotaBasename)}_Annotated_GFF.gff")
 
-logger.info("Annota annotated the annotations on the annotated file.")
+# Transfer annotation from proteins to Transcript (codingseq) file
+annotate_codingseq(annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + "_proteins.fasta"), 
+    augustus_folder / str("AUGUSTUS_" + AnnotaBasename + ".codingseq"), AnnotaBasename)
+
+logger.info("AnnotaPipeline has annotated the annotations on the annotated file.")
 
 # -----------------------------------------------------------------------
 # ---------------------- Kallisto ---------------------------------------
@@ -905,16 +913,13 @@ else:
     # Go to /4_TranscriptQuantification_
     os.chdir(kallisto_output_path)
 
-    annotate_codingseq(annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + ".fasta"), 
-                augustus_folder / str("AUGUSTUS_" + AnnotaBasename + ".codingseq"), AnnotaBasename)
-
     # Annotated_Products.cdsexon 
     kallisto_run(str(python_exe),
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
-        AnnotaBasename, f"AnnotaPipeline_{AnnotaBasename}_Transcripts.fasta"
+        AnnotaBasename, annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + "_transcripts.fasta")
     )
 
-    logger.info("Finished Kallisto")
+    logger.info("KALLISTO execution and parsing is finished")
 
     # Return to AnnotaPipeline basedir
     os.chdir(annota_pwd)
