@@ -120,11 +120,6 @@ optionalNamed.add_argument(
 # arguments saved here
 args = parser.parse_args()
 
-#if len(args.kallisto_reads) > 2:
-        #logger.error("Error, Kallisto requires single end or paired end files, more than 2 datasets were given!")
-        #logger.info("Exiting")
-        #exit("Error, Kallisto requires single end or paired end files, more than 2 datasets were given")
-
 # --- CREATE LogFile -----------------------------------------------------------
 
 logger = logging.getLogger('AnnotaPipeline')
@@ -195,7 +190,7 @@ def is_tool(name):
         log_quit()
 
 
-def kallisto_run(kallisto_exe, paired_end, method, basename, fasta):
+def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta):
     
     kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index.idx {fasta}"
     logger.info(f"{kallisto_command_index}")
@@ -248,8 +243,8 @@ def kallisto_run(kallisto_exe, paired_end, method, basename, fasta):
     # inside 4_Transcript_Quantification_
     kallisto_parser_path =  str(annota_pwd / "kallisto_parser.py")
     kallisto_parser_command = (
-        f"python3 {kallisto_parser_path} "
-        f"-ktfile {basename}_kallisto_output/abundance.tsv "
+        f"{python_path} {kallisto_parser_path} "
+        f"-ktfile {basename}_kallisto_output/abundance.tsv " # kallisto output is always "abundance.tsv"
         f"-basename {basename} {kallisto_parser_flag}"
     )
     logger.info(f"Running Parser for Kallisto")
@@ -476,9 +471,9 @@ def augustus_run():
     aug_parsing = aug_file + ".aa"
 
 
-def gfftofasta():
+def gfftofasta(python_path):
     subprocess.run([
-        "python3",
+        python_path,
         str(pipeline_pwd / "gfftofasta_parser.py"),
         "-gff",
         str(gff_file),
@@ -494,9 +489,9 @@ def gfftofasta():
     )
 
 
-def run_fasta_to_GFF():
+def run_fasta_to_GFF(python_path):
     subprocess.run([
-        "python3",
+        python_path,
         str(pipeline_pwd / "fasta_to_GFF.py"),
         "-gff",
         str(gff_file),
@@ -528,6 +523,7 @@ if args.gff is not None:
     gff_path = pathlib.Path(args.gff).absolute()
 
 # Parameters from config file, each line is one script/software configuration
+python_exe = config['EssentialParameters']['python_exe']
 AnnotaPipeline = config['EssentialParameters']
 AnnotaBasename = AnnotaPipeline['basename']
 keyword_list = config['EssentialParameters']['key_words']
@@ -599,7 +595,7 @@ elif (len(AnnotaPipeline.get("trembl_db_path"))) > 1:
     flag_spdb = "-trbl"
 
 subprocess.run([
-    "python3",
+    str(python_exe),
     str(str(pipeline_pwd / "blastp_parser.py")),
     "-s",
     str(augustus_folder / str("Clear_" + aug_parsing)),
@@ -801,7 +797,7 @@ logger.info("RPSBLAST finished")
 logger.info("Parsing information from INTERPRO, HMMSCAN and RPSBLAST")
 
 subprocess.run([
-    "python3",
+    str(python_exe),
     str(pipeline_pwd / "funcannotation_parser.py"),
     "-interpro",
     str(AnnotaBasename + "_interproscan_hypothetical_output.gff3"),
@@ -832,7 +828,7 @@ os.chdir(annota_pwd)
 logger.info("Preparing file for protein annotation")
 
 subprocess.run([
-    "python3",
+    str(python_exe),
     str(pipeline_pwd / "info_parser.py"),
     "-ipr1",
     str(interpro_folder / str(AnnotaBasename + "_interproscan_annotated_output.gff3")),
@@ -866,15 +862,15 @@ logger.info("Generating fasta file from All_Annotated_Products.txt")
 if args.gff is not None and args.protein is not None:  # User gave protein file and gff file
     # Run parser to generate fasta_file
     gff_file = str(gff_path)
-    gfftofasta()
+    gfftofasta(str(python_exe))
     logger.info("Running fasta_to_GFF to get gff file annotated")
-    run_fasta_to_GFF()
+    run_fasta_to_GFF(str(python_exe))
     logger.info(f"GFF file is ready - Check {str(AnnotaBasename)}_Annotated_GFF.gff")
 elif args.protein is not None and args.gff is None:  # User gave only protein file
     logger.info("GFF file wasn't given, fasta file will have only annotations")
     logger.info("Running fasta_simple.py")
     subprocess.run([
-        "python3",
+        str(python_exe),
         str(pipeline_pwd / "fasta_simple.py"),
         "-annot",
         str("All_Annotated_Products.txt"),
@@ -889,9 +885,9 @@ elif args.protein is not None and args.gff is None:  # User gave only protein fi
     logger.info("GFF file wasn't given, skipping script fasta_to_GFF")
 else:  # User selected run Augustus
     gff_file = augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".gff")
-    gfftofasta()
+    gfftofasta(str(python_exe))
     logger.info("Running fasta_to_GFF to get gff file annotated")
-    run_fasta_to_GFF()
+    run_fasta_to_GFF(str(python_exe))
     logger.info("GFF file is ready")
 
 logger.info("Annota annotated the annotations on the annotated file.")
@@ -913,7 +909,7 @@ else:
                 augustus_folder / str("AUGUSTUS_" + AnnotaBasename + ".codingseq"), AnnotaBasename)
 
     # Annotated_Products.cdsexon 
-    kallisto_run(
+    kallisto_run(str(python_exe),
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
         AnnotaBasename, f"AnnotaPipeline_{AnnotaBasename}_Transcripts.fasta"
     )
