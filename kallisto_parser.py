@@ -74,19 +74,25 @@ df_kallisto = pd.read_csv(kallisto_file, sep="\t")
 # PARSE DATAFRAMES -------------------------------------------------------------
 
 if args.tpm_avg == True:
-    tpm = df_kallisto["tpm"].mean()
-    print(f"Average TPM: {tpm}")
-    df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
-    df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
+    # remove SettingWithCopyWarning for next operation:
+    with pd.option_context('mode.chained_assignment', None):
+        tpm = df_kallisto["tpm"].mean()
+        print(f"Average TPM: {tpm}")
+        df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
+        df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
 elif args.tpm_median == True:
-    tpm = df_kallisto["tpm"].median()
-    print(f"Median TPM: {tpm}")
-    df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
-    df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
+    # remove SettingWithCopyWarning for next operation:
+    with pd.option_context('mode.chained_assignment', None):
+        tpm = df_kallisto["tpm"].median()
+        print(f"Median TPM: {tpm}")
+        df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
+        df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
 else:
-    tpm = float(args.tpm_value)
-    print(f"Chosen TPM value: {tpm}")
-    df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
-    df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
+    # remove SettingWithCopyWarning for next operation:
+    with pd.option_context('mode.chained_assignment', None):
+        tpm = float(args.tpm_value)
+        print(f"Chosen TPM value: {tpm}")
+        df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
+        df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
 
 df_kt_threshold.to_csv(f"{args.basename}_transcript_evidence.txt", sep="\t", index=False)

@@ -242,7 +242,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
         kallisto_parser_flag = f'-tpmval {kallisto.get("value")}'
     # Run parser
     # inside 4_Transcript_Quantification_
-    kallisto_parser_path =  str(annota_pwd / "kallisto_parser.py")
+    kallisto_parser_path =  str(pipeline_pwd / "kallisto_parser.py")
     kallisto_parser_command = (
         f"{python_path} {kallisto_parser_path} "
         f"-ktfile {basename}_kallisto_output/abundance.tsv " # kallisto output is always "abundance.tsv"
