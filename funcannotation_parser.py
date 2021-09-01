@@ -219,7 +219,7 @@ def sort_arq(arq_entrada, arq_saida):
 
 parser_interproscan(args.interpro, str("InterProScan_Out_" + args.basename + ".txt"),
                     str("Temp_" + args.basename + ".txt"))
-logger.info("Interpro parser done")
+logger.info("InterProScan parser done")
 pfam_format(args.hmm, str("Hmmscan_Out_" + args.basename + ".txt"))
 logger.info("Hmmscan format done")
 parser_pfam(str("Hmmscan_Out_" + args.basename + ".txt"), str("Temp_" + args.basename + ".txt"))
@@ -230,4 +230,4 @@ sort_arq(str("Temp_" + args.basename + ".txt"), str(args.basename + "_Grouped_Hy
 logger.info("Sorting querys in files")
 os.system("rm " + str("Temp_" + args.basename + ".txt"))
 logger.info("Temporary file removed")
-logger.info("Script finished")
+logger.info("Functional Annotation step is completed")
