@@ -614,9 +614,9 @@ def no_hit(basename, blast6):
 
 
 def swiss_run():
-    logger.info("Running blast against swissprot")
+    logger.info("Running BLAST against SwissProt")
     blast(args.seq, swiss_out, args.spdb)
-    logger.info("Running parser")
+    logger.info("Running parser SwissProt")
 
 
 # Check BLAST, run Swissprot and parser it's results
@@ -630,24 +630,26 @@ process_swiss(args.basename, args.seq, swiss_out, args.id, args.pos, args.cov)
 # Secondary database
 if args.nr is not None:
     odb_out_name = str(args.basename + "_BLASTp_AAvsNRDB.outfmt6")
-    logger.info("Running BLAST against SpecificDB")
+    logger.info("Running BLAST against NR")
     # Use the file above without sequences already annotated by swissprot
     blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.nr)
     # ------------------------------
-    logger.info("Running parser")
+    logger.info("Running parser NR")
     parser_nr(args.basename, odb_out_name, args.id, args.pos, args.cov)
+    logger.info("Parser NR done")
     # -------------No hit-----------
     no_hit(str(args.basename), odb_out_name)
 
 elif args.trembl is not None:
     odb_out_name = str(args.basename + "_BLASTp_AAvsTrembl.outfmt6")
     odb = args.trembl
+    logger.info("Running BLAST against TrEMBL")
     # Use the file above without sequences already annotated by swissprot
     blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.trembl)
     # ------------------------------
-    logger.info("Running parser")
+    logger.info("Running parser TrEMBL")
     parser_trembl(args.basename, odb_out_name, args.id, args.pos, args.cov)
-    logger.info("Parser SpecificDB done")
+    logger.info("Parser TrEMBL done")
     # ----------No hit--------------
     no_hit(str(args.basename), odb_out_name)
 
@@ -655,12 +657,13 @@ elif args.trembl is not None:
 elif args.specificdb is not None:
     odb_out_name = str(args.basename + "_BLASTp_AAvsSpecifiedDB.outfmt6")
     odb = args.specificdb
+    logger.info("Running BLAST against specificDB")
     # Use the file above without sequences already annotated by swissprot
     blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.specificdb)
     # ------------------------------
-    logger.info("Running parser")
+    logger.info("Running parser specificDB")
     parser_trytrip(args.basename, odb_out_name, args.id, args.pos, args.cov)
-    logger.info("Parser specific db done")
+    logger.info("Parser specificDB done")
     # ----------No hit--------------
     no_hit(str(args.basename), odb_out_name)
 else:
