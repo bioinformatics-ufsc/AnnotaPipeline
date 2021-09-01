@@ -858,8 +858,6 @@ except Exception as warn:
 
 logger.info("All_Annotated_Products.txt file is complete")
 
-logger.info(f"Generating AnnotaPipeline_{AnnotaBasename}_proteins.fasta file from All_Annotated_Products.txt")
-
 # ------------  Defining what file will be used ---------------------------
 if args.gff is not None and args.protein is not None:  # User gave protein file and gff file
     # Run parser to generate fasta_file
