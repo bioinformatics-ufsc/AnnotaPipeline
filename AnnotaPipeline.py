@@ -342,7 +342,7 @@ def check_parameters(sections):
                 else:
                     if (len(config[str(section)].get(key))) < 1:
                         # Check if any secondary database were given
-                        if str(section) == "EssentialParameters" and key == "specific_path_db":
+                        if str(section) == "EssentialParameters" and key == "specific_db_path":
                             sp_verify = False
                         elif str(section) == "EssentialParameters" and key == "nr_db_path":
                             nr_verify = False
@@ -586,8 +586,8 @@ os.chdir(blast_folder)
 logger.info("BLAST execution and parsing has started")
 
 # Select secondary database from config file
-if (len(AnnotaPipeline.get("specific_path_db"))) > 1:
-    spdb_path = AnnotaPipeline.get("specific_path_db")
+if (len(AnnotaPipeline.get("specific_db_path"))) > 1:
+    spdb_path = AnnotaPipeline.get("specific_db_path")
     flag_spdb = "-spdb"
 elif (len(AnnotaPipeline.get("nr_db_path"))) > 1:
     spdb_path = AnnotaPipeline.get("nr_db_path")
@@ -681,7 +681,7 @@ if os.path.isfile(str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")
     logger.info("INTERPROSCAN analysis return no results, moving on without this results.")
     logger.warning("Check if your sequences have special characters (like *), remove it and rerun")
 
-logger.info("INTERPROSCAN finished for hypothetical proteins")
+logger.info("INTERPROSCAN finished for Hypothetical Proteins")
 logger.info("Preparing file for INTERPROSCAN Annotated Proteins execution")
 
 annotated_file = str(blast_folder / str(AnnotaBasename + "_annotated_products.txt"))
@@ -724,7 +724,7 @@ if os.path.isfile(str(AnnotaBasename + "_interproscan_annotated_output.gff3")) =
     logger.info("INTERPROSCAN analysis return no results, moving on without this results.")
     logger.warning("Check if your sequences have special characters (like *), remove it and rerun")
 
-logger.info("INTERPROSCAN finished for annotated proteins")
+logger.info("INTERPROSCAN finished for Annotated Proteins")
 
 # HMMER ------------------------------------------------------------------------
 
@@ -763,7 +763,7 @@ subprocess.getoutput(hmmscan_command_line)
 # Check if expected file exists
 check_file(f"{str(AnnotaBasename)}_hmmscan_output.txt")
 
-logger.info("HMMSCAN finished")
+logger.info("HMMSCAN is finished")
 
 # RPSBLAST ---------------------------------------------------------------------
 
@@ -792,7 +792,7 @@ subprocess.getoutput(rpsblast_command_line)
 # Check if expected file exists
 check_file(f"{str(AnnotaBasename)}_rpsblast_output.outfmt6")
 
-logger.info("RPSBLAST finished")
+logger.info("RPSBLAST is finished")
 
 # -----------------------------------------------------------------------
 
