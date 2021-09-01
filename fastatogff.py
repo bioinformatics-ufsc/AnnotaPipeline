@@ -68,7 +68,6 @@ while True:
                 anots.append(array_anot[1])
                 ids.append(array_anot[0])
         except Exception as warn:
-                warnings.warn("Failed to get annotations and ids from line")
                 pass
         if not line:
                 break
