@@ -384,7 +384,7 @@ def annotate_codingseq(aa_fasta, codingseq_fasta, basename):
 
     corrected_fasta = str(f"AnnotaPipeline_{basename}_transcripts.fasta")
 
-    logger.info(f"Generating AnnotaPipeline_{basename}_transcripts.fasta file from AnnotaPipeline_{basename}.fasta")
+    logger.info(f"Generating AnnotaPipeline_{basename}_transcripts.fasta file from AnnotaPipeline_{basename}_proteins.fasta")
 
     with open(corrected_fasta, "w") as corrected:
         for key, record in id_dict.items():
@@ -864,7 +864,7 @@ if args.gff is not None and args.protein is not None:  # User gave protein file 
     gff_file = str(gff_path)
     logger.info(f"Generating AnnotaPipeline_{AnnotaBasename}_proteins.fasta")
     gfftofasta(str(python_exe))
-    logger.info("Generating annotated.gff file")
+    logger.info("Generating annotated GFF file")
     run_fastatogff(str(python_exe))
     logger.info(f"GFF file is ready - Check {AnnotaBasename}_Annotated_GFF.gff")
 elif args.protein is not None and args.gff is None:  # User gave only protein file
@@ -888,7 +888,7 @@ else:  # User selected run Augustus
     gff_file = augustus_folder / str("AUGUSTUS_" + str(AnnotaBasename) + ".gff")
     logger.info(f"Generating AnnotaPipeline_{AnnotaBasename}_proteins.fasta")
     gfftofasta(str(python_exe))
-    logger.info("Generating annotated.gff file")
+    logger.info("Generating annotated GFF file")
     run_fastatogff(str(python_exe))
     logger.info(f"GFF file is ready - Check {str(AnnotaBasename)}_Annotated_GFF.gff")
 
