@@ -316,19 +316,23 @@ def kallisto_check_parameters():
                 kallisto_method = kallisto_check[1]                    
 
 def comet_check_parameters():
-    if len(config['comet'].get("comet_path")) == 0:
+    if len(config['COMET'].get("comet_path")) == 0:
         logger.info("Arguments for COMET are empty. This step will be skipped.")
     else:
+        # ------------ check F and L -------------------
         last_check = False
         first_check = False
-        for argument in ("params", "mass_files", "first", "last"):
-            if len(config['comet'].get(argument)) == 0:
+        if len(config['COMET'].get('first')) !=0:
+            first_check = True
+        if len(config['COMET'].get('last'))!=0:
+            last_check = True
+        # ----------------------------------------------
+
+        for argument in ("params", "mass_files"):
+            if len(config['COMET'].get(argument)) == 0:
                 logger.error(f"Parameter [{argument}] from section [COMET] is null")
-            else:
-                if argument == 'first':
-                    first_check = True
-                if argument == 'last':
-                    last_check = True
+                log_quit()
+        # ------------ Specific conditions -----------------------
         if sum([last_check, first_check]) == 1:
             logger.error("[COMET]: both arguments from comet, first and last, must be given")
             logger.error("[COMET]: Leave both empty or give both")

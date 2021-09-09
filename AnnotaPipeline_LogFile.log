@@ -1,0 +1,26 @@
+09/09/2021 18:30:55 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+09/09/2021 18:30:55 | AnnotaPipeline | INFO | COMET execution has started
+09/09/2021 18:30:55 | AnnotaPipeline | INFO | None -pjonas.config -D seq_prot_location /opt/joans/jonas/*
+09/09/2021 18:30:55 | AnnotaPipeline | INFO | COMET execution is finished
+09/09/2021 18:31:01 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+09/09/2021 18:31:01 | AnnotaPipeline | INFO | COMET execution has started
+09/09/2021 18:31:01 | AnnotaPipeline | INFO | None -pjonas.config -D seq_prot_location /opt/joans/jonas/*
+09/09/2021 18:31:01 | AnnotaPipeline | INFO | COMET execution is finished
+09/09/2021 18:32:07 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+09/09/2021 18:32:07 | AnnotaPipeline | ERROR | [COMET]: both arguments from comet, first and last, must be given
+09/09/2021 18:32:07 | AnnotaPipeline | ERROR | [COMET]: Leave both empty or give both
+09/09/2021 18:32:07 | AnnotaPipeline | INFO | Exiting
+09/09/2021 18:32:12 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+09/09/2021 18:32:12 | AnnotaPipeline | ERROR | [COMET]: both arguments from comet, first and last, must be given
+09/09/2021 18:32:12 | AnnotaPipeline | ERROR | [COMET]: Leave both empty or give both
+09/09/2021 18:32:12 | AnnotaPipeline | INFO | Exiting
+09/09/2021 18:33:37 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+09/09/2021 18:33:37 | AnnotaPipeline | ERROR | [COMET]: both arguments from comet, first and last, must be given
+09/09/2021 18:33:37 | AnnotaPipeline | ERROR | [COMET]: Leave both empty or give both
+09/09/2021 18:33:37 | AnnotaPipeline | INFO | Exiting
+09/09/2021 18:33:44 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+09/09/2021 18:33:44 | AnnotaPipeline | ERROR | [COMET]: both arguments from comet, first and last, must be given
+09/09/2021 18:33:44 | AnnotaPipeline | ERROR | [COMET]: Leave both empty or give both
+09/09/2021 18:33:44 | AnnotaPipeline | INFO | Exiting
+09/09/2021 18:36:56 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+09/09/2021 18:36:56 | AnnotaPipeline | INFO | Arguments for COMET are empty. This step will be skipped.
