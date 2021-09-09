@@ -267,7 +267,7 @@ def kallisto_check_parameters():
             if argument == "rnaseq-data":
                 if len(config[str('KALLISTO')].get("rnaseq-data").split()) > 2:
                     logger.error(
-                        "Error: there are more arguments than required for rnaseq-data (KALLISTO). " \
+                        "[KALLISTO]: there are more arguments than required for rnaseq-data (KALLISTO). " \
                         "Pass one if your data is from single-end, " \
                         "and two files if your data is from paired-end!"
                     )
@@ -281,16 +281,16 @@ def kallisto_check_parameters():
                     kallisto_paired_end = False
                     # Check required arguments for single end data
                     if len(config['KALLISTO'].get('l')) == 0:
-                        logger.error("Error: mandatory argument for single-end data 'l' is empty")
+                        logger.error("[KALLISTO]: mandatory argument for single-end data 'l' is empty")
                         log_quit()
                     elif len(config['KALLISTO'].get('s')) == 0:
-                        logger.error("Error: mandatory argument for single-end data 's' is empty")
+                        logger.error("[KALLISTO]: mandatory argument for single-end data 's' is empty")
                         log_quit()
                     logger.info(f"KALLISTO will run with single-end data")
                     kallisto_check.append(argument)
                 else:
                     logger.error(
-                        "Error: check values for rnaseq-data (KALLISTO). " \
+                        "[KALLISTO]: check values for rnaseq-data (KALLISTO). " \
                         "Pass one if your data is from single-end, " \
                         "and two files if your data is from paired-end!"
                     )
@@ -311,10 +311,10 @@ def kallisto_check_parameters():
         if 'rnaseq-data' in kallisto_check:
             # if there is rna-seq data, check if method is correctly given
             if len(kallisto_check) > 2:
-                logger.error("Error: there is more than one method selected to parse KALLISTO ouput. Please, review .config file.")
+                logger.error("[KALLISTO]: there is more than one method selected to parse KALLISTO ouput. Please, review .config file.")
                 log_quit()
             elif len(config[str('KALLISTO')].get("bootstrap")) == 0:
-                logger.error("KALLISTO bootstrap is empty, default value is 0. At least pass this value")
+                logger.error("[KALLISTO]: bootstrap is empty, default value is 0. At least pass this value")
                 log_quit()
             else:
                 logger.info(f"KALLISTO will run with method: {kallisto_check[1]}")
@@ -323,19 +323,23 @@ def kallisto_check_parameters():
 
 
 def comet_check_parameters():
-    if len(config['comet'].get("comet_path")) == 0:
+    if len(config['COMET'].get("comet_path")) == 0:
         logger.info("Arguments for COMET are empty. This step will be skipped.")
     else:
+        # ------------ check F and L -------------------
         last_check = False
         first_check = False
-        for argument in ("params", "mass_files", "first", "last"):
-            if len(config['comet'].get(argument)) == 0:
-                logger.error(f"Parameter [{argument}] from section [COMET] is null")
-            else:
-                if argument == 'first':
-                    first_check = True
-                if argument == 'last':
-                    last_check = True
+        if len(config['COMET'].get('first')) !=0:
+            first_check = True
+        if len(config['COMET'].get('last')) !=0:
+            last_check = True
+        # ----------------------------------------------
+
+        for argument in ("params", "mass_files"):
+            if len(config['COMET'].get(argument)) == 0:
+                logger.error(f"[COMET]: Parameter [{argument}] from section [COMET] is null")
+                log_quit()
+        # ------------ Specific conditions -----------------------
         if sum([last_check, first_check]) == 1:
             logger.error("[COMET]: both arguments from comet, first and last, must be given")
             logger.error("[COMET]: Leave both empty or give both")
@@ -346,7 +350,6 @@ def comet_check_parameters():
             use_last_and_first = True
         else:
             use_last_and_first = False
-
 
 
 def check_parameters(sections):
@@ -384,10 +387,10 @@ def check_parameters(sections):
                             log_quit()
     # Exit and report error if there is more than one database or if there is no one
     if sum([sp_verify, nr_verify, trembl_verify]) == 0:
-        logger.error("Error: there is no secondary database. Please review config file!")
+        logger.error("[DATABASE]: there is no secondary database. Please review config file!")
         log_quit()
     if sum([sp_verify, nr_verify, trembl_verify]) == 2:
-        logger.error("Error: there are two secondary databases. Select one of them in the config file.")
+        logger.error("[DATABASE]: there are two secondary databases. Select one of them in the config file.")
         log_quit()
 
 
