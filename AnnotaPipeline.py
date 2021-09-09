@@ -322,6 +322,12 @@ def kallisto_check_parameters():
                 kallisto_method = kallisto_check[1]                    
 
 
+def comet_check_parameters():
+    
+    # se L for dado, F tem que ser tbm, unica restricao
+    pass
+
+
 def check_parameters(sections):
     # Variables to check databases
     # swissprot database
@@ -334,6 +340,8 @@ def check_parameters(sections):
         # Check kallisto optional arguments
         if str(section) == "KALLISTO":
             kallisto_check_parameters()  
+        elif str(section) == "COMET":
+            comet_check_parameters()
         else:  
             for key in config[str(section)]:  # get variable for each box
                 # Arguments for agutustus don't need to be checked if protein file were given

@@ -200,14 +200,16 @@ def blast(arq1, arq2, db):
     command = str("blastp -query " + arq1 + " -out " + arq2
                     + " -db " + datab + " -evalue 0.00001"
                     + " -outfmt " + fmt
-                    + " -num_alignments 15"
+                    + " -max_hsp 10"
+ #                   + " -num_alignments 15"
                     + " -num_threads " + str(args.threads))
     logger.info(str(command))
 
     subprocess.call("blastp -query " + arq1 + " -out " + arq2
                     + " -db " + datab + " -evalue 0.00001"
                     + " -outfmt " + fmt
-                    + " -num_alignments 15"
+                    + " -max_hsp 10"
+  #                  + " -num_alignments 15"
                     + " -num_threads " + str(args.threads), shell=True)
 
 
