@@ -337,9 +337,16 @@ def comet_check_parameters():
                 if argument == 'last':
                     last_check = True
         if sum([last_check, first_check]) == 1:
-            logger.info("ERROR: both arguments from comet, first and last, must be given")
-            logger.info("ERROR: Leave both empty or give both")
+            logger.error("[COMET]: both arguments from comet, first and last, must be given")
+            logger.error("[COMET]: Leave both empty or give both")
             log_quit()
+        elif sum([last_check, first_check]) == 2:
+            logger.info("WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file")
+            global use_last_and_first
+            use_last_and_first = True
+        else:
+            use_last_and_first = False
+
 
 
 def check_parameters(sections):
@@ -533,6 +540,8 @@ is_tool("blastp")
 is_tool("perl")
 is_tool("rpsblast")
 # ------------------------------------------------------------------------------
+
+logger.info("")
 
 sections_config = config.sections()
 check_parameters(sections_config)
@@ -947,16 +956,31 @@ else:
 
 # -----------------------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
-if comet.get('comet_path') == None:
+if len(comet.get('comet_path')) == 0:
     pass
 else:
     if kallisto_method == None or args.protein is not None:
-        comet_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
+        comet_output_path = pathlib.Path(annota_pwd / str("4_PeptideIdentification" + AnnotaBasename))
     else:
-        comet_output_path = pathlib.Path(annota_pwd / str("5_TranscriptQuantification_" + AnnotaBasename))
-        # Go to /4_TranscriptQuantification_
+        comet_output_path = pathlib.Path(annota_pwd / str("5_PeptideIdentification" + AnnotaBasename))
+    
+    # Go to /X_PeptideIdentification
     pathlib.Path(comet_output_path).mkdir(exist_ok=True)
     os.chdir(comet_output_path)
+
+    # Check if overwrite parameters will be used
+    if use_last_and_first == True:
+        first_last_param = f"-F{comet.get('first')} -L{comet.get('last')}"
+    else:
+        first_last_param = str()
+
+    commet_command = f"{comet.get('comet_bash')} -p{comet.get('params')} -D seq_prot_location" \
+                     f"{first_last_param} {comet.get('mass_files')}/*"
+
+    logger.info("COMET execution has started")
+    logger.info(commet_command)
+    subprocess.getoutput(commet_command)
+    logger.info("COMET execution is finished")
 
 
 # Return to AnnotaPipeline basedir
