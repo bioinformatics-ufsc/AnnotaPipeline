@@ -323,9 +323,23 @@ def kallisto_check_parameters():
 
 
 def comet_check_parameters():
-    
-    # se L for dado, F tem que ser tbm, unica restricao
-    pass
+    if len(config['comet'].get("kallisto_path")) == 0:
+        logger.info("Arguments for COMET are empty. This step will be skipped.")
+    else:
+        last_check = False
+        first_check = False
+        for argument in ("params", "mass_files", "first", "last"):
+            if len(config['comet'].get(argument)) == 0:
+                logger.error(f"Parameter [{argument}] from section [COMET] is null")
+            else:
+                if argument == 'first':
+                    first_check = True
+                if argument == 'last':
+                    last_check = True
+        if sum([last_check, first_check]) == 1:
+            logger.info("ERROR: both arguments from comet, first and last, must be given")
+            logger.info("ERROR: Leave both empty or give both")
+            log_quit()
 
 
 def check_parameters(sections):
@@ -544,6 +558,7 @@ hmmscan = config['HMMSCAN']
 blast = config['BLAST']
 rpsblast = config['RPSBLAST']
 kallisto = config['KALLISTO']
+comet = config['COMET']
 
 # AnnotaPipeline main directory
 home_dir = f"AnnotaPipeline_{str(AnnotaBasename)}"
@@ -930,21 +945,19 @@ else:
     # Return to AnnotaPipeline basedir
     os.chdir(annota_pwd)
 
-
 # -----------------------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
-# if 1==1:
-#     if kallisto_method == None or args.protein is not None:
-#         comet_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
-#     else:
-#         comet_output_path = pathlib.Path(annota_pwd / str("5_TranscriptQuantification_" + AnnotaBasename))
-#         # Go to /4_TranscriptQuantification_
-#     pathlib.Path(comet_output_path).mkdir(exist_ok=True)
-#     os.chdir(comet_output_path)
-# else:
-#     pass
-
+if comet.get('comet_path') == None:
+    pass
+else:
+    if kallisto_method == None or args.protein is not None:
+        comet_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
+    else:
+        comet_output_path = pathlib.Path(annota_pwd / str("5_TranscriptQuantification_" + AnnotaBasename))
+        # Go to /4_TranscriptQuantification_
+    pathlib.Path(comet_output_path).mkdir(exist_ok=True)
+    os.chdir(comet_output_path)
 
 
 # Return to AnnotaPipeline basedir
-# os.chdir(annota_pwd)
+os.chdir(annota_pwd)
