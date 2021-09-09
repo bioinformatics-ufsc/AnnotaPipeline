@@ -323,7 +323,7 @@ def kallisto_check_parameters():
 
 
 def comet_check_parameters():
-    if len(config['comet'].get("kallisto_path")) == 0:
+    if len(config['comet'].get("comet_path")) == 0:
         logger.info("Arguments for COMET are empty. This step will be skipped.")
     else:
         last_check = False
@@ -974,7 +974,7 @@ else:
     else:
         first_last_param = str()
 
-    commet_command = f"{comet.get('comet_bash')} -p{comet.get('params')} -D seq_prot_location" \
+    commet_command = f"{comet.get('comet_bash')} -p{comet.get('params')} -D seq_prot_location " \
                      f"{first_last_param} {comet.get('mass_files')}/*"
 
     logger.info("COMET execution has started")

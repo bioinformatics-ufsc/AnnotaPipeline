@@ -315,6 +315,32 @@ def kallisto_check_parameters():
                 # Pass method, to use further
                 kallisto_method = kallisto_check[1]                    
 
+def comet_check_parameters():
+    if len(config['comet'].get("comet_path")) == 0:
+        logger.info("Arguments for COMET are empty. This step will be skipped.")
+    else:
+        last_check = False
+        first_check = False
+        for argument in ("params", "mass_files", "first", "last"):
+            if len(config['comet'].get(argument)) == 0:
+                logger.error(f"Parameter [{argument}] from section [COMET] is null")
+            else:
+                if argument == 'first':
+                    first_check = True
+                if argument == 'last':
+                    last_check = True
+        if sum([last_check, first_check]) == 1:
+            logger.error("[COMET]: both arguments from comet, first and last, must be given")
+            logger.error("[COMET]: Leave both empty or give both")
+            log_quit()
+        elif sum([last_check, first_check]) == 2:
+            logger.info("WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file")
+            global use_last_and_first
+            use_last_and_first = True
+        else:
+            use_last_and_first = False
+
+
 
 def check_parameters(sections):
     # Variables to check databases
@@ -328,6 +354,8 @@ def check_parameters(sections):
         # Check kallisto optional arguments
         if str(section) == "KALLISTO":
             kallisto_check_parameters()  
+        elif str(section) == "COMET":
+            comet_check_parameters()
         else:  
             for key in config[str(section)]:  # get variable for each box
                 # Arguments for agutustus don't need to be checked if protein file were given
@@ -336,7 +364,7 @@ def check_parameters(sections):
                 else:
                     if (len(config[str(section)].get(key))) < 1:
                         # Check if any secondary database were given
-                        if str(section) == "EssentialParameters" and key == "specific_path_db":
+                        if str(section) == "EssentialParameters" and key == "specific_db_path":
                             sp_verify = False
                         elif str(section) == "EssentialParameters" and key == "nr_db_path":
                             nr_verify = False
@@ -349,10 +377,10 @@ def check_parameters(sections):
                             log_quit()
     # Exit and report error if there is more than one database or if there is no one
     if sum([sp_verify, nr_verify, trembl_verify]) == 0:
-        logger.error("Error, there is no Secondary database, please review config file!")
+        logger.error("Error: there is no secondary database. Please review config file!")
         log_quit()
     if sum([sp_verify, nr_verify, trembl_verify]) == 2:
-        logger.error("Error, there is two secondary databases, select one of them in config file")
+        logger.error("Error: there are two secondary databases. Select one of them in the config file.")
         log_quit()
 
 
@@ -407,8 +435,6 @@ script_pwd = pathlib.Path(sys.argv[0]).absolute()
 # AnnotaPipeline location
 pipeline_pwd = script_pwd.parents[0]
 
-
-
 # --- PREPARING SOME VARIABLES -------------------------------------------------
 # \\ Check if user pass protein and gff file -> if it is, redirect variables
 if args.seq is not None:
@@ -429,6 +455,7 @@ hmmscan = config['HMMSCAN']
 blast = config['BLAST']
 rpsblast = config['RPSBLAST']
 kallisto = config['KALLISTO']
+comet = config['COMET']
 
 # initial directory
 home_dir_pwd = pathlib.Path.cwd()
@@ -440,44 +467,33 @@ annota_pwd = pathlib.Path(home_dir_pwd / home_dir)
 augustus_folder = pathlib.Path(annota_pwd / str("1_GenePrediction_" + AnnotaBasename))
 
 # -----------------------------------------------------------------------
-# ---------------------- Kallisto ---------------------------------------
-# Run kallisto
-# If kalisto_method is empty, lack arguments for kallisto >> skip
-# If proteins were given, lack cdscexon files >> skip
-if kallisto_method == None or args.protein is not None:
+# ----------------------- Commet ----------------------------------------
+if len(comet.get('comet_path')) == 0:
     pass
 else:
-    kallisto_output_path = pathlib.Path(pipeline_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
-    pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
-    # Go to /4_TranscriptQuantification_
-    os.chdir(kallisto_output_path)
-    # parser codingseq
-    # Path para arquivo: augustus_folder / f"AUGUSTUS_{str(AnnotaBasename)}.codingseq"
+    if kallisto_method == None or args.protein is not None:
+        comet_output_path = pathlib.Path(annota_pwd / str("4_PeptideIdentification" + AnnotaBasename))
+    else:
+        comet_output_path = pathlib.Path(annota_pwd / str("5_PeptideIdentification" + AnnotaBasename))
     
-    '''
-    VARIABLES:
-      hypothetical_id = str(blast_folder / str(AnnotaBasename + "_hypothetical_products.txt"))
-      no_hit_id = str(blast_folder / str(AnnotaBasename + "_no_hit_products.txt"))
-      annotated_file = str(blast_folder / str(AnnotaBasename + "_annotated_products.txt"))
-    LISTS:  
-      hypothetical_id_strip = [line.strip() for line in open(hypothetical_id, "r")]
-      no_hit_id_strip = [line.strip() for line in open(no_hit_id, "r")]
-      annotated_id = [line.strip().split()[0] for line in open(annotated_file, "r")]
-    '''
-    # line => g1.t1 
-    
-    annotate_codingseq(annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + ".fasta"), 
-                augustus_folder / str("AUGUSTUS_" + AnnotaBasename + ".codingseq"))
-    
-    # Adicionar um *g1.t1 antes de cada linha 
-    # Quando o augustus roda com um modelo default (rodado por eles)
-    # o .coding seq adiciona um id na frente do identificador 
-    # ex >>. NC_03121.1.g1.t1
-    # fazer regex *.g1.t1
+    # Go to /X_PeptideIdentification
+    #pathlib.Path(comet_output_path).mkdir(exist_ok=True)
+    #os.chdir(comet_output_path)
 
-    # Return to AnnotaPipeline basedir
-    os.chdir(pipeline_pwd)
+    # Check if overwrite parameters will be used
+    if use_last_and_first == True:
+        first_last_param = f"-F{comet.get('first')} -L{comet.get('last')}"
+    else:
+        first_last_param = str()
 
-# test commit
-# if rodou kallisto  > pasta = nome 5
-# if nao rodou pasta > nome 4
+    commet_command = f"{comet.get('comet_bash')} -p{comet.get('params')} -D seq_prot_location" \
+                     f"{first_last_param} {comet.get('mass_files')}/*"
+
+    logger.info("COMET execution has started")
+    logger.info(commet_command)
+    #subprocess.getoutput(commet_command)
+    logger.info("COMET execution is finished")
+
+
+# Return to AnnotaPipeline basedir
+#os.chdir(annota_pwd)
