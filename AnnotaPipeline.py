@@ -991,7 +991,6 @@ else:
     if len(comet.get("charge")) != 0:
         parser_comet_comand += f" -ch {comet.get('charge')}"
     
-    logger.info(parser_comet_comand)
     subprocess.getoutput(parser_comet_comand)
 
     logger.info("COMET parsing is finished")
