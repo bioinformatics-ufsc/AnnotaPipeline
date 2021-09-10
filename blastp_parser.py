@@ -197,20 +197,13 @@ def blast(arq1, arq2, db):
     fmt = str("\"6 qseqid sseqid sacc bitscore"
               + " evalue ppos pident qcovs stitle\"")
 
-    command = str("blastp -query " + arq1 + " -out " + arq2
-                    + " -db " + datab + " -evalue 0.00001"
-                    + " -outfmt " + fmt
-                    + " -max_hsp 10"
- #                   + " -num_alignments 15"
-                    + " -num_threads " + str(args.threads))
-    logger.info(str(command))
-
-    subprocess.call("blastp -query " + arq1 + " -out " + arq2
-                    + " -db " + datab + " -evalue 0.00001"
-                    + " -outfmt " + fmt
-                    + " -max_hsp 10"
-  #                  + " -num_alignments 15"
-                    + " -num_threads " + str(args.threads), shell=True)
+    command = f"blastp -query {arq1} -out {arq2}" \
+                    f" -db {datab} -evalue 0.00001" \
+                    f" -outfmt {fmt}" \
+                    f" -max_hsp 10" \
+                    f" -num_threads {str(args.threads)}"
+    logger.info(command)
+    subprocess.getoutput(command)
 
 
 def temporary_query(arq):
@@ -224,7 +217,7 @@ def temporary_query(arq):
 
 def is_tool(name):
     if which(name) is None:
-        logging.error("Program: " + str(name) + " must be avaliable in $PATH")
+        logging.error(f"Program: {str(name)} must be avaliable in $PATH")
         logging.shutdown()
         sys.exit(1)
 
@@ -241,9 +234,9 @@ def parser_trembl(basename, result_blast, identidade, positividade, cov):
 
     swiss = open(str(result_blast), "r").read().splitlines()
 
-    hyp = open(str(basename) + "_hypothetical_products.txt", "w")
-    nhyp = open(str(basename) + "_annotated_products.txt", "a")
-    all_anot = open(str(basename) + "_SpecifiedDB_annotations.txt", "w")
+    hyp = open(f"{str(basename)}_hypothetical_products.txt", "w")
+    nhyp = open(f"{str(basename)}_annotated_products.txt", "a")
+    all_anot = open(f"{str(basename)}_SpecifiedDB_annotations.txt", "w")
     # temporary adding a line
     #   so it accounts for the last query found by the BLAST analysis
     temporary_query(swiss)
