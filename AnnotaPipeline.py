@@ -977,15 +977,24 @@ else:
     else:
         first_last_param = str()
 
-    commet_command = f"{comet.get('comet_bash')} -p{comet.get('params')} -D seq_prot_location " \
+    commet_command = f"{comet.get('comet_bash')} -p{comet.get('params')} -D . " \
                      f"{first_last_param} {str(comet.get('mass_files')).rstrip('/')}/*"
-
 
     logger.info("COMET execution has started")
     logger.info(commet_command)
     subprocess.getoutput(commet_command)
     logger.info("COMET execution is finished")
+    
+    logger.info("Parsing COMET output")
 
+    parser_comet_comand = f"{python_exe} {str(pipeline_pwd / 'comet_parser.py')} -p -b {AnnotaBasename} "
+    if len(comet.get("charge")) != 0:
+        parser_comet_comand += f" -ch {comet.get('charge')}"
+    
+    logger.info(parser_comet_comand)
+    subprocess.getoutput(parser_comet_comand)
+
+    logger.info("COMET parsing is finished")
 
 # Return to AnnotaPipeline basedir
 os.chdir(annota_pwd)

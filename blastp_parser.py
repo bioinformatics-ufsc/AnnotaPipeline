@@ -320,9 +320,9 @@ def parser_trytrip(basename, result_blast, identidade, positividade, cov):
 
     swiss = open(str(result_blast), "r").read().splitlines()
 
-    hyp = open(str(basename) + "_hypothetical_products.txt", "w")
-    nhyp = open(str(basename) + "_annotated_products.txt", "a")
-    all_anot = open(str(basename) + "_SpecifiedDB_annotations.txt", "w")
+    hyp = open(f"{str(basename)}_hypothetical_products.txt", "w")
+    nhyp = open(f"{str(basename)}_annotated_products.txt", "a")
+    all_anot = open(f"{str(basename)}_SpecifiedDB_annotations.txt", "w")
     # temporary adding a line
     #   so it accounts for the last query found by the BLAST analysis
     temporary_query(swiss)
@@ -409,9 +409,9 @@ def parser_nr(basename, result_blast, identidade, positividade, cov):
 
     nr = open(str(result_blast), "r").read().splitlines()
 
-    hyp = open(str(basename) + "_hypothetical_products.txt", "w")
-    nhyp = open(str(basename) + "_annotated_products.txt", "a")
-    all_anot = open(str(basename) + "_NR_annotations.txt", "w")
+    hyp = open(f"{str(basename)}_hypothetical_products.txt", "w")
+    nhyp = open(f"{str(basename)}_annotated_products.txt", "a")
+    all_anot = open(f"{str(basename)}_SpecifiedDB_annotations.txt", "w")
     # temporary adding a line
     #   so it accounts for the last query found by the BLAST analysis
     temporary_query(nr)
@@ -495,8 +495,8 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
     # --------------------------Parser ----------------------------------------------------
     swiss = open(str(swiss_out), "r").read().splitlines()
 
-    nhyp = open(str(basename) + "_annotated_products.txt", "w")
-    swiss_anot = open(str(basename) + "_SwissProt_annotations.txt", "w")
+    nhyp = open(f"{str(basename)}_annotated_products.txt", "w")
+    swiss_anot = open(f"{str(basename)}_SwissProt_annotations.txt", "w")
     # temporary adding a line
     #   so it accounts for the last query found by the BLAST analysis
     temporary_query(swiss)
@@ -573,7 +573,7 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
             if id_list in seq:
                 fasta.remove(seq)
 
-    new_fasta = open(str(basename) + "_BLASTp_AA_SwissProted.fasta", "w")
+    new_fasta = open(f"{str(basename)}_BLASTp_AA_SwissProted.fasta", "w")
     new_fasta.write(">".join(fasta))
     new_fasta.close()
     swiss_anot.close()
@@ -618,13 +618,13 @@ def swiss_run():
 is_tool("blastp")
 
 # Run BLAST against swissprotDB
-swiss_out = str(args.basename) + "_BLASTp_AAvsSwissProt.outfmt6"
+swiss_out = f"{str(args.basename)}_BLASTp_AAvsSwissProt.outfmt6"
 swiss_run()
 process_swiss(args.basename, args.seq, swiss_out, args.id, args.pos, args.cov)
 
 # Secondary database
 if args.nr is not None:
-    odb_out_name = str(args.basename + "_BLASTp_AAvsNRDB.outfmt6")
+    odb_out_name = f"{str(args.basename)}_BLASTp_AAvsNRDB.outfmt6"
     logger.info("Running BLAST against NR")
     # Use the file above without sequences already annotated by swissprot
     blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.nr)
@@ -636,7 +636,7 @@ if args.nr is not None:
     no_hit(str(args.basename), odb_out_name)
 
 elif args.trembl is not None:
-    odb_out_name = str(args.basename + "_BLASTp_AAvsTrembl.outfmt6")
+    odb_out_name = f"{str(args.basename)}_BLASTp_AAvsTrembl.outfmt6"
     odb = args.trembl
     logger.info("Running BLAST against TrEMBL")
     # Use the file above without sequences already annotated by swissprot
@@ -650,7 +650,7 @@ elif args.trembl is not None:
 
 # EupathDB
 elif args.specificdb is not None:
-    odb_out_name = str(args.basename + "_BLASTp_AAvsSpecifiedDB.outfmt6")
+    odb_out_name = f"{str(args.basename)}_BLASTp_AAvsSpecifiedDB.outfmt6"
     odb = args.specificdb
     logger.info("Running BLAST against specificDB")
     # Use the file above without sequences already annotated by swissprot
