@@ -81,6 +81,10 @@ if args.charge is not None:
         decoy_false = decoy_false.loc[decoy_false['charge'] >= int(args.charge)]
         decoy_true = decoy_true.loc[decoy_true['charge'] >= int(args.charge)]
 
+# Sort dataframes by 'protein' column
+decoy_true_sorted = decoy_true.sort_values('protein')
+decoy_false_sorted = decoy_false.sort_values('protein')
 
-decoy_false.to_csv(f"{args.basename}_peptide_identificated_DECOY_FALSE.txt", sep="\t", index=False)
-decoy_true.to_csv(f"{args.basename}_peptide_identificated_DECOY_TRUE.txt", sep="\t", index=False)
+# Save all
+decoy_false_sorted.to_csv(f"{args.basename}_identificated_peptides.txt", sep="\t", index=False)
+decoy_true_sorted.to_csv(f"DECOY_{args.basename}_identificated_peptides.txt", sep="\t", index=False)
