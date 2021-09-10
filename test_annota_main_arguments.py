@@ -467,9 +467,14 @@ home_dir_pwd = pathlib.Path.cwd()
 
 home_dir = f"AnnotaPipeline_{str(AnnotaBasename)}"
 
+pathlib.Path(home_dir).mkdir(exist_ok=True)
+
 annota_pwd = pathlib.Path(home_dir_pwd / home_dir)
 
-augustus_folder = pathlib.Path(annota_pwd / str("1_GenePrediction_" + AnnotaBasename))
+pathlib.Path(annota_pwd).mkdir(exist_ok=True)
+
+logger.info(f"PATH {annota_pwd}")
+
 
 # -----------------------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
@@ -482,8 +487,8 @@ else:
         comet_output_path = pathlib.Path(annota_pwd / str("5_PeptideIdentification" + AnnotaBasename))
     
     # Go to /X_PeptideIdentification
-    #pathlib.Path(comet_output_path).mkdir(exist_ok=True)
-    #os.chdir(comet_output_path)
+    pathlib.Path(comet_output_path).mkdir(exist_ok=True)
+    os.chdir(comet_output_path)
 
     # Check if overwrite parameters will be used
     if use_last_and_first == True:
@@ -496,7 +501,7 @@ else:
 
     logger.info("COMET execution has started")
     logger.info(commet_command)
-    #subprocess.getoutput(commet_command)
+    subprocess.getoutput(commet_command)
     logger.info("COMET execution is finished")
 
     logger.info("Parsing COMET output")

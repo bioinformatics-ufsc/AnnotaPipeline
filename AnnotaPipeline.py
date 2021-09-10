@@ -604,7 +604,7 @@ logger.info("Sequence Cleaner has started")
 sequence_cleaner(str(aug_parsing), int(seq_cleaner.get('minsize_seq')))
 
 # Check if expected file exists
-check_file(str("Clear_" + aug_parsing))
+check_file(f"Clear_{aug_parsing}")
 
 logger.info(f"Sequence Cleaner is finished. Please check Clear_{aug_parsing}")
 
@@ -658,9 +658,9 @@ subprocess.run([
 logger.info("BLAST execution and parsing is finished")
 
 # Check if expected file exists
-check_file(str(AnnotaBasename + "_no_hit_products.txt"))
-check_file(str(AnnotaBasename + "_hypothetical_products.txt"))
-check_file(str(AnnotaBasename + "_annotated_products.txt"))
+check_file(f"{str(AnnotaBasename)}_no_hit_products.txt")
+check_file(f"{str(AnnotaBasename)}_hypothetical_products.txt")
+check_file(f"{str(AnnotaBasename)}_annotated_products.txt")
 
 os.chdir(annota_pwd)
 
@@ -986,7 +986,8 @@ else:
     logger.info("COMET execution is finished")
     
     logger.info("Parsing COMET output")
-
+    
+    # ver possibilidade de fstring no pathlib --> usar '' ao inves de "" 
     parser_comet_comand = f"{python_exe} {str(pipeline_pwd / 'comet_parser.py')} -p -b {AnnotaBasename} "
     if len(comet.get("charge")) != 0:
         parser_comet_comand += f" -ch {comet.get('charge')}"

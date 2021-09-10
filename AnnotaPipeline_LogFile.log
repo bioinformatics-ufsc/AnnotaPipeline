@@ -1,8 +1,9 @@
-10/09/2021 16:20:12 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
-10/09/2021 16:20:12 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
-10/09/2021 16:20:12 | AnnotaPipeline | INFO | COMET execution has started
-10/09/2021 16:20:12 | AnnotaPipeline | INFO | comet -pjonas.config -D seq_prot_location -F1 -L100 /opt/joans/jonas/*
-10/09/2021 16:20:12 | AnnotaPipeline | INFO | COMET execution is finished
-10/09/2021 16:20:12 | AnnotaPipeline | INFO | Parsing COMET output
-10/09/2021 16:20:12 | AnnotaPipeline | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58
-10/09/2021 16:20:12 | AnnotaPipeline | INFO | COMET parsing is finished
+10/09/2021 17:00:59 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+10/09/2021 17:00:59 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+10/09/2021 17:00:59 | AnnotaPipeline | INFO | PATH /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58
+10/09/2021 17:00:59 | AnnotaPipeline | INFO | COMET execution has started
+10/09/2021 17:00:59 | AnnotaPipeline | INFO | comet -pjonas.config -D seq_prot_location -F1 -L100 /opt/joans/jonas/*
+10/09/2021 17:00:59 | AnnotaPipeline | INFO | COMET execution is finished
+10/09/2021 17:00:59 | AnnotaPipeline | INFO | Parsing COMET output
+10/09/2021 17:00:59 | AnnotaPipeline | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+10/09/2021 17:00:59 | AnnotaPipeline | INFO | COMET parsing is finished
