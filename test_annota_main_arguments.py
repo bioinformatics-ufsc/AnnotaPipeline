@@ -485,7 +485,8 @@ else:
         comet_output_path = pathlib.Path(annota_pwd / str("4_PeptideIdentification" + AnnotaBasename))
     else:
         comet_output_path = pathlib.Path(annota_pwd / str("5_PeptideIdentification" + AnnotaBasename))
-    
+    logger = logging.getLogger('COMET')
+    # Mudar loogger no log, facilita identificacao pra debug
     # Go to /X_PeptideIdentification
     pathlib.Path(comet_output_path).mkdir(exist_ok=True)
     os.chdir(comet_output_path)
