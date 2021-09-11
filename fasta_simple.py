@@ -77,13 +77,13 @@ del fasta[0]  # remove empty value
 
 # ============== Write fasta file with new header ==========================
 
-out = open("Annota_" + str(args.basename) + ".fasta", "w")
+out = open(f"Annota_{str(args.basename)}.fasta", "w")
 ids_warn = []  # store ids with no annotation
 for sequence in fasta:
 	sequence = sequence.split("\n")
 	id = sequence[0]
 	try:
-		out.write(">" + str(id) + " | Organism: " + str(args.org) + " | Description: " + str(ant[id]) + "\n")
+		out.write(f">{str(id)} | Organism: {str(args.org)} | Description: {str(ant[id])}\n")
 		out.write(str("\n".join(sequence[1:])))
 	except Exception as warn:
 		ids_warn.append(id)
@@ -95,7 +95,7 @@ out.close()
 
 if len(ids_warn) > 0:
 	warnings.warn("WARNING: Not all sequences from fasta file were in annotation file", stacklevel=2)
-	warn_seq = open(str(args.basename) + "_ids_with_no_annotations.txt", "w")
+	warn_seq = open(f"{str(args.basename)}_ids_with_no_annotations.txt", "w")
 	for a in ids_warn:
 		warn_seq.write(str(a) + "\n")
 	warn_seq.close()

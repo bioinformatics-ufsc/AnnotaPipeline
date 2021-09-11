@@ -496,12 +496,13 @@ else:
     else:
         first_last_param = str()
 
-    commet_command = f"{comet.get('comet_bash')} -p{comet.get('params')} -D seq_prot_location " \
+    commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
+                f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
                      f"{first_last_param} {str(comet.get('mass_files')).rstrip('/')}/*"
 
     logger.info("COMET execution has started")
     logger.info(commet_command)
-    subprocess.getoutput(commet_command)
+    #subprocess.getoutput(commet_command)
     logger.info("COMET execution is finished")
 
     logger.info("Parsing COMET output")

@@ -942,6 +942,8 @@ if kallisto_method == None or args.protein is not None:
     pass
 else:
     kallisto_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
+    # kallisto_output_path = pathlib.Path(f"{annota_pwd / f'4_TranscriptQuantification_{AnnotaBasename}'}")
+    # testei e funciona
     pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
     # Go to /4_TranscriptQuantification_
     os.chdir(kallisto_output_path)
@@ -949,7 +951,8 @@ else:
     # Annotated_Products.cdsexon 
     kallisto_run(str(python_exe),
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
-        AnnotaBasename, annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + "_transcripts.fasta")
+        AnnotaBasename, f"{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_transcripts.fasta'}"
+        f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
     )
 
     logger.info("KALLISTO execution and parsing is finished")
@@ -977,7 +980,8 @@ else:
     else:
         first_last_param = str()
 
-    commet_command = f"{comet.get('comet_bash')} -p{comet.get('params')} -D . " \
+    commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
+                f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
                      f"{first_last_param} {str(comet.get('mass_files')).rstrip('/')}/*"
 
     logger.info("COMET execution has started")

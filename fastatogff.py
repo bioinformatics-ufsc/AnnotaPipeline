@@ -78,14 +78,14 @@ del ids, anots
 header_gff = gff[0]
 del gff[0]
 
-outfile = open(str(args.basename) + "_Annotated_GFF.gff", "w")
+outfile = open(f"{str(args.basename)}_Annotated_GFF.gff", "w")
 outfile.write(str(header_gff))
 infos = []
 
 for gene in gff:
         gene = gene.split("\n")
         gene_stats = gene[1:]
-        infos.append("# start gene " + str(gene[0]))
+        infos.append(f"# start gene {str(gene[0])}")
         id_gene = None
         count = 0
         count_transcript = None
@@ -102,6 +102,9 @@ for gene in gff:
                 if stat is gene_stats[-1]:
                         if id_gene in dict_anot.keys():
                                 try:
+                                        #outfile.write(f"{'\n'.join(infos[0:count_transcript])}\n" 
+                                        #              f"{transcript_line}\t{dict_anot.get(id_gene)}" 
+                                        #              f"{'\n'.join(infos[count_transcript:])}")
                                         outfile.write("\n".join(infos[0:count_transcript]) + "\n" +
                                                                   transcript_line + "\t" + dict_anot.get(id_gene)
                                                                   + "\n".join(infos[count_transcript:]))

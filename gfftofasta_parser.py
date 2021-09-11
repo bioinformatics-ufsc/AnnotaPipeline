@@ -129,7 +129,7 @@ with open(f"AnnotaPipeline_{str(args.basename)}_proteins.fasta", "w") as annotaf
 
 if len(ids_warn) > 0:
     warnings.warn("WARNING: Not all sequences from fasta file were in annotation file", stacklevel=2)
-    warn_seq = open(str(args.basename) + "_ids_with_no_annotations.txt", "w")
+    warn_seq = open(f"{str(args.basename)}_ids_with_no_annotations.txt", "w")
     for a in ids_warn:
         warn_seq.write(str(a) + "\n")
     warn_seq.close()
