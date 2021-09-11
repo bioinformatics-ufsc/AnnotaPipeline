@@ -164,6 +164,12 @@ stderr_logger = logging.getLogger('AnnotaPipeline')
 sl = StreamToLogger(stderr_logger, logging.ERROR)
 sys.stderr = sl
 
+# CREATE CUSTOM LOG
+# JONAS = 5 # Numeric error
+# logging.addLevelName(5, "JONAS")
+# logger.setLevel(JONAS)
+# logger.log(JONAS,"teste")
+
 # --- PARSE ARGUMENTS FROM .config FILE ----------------------------------------
 
 config_pwd = pathlib.Path(args.annotaconfig).absolute()
@@ -1002,3 +1008,5 @@ else:
 
 # Return to AnnotaPipeline basedir
 os.chdir(annota_pwd)
+# close logger
+logging.shutdown()
