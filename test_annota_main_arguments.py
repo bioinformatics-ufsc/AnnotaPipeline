@@ -473,10 +473,14 @@ annota_pwd = pathlib.Path(home_dir_pwd / home_dir)
 
 pathlib.Path(annota_pwd).mkdir(exist_ok=True)
 
-logger.info(f"PATH {annota_pwd}")
 
-
-# -----------------------------------------------------------------------
+# CREATE CUSTOM LEVEL LOG
+# logger.info(f"PATH {annota_pwd}")
+# JONAS = 5 # Numeric error
+# logging.addLevelName(JONAS, "JONAS")
+# logger.setLevel(JONAS)
+# logger.log(JONAS,"teste")
+#-----------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
 if len(comet.get('comet_bash')) == 0:
     pass
