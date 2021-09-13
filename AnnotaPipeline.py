@@ -346,11 +346,12 @@ def comet_check_parameters():
                 logger.error(f"[COMET]: Parameter [{argument}] from section [COMET] is null")
                 log_quit()
         # ------------ Specific conditions -----------------------
-        if sum([last_check, first_check]) == 1:
+        # XOR conditional >> check if one value is True and another is False
+        if last_check ^ first_check:
             logger.error("[COMET]: both arguments from comet, first and last, must be given")
             logger.error("[COMET]: Leave both empty or give both")
             log_quit()
-        elif sum([last_check, first_check]) == 2:
+        elif last_check == first_check == True:
             logger.info("WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file")
             global use_last_and_first
             use_last_and_first = True

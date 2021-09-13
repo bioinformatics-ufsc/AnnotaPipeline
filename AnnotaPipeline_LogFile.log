@@ -6,3 +6,83 @@
 11/09/2021 15:18:26 | COMET | INFO | Parsing COMET output
 11/09/2021 15:18:26 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
 11/09/2021 15:18:26 | COMET | INFO | COMET parsing is finished
+13/09/2021 10:01:57 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:01:57 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+13/09/2021 10:01:57 | COMET | INFO | COMET execution has started
+13/09/2021 10:01:57 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta -F1 -L100 /opt/joans/jonas/*
+13/09/2021 10:01:57 | COMET | INFO | COMET execution is finished
+13/09/2021 10:01:57 | COMET | INFO | Parsing COMET output
+13/09/2021 10:01:57 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 10:01:57 | COMET | INFO | COMET parsing is finished
+13/09/2021 10:02:20 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:02:20 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+13/09/2021 10:02:20 | COMET | INFO | COMET execution has started
+13/09/2021 10:02:20 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta -F1 -L100 /opt/joans/jonas/*
+13/09/2021 10:02:20 | COMET | INFO | COMET execution is finished
+13/09/2021 10:02:20 | COMET | INFO | Parsing COMET output
+13/09/2021 10:02:20 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 10:02:20 | COMET | INFO | COMET parsing is finished
+13/09/2021 10:02:34 | AnnotaPipeline | ERROR | Error. Mandatory argument for single end data 's' is empty
+13/09/2021 10:02:34 | AnnotaPipeline | INFO | Exiting
+13/09/2021 10:03:08 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:03:08 | AnnotaPipeline | ERROR | [COMET]: both arguments from comet, first and last, must be given
+13/09/2021 10:03:08 | AnnotaPipeline | ERROR | [COMET]: Leave both empty or give both
+13/09/2021 10:03:08 | AnnotaPipeline | INFO | Exiting
+13/09/2021 10:04:25 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:04:25 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+13/09/2021 10:04:25 | COMET | INFO | COMET execution has started
+13/09/2021 10:04:25 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta -F1 -L12 /opt/joans/jonas/*
+13/09/2021 10:04:25 | COMET | INFO | COMET execution is finished
+13/09/2021 10:04:25 | COMET | INFO | Parsing COMET output
+13/09/2021 10:04:25 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 10:04:25 | COMET | INFO | COMET parsing is finished
+13/09/2021 10:04:44 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:04:44 | COMET | INFO | COMET execution has started
+13/09/2021 10:04:44 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta  /opt/joans/jonas/*
+13/09/2021 10:04:44 | COMET | INFO | COMET execution is finished
+13/09/2021 10:04:44 | COMET | INFO | Parsing COMET output
+13/09/2021 10:04:44 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 10:04:44 | COMET | INFO | COMET parsing is finished
+13/09/2021 10:10:12 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:10:12 | AnnotaPipeline | ERROR | Error: there is no secondary database. Please review config file!
+13/09/2021 10:10:12 | AnnotaPipeline | INFO | Exiting
+13/09/2021 10:10:23 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:10:23 | COMET | INFO | COMET execution has started
+13/09/2021 10:10:23 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta  /opt/joans/jonas/*
+13/09/2021 10:10:23 | COMET | INFO | COMET execution is finished
+13/09/2021 10:10:23 | COMET | INFO | Parsing COMET output
+13/09/2021 10:10:23 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 10:10:23 | COMET | INFO | COMET parsing is finished
+13/09/2021 10:10:44 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:10:44 | AnnotaPipeline | ERROR | Error: there is no secondary database. Please review config file!
+13/09/2021 10:10:44 | AnnotaPipeline | INFO | Exiting
+13/09/2021 10:11:07 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:11:07 | AnnotaPipeline | ERROR | Error: there is no secondary database. Please review config file!
+13/09/2021 10:11:07 | AnnotaPipeline | INFO | Exiting
+13/09/2021 10:13:21 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:13:21 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+13/09/2021 10:13:21 | COMET | INFO | COMET execution has started
+13/09/2021 10:13:21 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta -F1 -L1 /opt/joans/jonas/*
+13/09/2021 10:13:21 | COMET | INFO | COMET execution is finished
+13/09/2021 10:13:21 | COMET | INFO | Parsing COMET output
+13/09/2021 10:13:21 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 10:13:21 | COMET | INFO | COMET parsing is finished
+13/09/2021 10:13:46 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:13:46 | AnnotaPipeline | ERROR | [COMET]: both arguments from comet, first and last, must be given
+13/09/2021 10:13:46 | AnnotaPipeline | ERROR | [COMET]: Leave both empty or give both
+13/09/2021 10:13:46 | AnnotaPipeline | INFO | Exiting
+13/09/2021 10:13:58 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:13:58 | COMET | INFO | COMET execution has started
+13/09/2021 10:13:58 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta  /opt/joans/jonas/*
+13/09/2021 10:13:58 | COMET | INFO | COMET execution is finished
+13/09/2021 10:13:58 | COMET | INFO | Parsing COMET output
+13/09/2021 10:13:58 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 10:13:58 | COMET | INFO | COMET parsing is finished
+13/09/2021 10:14:21 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 10:14:21 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+13/09/2021 10:14:21 | COMET | INFO | COMET execution has started
+13/09/2021 10:14:21 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta -F1 -L1 /opt/joans/jonas/*
+13/09/2021 10:14:21 | COMET | INFO | COMET execution is finished
+13/09/2021 10:14:21 | COMET | INFO | Parsing COMET output
+13/09/2021 10:14:21 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 10:14:21 | COMET | INFO | COMET parsing is finished
