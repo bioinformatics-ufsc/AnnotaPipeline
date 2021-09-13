@@ -494,7 +494,7 @@ else:
     # Mudar loogger no log, facilita identificacao pra debug
     # Go to /X_PeptideIdentification
     pathlib.Path(comet_output_path).mkdir(exist_ok=True)
-    os.chdir(comet_output_path)
+    #os.chdir(comet_output_path)
 
     # Check if overwrite parameters will be used
     if use_last_and_first == True:
@@ -519,6 +519,31 @@ else:
     
     logger.info(parser_comet_comand)
     #subprocess.getoutput(parser_comet_comand)
+
+    mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
+    # Get all output files from mass_path >> default output path
+    files = pathlib.Path(mass_path).glob('*.txt')
+
+    #pathlib.Path("Samples").mkdir(exist_ok=True)
+    #os.chdir("Samples")
+
+    for comet_output_file in files:
+        logger.info(f"Parsing {comet_output_file}")
+        parser_comet_comand = f"{python_exe} {str(pipeline_pwd / 'comet_parser.py')}" \
+                            f" -p {comet_output_file}" \
+                            f" -b {AnnotaBasename}_{comet_output_file.stem}"
+
+        
+        if len(comet.get("charge")) != 0:
+            parser_comet_comand += f" -ch {comet.get('charge')}"
+        try:
+            pass
+            #subprocess.getoutput(parser_comet_comand)
+        except Exception as warn:
+            logger.warning(f"Fail trying to parser {comet_output_file}")
+            logger.debug(f"code error {warn}")
+
+        logger.debug(parser_comet_comand)
 
     logger.info("COMET parsing is finished")
 

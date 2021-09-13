@@ -86,3 +86,44 @@
 13/09/2021 10:14:21 | COMET | INFO | Parsing COMET output
 13/09/2021 10:14:21 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
 13/09/2021 10:14:21 | COMET | INFO | COMET parsing is finished
+13/09/2021 16:09:07 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 16:09:07 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+13/09/2021 16:09:07 | COMET | INFO | COMET execution has started
+13/09/2021 16:09:07 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta -F1 -L1 /opt/joans/jonas/*
+13/09/2021 16:09:07 | COMET | INFO | COMET execution is finished
+13/09/2021 16:09:07 | COMET | INFO | Parsing COMET output
+13/09/2021 16:09:07 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 16:09:08 | AnnotaPipeline | ERROR | Traceback (most recent call last):
+13/09/2021 16:09:08 | AnnotaPipeline | ERROR |   File "test_annota_main_arguments.py", line 525, in <module>
+13/09/2021 16:09:08 | AnnotaPipeline | ERROR |     files = pathlib.Path(mass_path).glob('*.txt')
+13/09/2021 16:09:08 | AnnotaPipeline | ERROR | NameError: name 'mass_path' is not defined
+13/09/2021 16:09:51 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 16:09:51 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+13/09/2021 16:09:51 | COMET | INFO | COMET execution has started
+13/09/2021 16:09:51 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta -F1 -L1 /opt/joans/jonas/*
+13/09/2021 16:09:51 | COMET | INFO | COMET execution is finished
+13/09/2021 16:09:51 | COMET | INFO | Parsing COMET output
+13/09/2021 16:09:51 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 16:09:51 | COMET | INFO | COMET parsing is finished
+13/09/2021 16:10:33 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 16:10:33 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+13/09/2021 16:10:33 | COMET | INFO | COMET execution has started
+13/09/2021 16:10:33 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta -F1 -L1 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/testes/*
+13/09/2021 16:10:33 | COMET | INFO | COMET execution is finished
+13/09/2021 16:10:33 | COMET | INFO | Parsing COMET output
+13/09/2021 16:10:33 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 16:10:33 | COMET | INFO | Parsing /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/testes/subset_1000lines_proteoma.txt
+13/09/2021 16:10:35 | COMET | INFO | Parsing /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/testes/Total_Proteoma.txt
+13/09/2021 16:10:39 | COMET | INFO | COMET parsing is finished
+13/09/2021 16:12:11 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+13/09/2021 16:12:11 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+13/09/2021 16:12:11 | COMET | INFO | COMET execution has started
+13/09/2021 16:12:11 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta -F1 -L1 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/testes/*
+13/09/2021 16:12:11 | COMET | INFO | COMET execution is finished
+13/09/2021 16:12:11 | COMET | INFO | Parsing COMET output
+13/09/2021 16:12:11 | COMET | INFO | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p -b TrangeliSC58 -ch 12
+13/09/2021 16:12:11 | COMET | INFO | Parsing /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/testes/subset_1000lines_proteoma.txt
+13/09/2021 16:12:11 | COMET | DEBUG | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/testes/subset_1000lines_proteoma.txt -b TrangeliSC58_subset_1000lines_proteoma -ch 12
+13/09/2021 16:12:11 | COMET | INFO | Parsing /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/testes/Total_Proteoma.txt
+13/09/2021 16:12:11 | COMET | DEBUG | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/testes/Total_Proteoma.txt -b TrangeliSC58_Total_Proteoma -ch 12
+13/09/2021 16:12:11 | COMET | INFO | COMET parsing is finished

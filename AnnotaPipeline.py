@@ -200,7 +200,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
     
     logger.info("KALLISTO index has started")
     kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index.idx {fasta}"
-    logger.info(f"{kallisto_command_index}")
+    logger.debug(f"{kallisto_command_index}")
     subprocess.getoutput(kallisto_command_index)
 
     # Standart command line for kallisto index
@@ -223,7 +223,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
             f"-o {basename}_kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
         logger.info(f"KALLISTO quant has started")
-        logger.info(kallisto_command_quant)
+        logger.debug(kallisto_command_quant)
         subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant paired end
         # kallisto quant -i transcripts.idx -o output -b 100 reads_1.fastq reads_2.fastq
@@ -234,7 +234,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
             f"-o kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
         )
         logger.info(f"KALLISTO quant has started")
-        logger.info(kallisto_command_quant)
+        logger.debug(kallisto_command_quant)
         subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant single end
         # kallisto quant -i transcripts.idx -o output -b 100 --single -l 180 -s 20 reads_1.fastq
@@ -482,7 +482,7 @@ def augustus_run(basename):
 
     aug_command += f" {str(seq_file)} > AUGUSTUS_{str(basename)}.gff"
 
-    logger.info(str(aug_command))
+    logger.debug(str(aug_command))
 
     subprocess.getoutput(aug_command)
 
@@ -557,8 +557,7 @@ logger.info("")
 sections_config = config.sections()
 logger = logging.getLogger('AnnotaPipeline')
 
-logger.info("Checking config file")
-
+logger.info("Checking parameters in AnnotaPipeline.config file")
 check_parameters(sections_config)
 
 # --- PREPARING SOME VARIABLES -------------------------------------------------
@@ -718,7 +717,7 @@ for variable in interpro:
     else:
         interpro_command_line += f" -{str(variable)} {str(interpro.get(variable))}"
 
-logger.info(str(interpro_command_line))
+logger.debug(str(interpro_command_line))
 
 subprocess.getoutput(interpro_command_line)
 
@@ -761,7 +760,7 @@ for variable in config['INTERPROSCAN']:
     else:
         interpro_command_line += f" -{str(variable)} {str(interpro.get(variable))}"
 
-logger.info(str(interpro_command_line))
+logger.debug(str(interpro_command_line))
 
 subprocess.getoutput(interpro_command_line)
 
@@ -804,7 +803,7 @@ hmmscan_command_line += (
     f"> /dev/null 2> hmmscan.err"
 )
 
-logger.info(str(hmmscan_command_line))
+logger.debug(str(hmmscan_command_line))
 
 subprocess.getoutput(hmmscan_command_line)
 
@@ -833,7 +832,7 @@ for variable in rpsblast:
     else:
         rpsblast_command_line += f" -{str(variable)} {str(rpsblast.get(variable))}"
 
-logger.info(str(rpsblast_command_line))
+logger.debug(str(rpsblast_command_line))
 
 subprocess.getoutput(rpsblast_command_line)
 
@@ -865,8 +864,8 @@ try:
     os.remove("hmmscan.err")
     os.rmdir("temp/")
 except Exception as warn:
-    logger.warning("Failed to remove HMMSCAN log and temp dir.")
-    logger.warning(warn)
+    logger.warning("Failed to remove HMMSCAN log and temp dir")
+    logger.debug(f"code error: {warn}")
     pass
 
 logger.info("INTERPROSCAN, HMMSCAN and RPSBLAST execution and parsing is finished")
@@ -902,6 +901,7 @@ try:
     os.remove("All_annotation_products.txt")
 except Exception as warn:
     logger.warning("Failed to sort All_annotation_products.txt")
+    logger.debug(f"code error: {warn}")
     pass
 
 logger.info("All_Annotated_Products.txt file is complete")
@@ -957,6 +957,8 @@ else:
     kallisto_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
     # kallisto_output_path = pathlib.Path(f"{annota_pwd / f'4_TranscriptQuantification_{AnnotaBasename}'}")
     # testei e funciona
+    # documentacao do Pathlib
+    # SubDeskTop = Path.joinpath(Desktop, "subdir")
     pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
     # Go to /4_TranscriptQuantification_
     os.chdir(kallisto_output_path)
@@ -1004,7 +1006,7 @@ else:
                      f"{first_last_param} {mass_path}*"
 
     logger.info("COMET execution has started")
-    logger.info(commet_command)
+    logger.debug(commet_command)
     subprocess.getoutput(commet_command)
     logger.info("COMET execution is finished")
     
@@ -1013,18 +1015,25 @@ else:
     # Get all output files from mass_path >> default output path
     files = pathlib.Path(mass_path).glob('*.txt')
 
+    pathlib.Path("Samples").mkdir(exist_ok=True)
+    os.chdir("Samples")
+
     for comet_output_file in files:
         logger.info(f"Parsing {comet_output_file}")
-        parser_comet_comand = f"{python_exe} {str(pipeline_pwd / 'comet_parser.py')}" \
-                            f" -p {comet_output_file} -b {AnnotaBasename}"
+        # testado
+        parser_comet_command = f"{python_exe} {str(pipeline_pwd / 'comet_parser.py')}" \
+                            f" -p {comet_output_file}" \
+                            f" -b {AnnotaBasename}_{comet_output_file.stem}"
 
         if len(comet.get("charge")) != 0:
-            parser_comet_comand += f" -ch {comet.get('charge')}"
+            parser_comet_command += f" -ch {comet.get('charge')}"
         try:
-            subprocess.getoutput(parser_comet_comand)
+            subprocess.getoutput(parser_comet_command)
         except Exception as warn:
             logger.warning(f"Fail trying to parser {comet_output_file}")
             logger.debug(f"code error {warn}")
+
+    os.chdir(comet_output_path)
 
     logger.info("COMET parsing is finished")
 
