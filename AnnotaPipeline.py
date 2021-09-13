@@ -352,7 +352,7 @@ def comet_check_parameters():
             logger.error("[COMET]: Leave both empty or give both")
             log_quit()
         elif last_check == first_check == True:
-            logger.info("WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file")
+            logger.warning("[COMET]: values for 'fist' and 'last' will overwrite those in params file")
             global use_last_and_first
             use_last_and_first = True
         else:
@@ -448,6 +448,7 @@ def sequence_cleaner(fasta_file, min_length=0, por_n=100):
 
 
 def check_file(file):
+    logger = logging.getLogger('AnnotaPipeline')
     if os.path.isfile(file) == 0:
         logging.error(f"File {str(file)} does not exist, please check earlier steps")
         log_quit()
@@ -460,7 +461,7 @@ def check_file(file):
 
 def augustus_run(basename):
     # create AUGUSTUS directory
-
+    logger = logging.getLogger('AUGUSTUS')
     augustus_dir = pathlib.Path(augustus_main['augustus_path'])
     augustus_bin = augustus_dir / "bin" / "augustus"
     augustus_config = augustus_dir / "config"
@@ -554,6 +555,10 @@ is_tool("rpsblast")
 logger.info("")
 
 sections_config = config.sections()
+logger = logging.getLogger('AnnotaPipeline')
+
+logger.info("Checking config file")
+
 check_parameters(sections_config)
 
 # --- PREPARING SOME VARIABLES -------------------------------------------------
@@ -604,7 +609,7 @@ else:
 
 # ==============================================================================
 # SEQUENCE CLEANER -------------------------------------------------------------
-
+logger = logging.getLogger('AnnotaPipeline')
 logger.info("Sequence Cleaner has started")
 
 # Clean only with min_size
@@ -678,6 +683,7 @@ interpro_folder = pathlib.Path(annota_pwd / str("3_FunctionalAnnotation_" + Anno
 pathlib.Path(interpro_folder).mkdir(exist_ok=True)
 os.chdir(interpro_folder)
 
+logger = logging.getLogger('INTERPROSCAN')
 # Preparing file that will be used by InteProScan
 logger.info("Preparing file for INTERPROSCAN Hypothetical Proteins execution")
 
@@ -720,7 +726,7 @@ subprocess.getoutput(interpro_command_line)
 if os.path.isfile(str(AnnotaBasename + "_interproscan_hypothetical_output.gff3")) == 0:
     # Generate valid file
     open(f"{str(AnnotaBasename)}_interproscan_hypothetical_output.gff3", "w").close()
-    logger.info("INTERPROSCAN analysis return no results, moving on without this results.")
+    logger.warning("INTERPROSCAN analysis return no results, moving on without this results.")
     logger.warning("Check if your sequences have special characters (like *), remove it and rerun")
 
 logger.info("INTERPROSCAN finished for Hypothetical Proteins")
@@ -763,13 +769,13 @@ subprocess.getoutput(interpro_command_line)
 if os.path.isfile(str(AnnotaBasename + "_interproscan_annotated_output.gff3")) == 0:
     # Generate valid file
     open(f"{str(AnnotaBasename)}_interproscan_annotated_output.gff3", "w").close()
-    logger.info("INTERPROSCAN analysis return no results, moving on without this results.")
+    logger.warning("INTERPROSCAN analysis return no results, moving on without this results.")
     logger.warning("Check if your sequences have special characters (like *), remove it and rerun")
 
 logger.info("INTERPROSCAN finished for Annotated Proteins")
 
 # HMMER ------------------------------------------------------------------------
-
+logger = logging.getLogger('HMMSCAN')
 logger.info("Running HMMSCAN with Hypothetical Proteins")
 
 # General
@@ -808,7 +814,7 @@ check_file(f"{str(AnnotaBasename)}_hmmscan_output.txt")
 logger.info("HMMSCAN is finished")
 
 # RPSBLAST ---------------------------------------------------------------------
-
+logger = logging.getLogger('RPSBLAST')
 logger.info("Running RPSBLAST with Hypothetical Proteins")
 
 # General
@@ -837,7 +843,7 @@ check_file(f"{str(AnnotaBasename)}_rpsblast_output.outfmt6")
 logger.info("RPSBLAST is finished")
 
 # -----------------------------------------------------------------------
-
+logger = logging.getLogger('AnnotaPipeline')
 logger.info("Parsing information from INTERPROSCAN, HMMSCAN and RPSBLAST")
 
 subprocess.run([
@@ -955,6 +961,9 @@ else:
     # Go to /4_TranscriptQuantification_
     os.chdir(kallisto_output_path)
 
+    # Change logger
+    logger = logging.getLogger('KALLISTO')
+
     # Annotated_Products.cdsexon 
     kallisto_run(str(python_exe),
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
@@ -976,7 +985,8 @@ else:
         comet_output_path = pathlib.Path(annota_pwd / str("4_PeptideIdentification" + AnnotaBasename))
     else:
         comet_output_path = pathlib.Path(annota_pwd / str("5_PeptideIdentification" + AnnotaBasename))
-    
+    # Change logger
+    logger = logging.getLogger('COMET')
     # Go to /X_PeptideIdentification
     pathlib.Path(comet_output_path).mkdir(exist_ok=True)
     os.chdir(comet_output_path)
