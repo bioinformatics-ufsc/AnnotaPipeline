@@ -997,9 +997,11 @@ else:
     else:
         first_last_param = str()
 
+
+    mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
     commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
                 f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
-                     f"{first_last_param} {str(comet.get('mass_files')).rstrip('/')}/*"
+                     f"{first_last_param} {mass_path}*"
 
     logger.info("COMET execution has started")
     logger.info(commet_command)
@@ -1007,14 +1009,22 @@ else:
     logger.info("COMET execution is finished")
     
     logger.info("Parsing COMET output")
-    
-    # ver possibilidade de fstring no pathlib --> usar '' ao inves de "" 
-    parser_comet_comand = f"{python_exe} {str(pipeline_pwd / 'comet_parser.py')} -p -b {AnnotaBasename} "
-    if len(comet.get("charge")) != 0:
-        parser_comet_comand += f" -ch {comet.get('charge')}"
-    
-    subprocess.getoutput(parser_comet_comand)
 
+    files = pathlib.Path(mass_path).glob('*.txt')
+
+    for comet_output_file in files:
+        logger.info(f"Parsing {comet_output_file}")
+        parser_comet_comand = f"{python_exe} {str(pipeline_pwd / 'comet_parser.py')}" \
+                            f"-p {comet_output_file} -b {AnnotaBasename} "
+
+        if len(comet.get("charge")) != 0:
+            parser_comet_comand += f" -ch {comet.get('charge')}"
+        try:
+            subprocess.getoutput(parser_comet_comand)
+        except Exception as warn:
+            logger.warning(f"Fail trying to parser {comet_output_file}")
+            logger.debug(f"code error {warn}")
+            
     logger.info("COMET parsing is finished")
 
 # Return to AnnotaPipeline basedir
