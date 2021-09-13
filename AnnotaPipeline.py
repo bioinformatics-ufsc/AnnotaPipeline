@@ -393,7 +393,7 @@ def check_parameters(sections):
                             logger.error(f"Variable [{key}] from section [{str(section)}] is null")
                             log_quit()
     # Exit and report error if there is more than one database or if there is no one
-    if sum([sp_verify, nr_verify, trembl_verify]) == 0:
+    if sp_verify == nr_verify == trembl_verify == False:
         logger.error("[DATABASE]: there is no secondary database. Please review config file!")
         log_quit()
     if sum([sp_verify, nr_verify, trembl_verify]) == 2:
