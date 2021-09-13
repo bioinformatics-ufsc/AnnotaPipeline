@@ -86,5 +86,5 @@ decoy_true_sorted = decoy_true.sort_values('protein')
 decoy_false_sorted = decoy_false.sort_values('protein')
 
 # Save all
-decoy_false_sorted.to_csv(f"{args.basename}_identificated_peptides.txt", sep="\t", index=False)
-decoy_true_sorted.to_csv(f"DECOY_{args.basename}_identificated_peptides.txt", sep="\t", index=False)
+decoy_false_sorted.to_csv(f"{args.basename}_identificated_peptides.tsv", sep="\t", index=False)
+decoy_true_sorted.to_csv(f"DECOY_{args.basename}_identificated_peptides.tsv", sep="\t", index=False)

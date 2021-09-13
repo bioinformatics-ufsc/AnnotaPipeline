@@ -1015,8 +1015,8 @@ else:
     # Get all output files from mass_path >> default output path
     files = pathlib.Path(mass_path).glob('*.txt')
 
-    pathlib.Path("Samples").mkdir(exist_ok=True)
-    os.chdir("Samples")
+    pathlib.Path("comet_output").mkdir(exist_ok=True)
+    os.chdir("comet_output")
 
     for comet_output_file in files:
         logger.info(f"Parsing {comet_output_file}")
@@ -1031,7 +1031,7 @@ else:
             subprocess.getoutput(parser_comet_command)
         except Exception as warn:
             logger.warning(f"Fail trying to parser {comet_output_file}")
-            logger.debug(f"code error {warn}")
+            logger.debug(f"code error: {warn}")
 
     os.chdir(comet_output_path)
 
