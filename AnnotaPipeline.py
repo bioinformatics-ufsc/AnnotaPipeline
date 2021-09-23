@@ -20,6 +20,7 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import re
 
 # --- SCRIPT LOCATION ----------------------------------------------------------
 
@@ -582,6 +583,7 @@ blast = config['BLAST']
 rpsblast = config['RPSBLAST']
 kallisto = config['KALLISTO']
 comet = config['COMET']
+percolator = config['PERCOLATOR']
 
 # AnnotaPipeline main directory
 home_dir = f"AnnotaPipeline_{str(AnnotaBasename)}"

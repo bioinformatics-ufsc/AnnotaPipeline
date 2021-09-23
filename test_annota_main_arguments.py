@@ -16,6 +16,7 @@ import argparse
 import configparser
 import logging
 import os
+import re
 import pathlib
 import shutil
 import subprocess
@@ -462,6 +463,7 @@ blast = config['BLAST']
 rpsblast = config['RPSBLAST']
 kallisto = config['KALLISTO']
 comet = config['COMET']
+percolator = config['PERCOLATOR']
 
 # initial directory
 home_dir_pwd = pathlib.Path.cwd()
@@ -494,7 +496,7 @@ else:
     # Mudar loogger no log, facilita identificacao pra debug
     # Go to /X_PeptideIdentification
     pathlib.Path(comet_output_path).mkdir(exist_ok=True)
-    #os.chdir(comet_output_path)
+    os.chdir(comet_output_path)
 
     # Check if overwrite parameters will be used
     if use_last_and_first == True:
@@ -508,8 +510,44 @@ else:
 
     logger.info("COMET execution has started")
     logger.info(commet_command)
-    #subprocess.getoutput(commet_command)
+    subprocess.getoutput(commet_command)
     logger.info("COMET execution is finished")
+    
+    # Mass files location
+    mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
+    # Get all output files from mass_path >> default output path
+    file_names = pathlib.Path(mass_path).glob('*.pin')
+
+    logger = logging.getLogger('PERCOLATOR')
+    logger.info("PERCOLATOR execution has started")
+
+    for comet_output_file in file_names:
+        # get only filename (without path), and remove comet range from filename (ex: filename.2-200.pin)
+        percolator_out_basename = re.sub(r"\.[0-9].*","",comet_output_file.stem)
+        percolator_command = f"{percolator.get('percolator_bash')} -r {percolator_out_basename}_peptide_output.tsv" \
+                            f"-m {percolator_out_basename}_percolator_output.tsv" \
+                            f"-B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
+        logger.info(f"Runing percolator with sample: {comet_output_file}")
+        logger.debug(percolator_command)
+        subprocess.getoutput(percolator_command)
+
+        logger.info(f"Parsing {percolator_out_basename}_percolator_output.tsv")
+        
+        parser_percolator_command = f"{python_exe} {str(pipeline_pwd / 'percolator_parser.py')}" \
+                            f" -p {comet_output_file} -qv {percolator.get('qvalue')}" \
+                            f" -b {AnnotaBasename}_{percolator_out_basename}_parsed"
+        logger.debug(parser_percolator_command)
+
+        try:
+            pass
+            subprocess.getoutput(parser_percolator_command)
+        except Exception as warn:
+            logger.warning(f"Failed trying to parser {percolator_out_basename}_percolator_output.tsv")
+            logger.debug(f"code error {warn}")
+
+    logger.info("PERCOLATOR parsing is finished")
+
+
 
     logger.info("Parsing COMET output")
 
@@ -520,32 +558,10 @@ else:
     logger.info(parser_comet_comand)
     #subprocess.getoutput(parser_comet_comand)
 
-    mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
-    # Get all output files from mass_path >> default output path
-    files = pathlib.Path(mass_path).glob('*.txt')
-
+    
     #pathlib.Path("Samples").mkdir(exist_ok=True)
     #os.chdir("Samples")
 
-    for comet_output_file in files:
-        logger.info(f"Parsing {comet_output_file}")
-        parser_comet_comand = f"{python_exe} {str(pipeline_pwd / 'comet_parser.py')}" \
-                            f" -p {comet_output_file}" \
-                            f" -b {AnnotaBasename}_{comet_output_file.stem}"
-
-        
-        if len(comet.get("charge")) != 0:
-            parser_comet_comand += f" -ch {comet.get('charge')}"
-        try:
-            pass
-            #subprocess.getoutput(parser_comet_comand)
-        except Exception as warn:
-            logger.warning(f"Fail trying to parser {comet_output_file}")
-            logger.debug(f"code error {warn}")
-
-        logger.debug(parser_comet_comand)
-
-    logger.info("COMET parsing is finished")
 
 
 # Return to AnnotaPipeline basedir
