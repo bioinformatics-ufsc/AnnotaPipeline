@@ -127,3 +127,22 @@
 13/09/2021 16:12:11 | COMET | INFO | Parsing /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/testes/Total_Proteoma.txt
 13/09/2021 16:12:11 | COMET | DEBUG | python3 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/comet_parser.py -p /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/testes/Total_Proteoma.txt -b TrangeliSC58_Total_Proteoma -ch 12
 13/09/2021 16:12:11 | COMET | INFO | COMET parsing is finished
+23/09/2021 21:48:39 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+23/09/2021 21:48:39 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+23/09/2021 21:48:39 | AnnotaPipeline | ERROR | [PERCOLATOR]: path to software is empty, but comet was setted
+23/09/2021 21:48:39 | AnnotaPipeline | WARNING | [PERCOLATOR]: leave comet fields empty or pass parameters for PERCOLATOR
+23/09/2021 21:48:39 | AnnotaPipeline | INFO | Exiting
+23/09/2021 21:49:30 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+23/09/2021 21:49:30 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+23/09/2021 21:49:30 | AnnotaPipeline | ERROR | [PERCOLATOR]: qvalue cutoff is empty, check this parameter
+23/09/2021 21:49:30 | AnnotaPipeline | INFO | Exiting
+23/09/2021 21:49:44 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+23/09/2021 21:49:44 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+23/09/2021 21:49:44 | AnnotaPipeline | ERROR | [PERCOLATOR]: qvalue cutoff invalid. Must be float between [0-1]
+23/09/2021 21:49:44 | AnnotaPipeline | INFO | Exiting
+23/09/2021 21:51:08 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+23/09/2021 21:51:08 | AnnotaPipeline | INFO | Arguments for COMET are empty. This step will be skipped.
+23/09/2021 21:51:08 | AnnotaPipeline | INFO | Exiting
+23/09/2021 21:51:56 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+23/09/2021 21:51:56 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+23/09/2021 21:51:56 | AnnotaPipeline | INFO | Exiting

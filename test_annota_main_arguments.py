@@ -316,6 +316,22 @@ def kallisto_check_parameters():
                 # Pass method, to use further
                 kallisto_method = kallisto_check[1]                    
 
+
+
+def percolator_check_parameters():
+    if len(config['PERCOLATOR'].get('percolator_bash')) == 0:
+        logger.error("[PERCOLATOR]: path to software is empty, but comet was setted")
+        logger.warning("[PERCOLATOR]: leave comet fields empty or pass parameters for PERCOLATOR")
+        log_quit()
+    if len(config['PERCOLATOR'].get('qvalue')) == 0:
+        logger.error("[PERCOLATOR]: qvalue cutoff is empty, check this parameter")
+        log_quit()
+    # check value for parser
+    if not (0 <= float(config['PERCOLATOR'].get('qvalue')) <= 1):
+        logger.error("[PERCOLATOR]: qvalue cutoff invalid. Must be float between [0-1]")
+        log_quit()
+
+
 def comet_check_parameters():
     if len(config['COMET'].get("comet_bash")) == 0:
         logger.info("Arguments for COMET are empty. This step will be skipped.")
@@ -345,7 +361,7 @@ def comet_check_parameters():
             use_last_and_first = True
         else:
             use_last_and_first = False
-
+        percolator_check_parameters()
 
 
 def check_parameters(sections):
@@ -362,6 +378,9 @@ def check_parameters(sections):
             kallisto_check_parameters()  
         elif str(section) == "COMET":
             comet_check_parameters()
+        elif str(section) == "PERCOLATOR":
+        # Percolator depends on COMET, thus, is checked with comet_check_parameters()
+            pass
         else:  
             for key in config[str(section)]:  # get variable for each box
                 # Arguments for agutustus don't need to be checked if protein file were given
@@ -503,7 +522,8 @@ else:
         first_last_param = f"-F{comet.get('first')} -L{comet.get('last')}"
     else:
         first_last_param = str()
-
+    # Mass files location
+    mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
     commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
                 f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
                      f"{first_last_param} {str(comet.get('mass_files')).rstrip('/')}/*"
@@ -513,10 +533,16 @@ else:
     subprocess.getoutput(commet_command)
     logger.info("COMET execution is finished")
     
-    # Mass files location
-    mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
     # Get all output files from mass_path >> default output path
     file_names = pathlib.Path(mass_path).glob('*.pin')
+
+    # Check_files for comet_output
+    if len(file_names) == 0:
+        logger.error("COMET returns no output")
+        log_quit()
+    # we know that they exist, i'm interested if they aren't empty
+    for comet_out in file_names:
+        check_file(comet_out)
 
     logger = logging.getLogger('PERCOLATOR')
     logger.info("PERCOLATOR execution has started")
@@ -532,7 +558,7 @@ else:
         subprocess.getoutput(percolator_command)
 
         logger.info(f"Parsing {percolator_out_basename}_percolator_output.tsv")
-        
+        check_file(f"{percolator_out_basename}_percolator_output.tsv")
         parser_percolator_command = f"{python_exe} {str(pipeline_pwd / 'percolator_parser.py')}" \
                             f" -p {comet_output_file} -qv {percolator.get('qvalue')}" \
                             f" -b {AnnotaBasename}_{percolator_out_basename}_parsed"
@@ -548,21 +574,7 @@ else:
     logger.info("PERCOLATOR parsing is finished")
 
 
-
-    logger.info("Parsing COMET output")
-
-    parser_comet_comand = f"{python_exe} {str(pipeline_pwd / 'comet_parser.py')} -p -b {AnnotaBasename}"
-    if len(comet.get("charge")) != 0:
-        parser_comet_comand += f" -ch {comet.get('charge')}"
-    
-    logger.info(parser_comet_comand)
-    #subprocess.getoutput(parser_comet_comand)
-
-    
-    #pathlib.Path("Samples").mkdir(exist_ok=True)
-    #os.chdir("Samples")
-
-
-
 # Return to AnnotaPipeline basedir
-#os.chdir(annota_pwd)
+os.chdir(annota_pwd)
+# close logger
+logging.shutdown()

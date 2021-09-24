@@ -329,6 +329,20 @@ def kallisto_check_parameters():
                 kallisto_method = kallisto_check[1]                    
 
 
+def percolator_check_parameters():
+    if len(config['PERCOLATOR'].get('percolator_bash')) == 0:
+        logger.error("[PERCOLATOR]: path to software is empty, but comet was setted")
+        logger.warning("[PERCOLATOR]: leave comet fields empty or pass parameters for PERCOLATOR")
+        log_quit()
+    if len(config['PERCOLATOR'].get('qvalue')) == 0:
+        logger.error("[PERCOLATOR]: qvalue cutoff is empty, check this parameter")
+        log_quit()
+    # check value for parser
+    if not (0 <= float(config['PERCOLATOR'].get('qvalue')) <= 1):
+        logger.error("[PERCOLATOR]: qvalue cutoff invalid. Must be float between [0-1]")
+        log_quit()
+
+
 def comet_check_parameters():
     if len(config['COMET'].get("comet_bash")) == 0:
         logger.info("Arguments for COMET are empty. This step will be skipped.")
@@ -341,7 +355,6 @@ def comet_check_parameters():
         if len(config['COMET'].get('last')) !=0:
             last_check = True
         # ----------------------------------------------
-
         for argument in ("params", "mass_files"):
             if len(config['COMET'].get(argument)) == 0:
                 logger.error(f"[COMET]: Parameter [{argument}] from section [COMET] is null")
@@ -358,6 +371,8 @@ def comet_check_parameters():
             use_last_and_first = True
         else:
             use_last_and_first = False
+        # Only check percolator if comet parames are ok
+        percolator_check_parameters()
 
 
 def check_parameters(sections):
@@ -374,6 +389,9 @@ def check_parameters(sections):
             kallisto_check_parameters()  
         elif str(section) == "COMET":
             comet_check_parameters()
+        elif str(section) == "PERCOLATOR":
+            # Percolator depends on COMET, thus, is checked with comet_check_parameters()
+            pass
         else:  
             for key in config[str(section)]:  # get variable for each box
                 # Arguments for agutustus don't need to be checked if protein file were given
@@ -985,58 +1003,75 @@ else:
 if len(comet.get('comet_bash')) == 0:
     pass
 else:
+    # ----------------------------------- Path name  --------------------------------------------------
     if kallisto_method == None or args.protein is not None:
         comet_output_path = pathlib.Path(annota_pwd / str("4_PeptideIdentification" + AnnotaBasename))
     else:
         comet_output_path = pathlib.Path(annota_pwd / str("5_PeptideIdentification" + AnnotaBasename))
+    # -------------------------------------------------------------------------------------------------
     # Change logger
     logger = logging.getLogger('COMET')
     # Go to /X_PeptideIdentification
     pathlib.Path(comet_output_path).mkdir(exist_ok=True)
     os.chdir(comet_output_path)
-
+    # -------------------------------------------------------------------------------------------------
     # Check if overwrite parameters will be used
     if use_last_and_first == True:
         first_last_param = f"-F{comet.get('first')} -L{comet.get('last')}"
     else:
         first_last_param = str()
-
+    # -------------------------------------------------------------------------------------------------
     mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
-
     commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
-                f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
+                     f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
                      f"{first_last_param} {mass_path}*"
-
+    # -------------------------------------------------------------------------------------------------
     logger.info("COMET execution has started")
     logger.debug(commet_command)
     subprocess.getoutput(commet_command)
     logger.info("COMET execution is finished")
-    
     logger.info("Parsing COMET output")
-
+    # -------------------------------------------------------------------------------------------------
     # Get all output files from mass_path >> default output path
-    files = pathlib.Path(mass_path).glob('*.txt')
+    file_names = pathlib.Path(mass_path).glob('*.pin')
+    # Check_files for comet_output
+    if len(file_names) == 0:
+        logger.error("COMET returns no output")
+        log_quit()
+    # we know that they exist, i'm interested if they aren't empty
+    for comet_out in file_names:
+        check_file(comet_out)
+    # -------------------------------------------------------------------------------------------------
+    logger = logging.getLogger('PERCOLATOR')
+    logger.info("PERCOLATOR execution has started")
+    # ----------------------------------PERCOLATOR RUN-------------------------------------------------
+    for comet_output_file in file_names:
+        # get only filename (without path), and remove comet range from filename (ex: filename.2-200.pin)
+        percolator_out_basename = re.sub(r"\.[0-9].*","",comet_output_file.stem)
+        percolator_command = f"{percolator.get('percolator_bash')} -r {percolator_out_basename}_peptide_output.tsv" \
+                            f"-m {percolator_out_basename}_percolator_output.tsv" \
+                            f"-B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
+        logger.info(f"Runing percolator with sample: {comet_output_file}")
+        logger.debug(percolator_command)
+        subprocess.getoutput(percolator_command)
 
-    pathlib.Path("comet_output").mkdir(exist_ok=True)
-    os.chdir("comet_output")
+        logger.info(f"Parsing {percolator_out_basename}_percolator_output.tsv")
+        check_file(f"{percolator_out_basename}_percolator_output.tsv")
+        # --------------------------- PERCOLATOR PARSING -----------------------------------------------
+        parser_percolator_command = f"{python_exe} {str(pipeline_pwd / 'percolator_parser.py')}" \
+                            f" -p {comet_output_file} -qv {percolator.get('qvalue')}" \
+                            f" -b {AnnotaBasename}_{percolator_out_basename}_parsed"
+        logger.debug(parser_percolator_command)
 
-    for comet_output_file in files:
-        logger.info(f"Parsing {comet_output_file}")
-        # testado
-        parser_comet_command = f"{python_exe} {str(pipeline_pwd / 'comet_parser.py')}" \
-                            f" -p {comet_output_file}" \
-                            f" -b {AnnotaBasename}_{comet_output_file.stem}"
-
-        if len(comet.get("charge")) != 0:
-            parser_comet_command += f" -ch {comet.get('charge')}"
         try:
-            subprocess.getoutput(parser_comet_command)
+            pass
+            subprocess.getoutput(parser_percolator_command)
         except Exception as warn:
-            logger.warning(f"Fail trying to parser {comet_output_file}")
-            logger.debug(f"code error: {warn}")
-
+            logger.warning(f"Failed trying to parser {percolator_out_basename}_percolator_output.tsv")
+            logger.debug(f"code error {warn}")
+    logger.info("PERCOLATOR parsing is finished")
+    # -------------------------------------------------------------------------------------------------
     os.chdir(comet_output_path)
-
     logger.info("COMET parsing is finished")
 
 # Return to AnnotaPipeline basedir
