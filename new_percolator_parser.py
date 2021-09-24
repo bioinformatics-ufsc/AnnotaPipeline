@@ -3,10 +3,9 @@
 # --- A AVENTURA VAI COMEÇAR ---------------------------------------------------
 
 import argparse
-import pandas as pd
 import sys
 from pathlib import Path
-import re
+import pandas as pd
 import warnings
 from collections import defaultdict
 
@@ -72,6 +71,7 @@ if  0 < args.qvalue > 1:
 
 percolator_file = open(str(args.proteom), "r").readlines()
 # If needed, filter by charge
+# PANDAS N FUNCIONAAAAAAAAAAAAA A
 parcial_output = open(f"{args.basename}_qvalue_filtered.tsv", "w")
 parcial_output.write(str(percolator_file[0]))
 del percolator_file[0]
@@ -81,10 +81,6 @@ for line in percolator_file:
         parcial_output.write(str('\t'.join(line)))
 
 parcial_output.close()
-
-
-
-# Save all
 
 # ---------- Parse information ----------------
 
@@ -131,5 +127,29 @@ with open(f"{args.basename}_parsed.tsv", "w") as output:
         for peptide in info:
             output.write(f"{key}\t{''.join(peptide)}")
 
-def quantitative_proteomics():
-    pass
+def quantitative_proteomics(path):
+    parsed_files = Path(path).glob('*_parsed.tsv')
+    # Create basal 
+    data = pd.DataFrame({'ProteinID':[], \
+                        'Peptide':[], \
+                        'Spectrum':[]}) 
+    for file in parsed_files:
+        df = pd.read_csv(file, sep='\t', header=0)
+        data = data.append(df)
+    
+    # separar os duplicados
+    duplicated_pep = data[data.duplicated(['Peptide'], keep=False)]
+    unique_pep = data[data.duplicated(['Peptide'], keep=False)==False]
+
+    duplicated_spec = data[data.duplicated(['Peptide'], keep=False)]
+    unique_spectrum = data[data.duplicated(['Spectrum'], keep=False)==False]
+
+    # Fazer as contas
+    #data.groupby('ProteinID').count()
+    #data.groupby('Peptide').count()
+    #data.groupby(['ProteinID', 'Peptide']).count()
+    # THHIIISSS
+    data.groupby(['ProteinID', 'Peptide']).size().sort_values(ascending=False).reset_index(name='count')
+    # escrever sem o index
+    #data.to_csv(filename, index=False)
+    print(data)
