@@ -1,0 +1,5 @@
+PSMId	score	q-value	posterior_error_prob	peptide	proteinIds
+/bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Proteome/10_TDGW20_GPI_Tripo_Tr1_Run3_1695_2_1	0	0.166667	0.142888	K.DADM[15.9949]VLYVASR.S	g1508.t1	g1510.t1	g1510.t1
+/bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Proteome/10_TDGW20_GPI_Tripo_Tr1_Run3_1369_2_1	0	0.166667	0.142888	K.GQIVMITR.C	g1236.t1
+/bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Proteome/10_TDGW20_GPI_Tripo_Tr1_Run3_695_2_1	0	0.166667	0.142888	K.AGGTLEDDDNVIR.E	g3727.t1
+/bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Proteome/10_TDGW20_GPI_Tripo_Tr1_Run3_756_2_1	-0.253747	0.166667	0.245795	K.MVVGENVR.A	g1576.t1	g3844.t1	g5445.t1	g10785.t1
