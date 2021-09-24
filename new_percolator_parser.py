@@ -130,3 +130,6 @@ with open(f"{args.basename}_parsed.tsv", "w") as output:
         info = dict_write.get(key)
         for peptide in info:
             output.write(f"{key}\t{''.join(peptide)}")
+
+def quantitative_proteomics():
+    pass
