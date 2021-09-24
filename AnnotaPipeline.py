@@ -203,6 +203,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
     kallisto_command_index = f"{kallisto_exe} index -i {basename}_kallisto_index.idx {fasta}"
     logger.debug(f"{kallisto_command_index}")
     subprocess.getoutput(kallisto_command_index)
+    check_file(f"{basename}_kallisto_index.idx")
 
     # Standart command line for kallisto index
     # kallisto index -i transcripts.idx transcripts.fasta
@@ -239,7 +240,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
         subprocess.getoutput(kallisto_command_quant)
         # Standart command line for kallisto quant single end
         # kallisto quant -i transcripts.idx -o output -b 100 --single -l 180 -s 20 reads_1.fastq
-
+    check_file(f"{basename}_kallisto_output/abundance.tsv")
     # Define method to parse
     if method == "median":
         kallisto_parser_flag = "-tpmmd"
@@ -257,6 +258,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
     )
     logger.info(f"KALLISTO parsing has started")
     subprocess.getoutput(kallisto_parser_command)
+    check_file(f"{basename}_transcript_evidence.tsv")
 
 
 def kallisto_check_parameters():
