@@ -151,7 +151,7 @@ def quantitative_proteomics(path):
                     'Total Spectrum':[]
                     }) 
     # REPETIR PARA SPECTRUM
-    parcial = data.groupby(['ProteinID', 'Peptide']).size().sort_values(ascending=False).reset_index(name='Unique_Peptide')
+    parcial = data.groupby(['ProteinID', 'Peptide']).size().sort_values(ascending=False).reset_index(name='Unique Peptide')
     parcial2 = parcial.groupby(['ProteinID']).size().sort_values(ascending=False).reset_index(name='Total')
     tmp = parcial.loc[parcial['Unique_Peptide'] == 1].drop(columns=["Peptide"])
     tmp2 = tmp.groupby("ProteinID").count().reset_index()
