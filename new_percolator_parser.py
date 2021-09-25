@@ -138,18 +138,37 @@ def quantitative_proteomics(path):
         data = data.append(df)
     
     # separar os duplicados
-    duplicated_pep = data[data.duplicated(['Peptide'], keep=False)]
-    unique_pep = data[data.duplicated(['Peptide'], keep=False)==False]
+    #duplicated_pep = data[data.duplicated(['Peptide'], keep=False)]
+    #unique_pep = data[data.duplicated(['Peptide'], keep=False)==False]
 
-    duplicated_spec = data[data.duplicated(['Peptide'], keep=False)]
-    unique_spectrum = data[data.duplicated(['Spectrum'], keep=False)==False]
+    #duplicated_spec = data[data.duplicated(['Peptide'], keep=False)]
+    #unique_spectrum = data[data.duplicated(['Spectrum'], keep=False)==False]
+
+    total = pd.DataFrame({'ProteinID':[], \
+                    'Unique Peptide':[], \
+                    'Total Peptide':[], \
+                    'Unique Spectrum':[], \
+                    'Total Spectrum':[]
+                    }) 
+    # REPETIR PARA SPECTRUM
+    parcial = data.groupby(['ProteinID', 'Peptide']).size().sort_values(ascending=False).reset_index(name='Unique_Peptide')
+    parcial2 = parcial.groupby(['ProteinID']).size().sort_values(ascending=False).reset_index(name='Total')
+    tmp = parcial.loc[parcial['Unique_Peptide'] == 1].drop(columns=["Peptide"])
+    tmp2 = tmp.groupby("ProteinID").count().reset_index()
+    total["ProteinID"] = parcial2["ProteinID"]
+    total.set_index("ProteinID").join(tmp2.set_index("ProteinID")).reset_index()
+    # Tem q dar um sort talvez? ou usar join que garante que pega o proteinID? sla
+    total["Total Peptide"] = parcial2["Total"]
+
+    #parcial.loc[parcial['Total_Peptide'] == 1]
+    #data.groupby(['ProteinID', 'Spectrum']).size().sort_values(ascending=False).reset_index(name='Total_Spectrum')
 
     # Fazer as contas
     #data.groupby('ProteinID').count()
     #data.groupby('Peptide').count()
     #data.groupby(['ProteinID', 'Peptide']).count()
     # THHIIISSS
-    data.groupby(['ProteinID', 'Peptide']).size().sort_values(ascending=False).reset_index(name='count')
+
     # escrever sem o index
     #data.to_csv(filename, index=False)
     print(data)
