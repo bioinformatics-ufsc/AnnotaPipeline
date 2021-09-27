@@ -3,17 +3,16 @@
 # --- A AVENTURA VAI COMEÇAR ---------------------------------------------------
 
 import argparse
-import pandas as pd
 import sys
 from pathlib import Path
-import re
+import warnings
 
 # PARSER ARGUMENTS -------------------------------------------------------------
 
 parser = argparse.ArgumentParser(
     add_help=False,
     description='''
-Script to parse Percolator Output
+Script to parse Percolator Outputs
     ''',
     epilog="""Shadows will fade... someday...""",
     formatter_class=argparse.RawTextHelpFormatter
@@ -25,7 +24,6 @@ optional_args = parser.add_argument_group("custom arguments")
 # mandatory arguments
 required_args.add_argument(
     "-p", "--percolator-output", dest="proteom",
-    type=argparse.FileType('r'), 
     metavar="[Percolator output]",
     help="Peptide quantification file (Percolator output)",
     required=True
@@ -56,7 +54,6 @@ optional_args.add_argument(
     help=""
 )
 
-
 # arguments saved here
 args = parser.parse_args()
 
@@ -67,70 +64,56 @@ if  0 < args.qvalue > 1:
 
 # --- PARSE QVALUE -----------------------------
 
-df = pd.read_csv(args.proteom, sep="\t", skiprows=1, index_col=False)
-# If needed, filter by charge
+percolator_file = open(str(args.proteom), "r").readlines()
 
+parcial_output = open(f"{args.basename}_qvalue_filtered.tsv", "w")
+parcial_output.write(str(percolator_file[0]))
+del percolator_file[0]
+for line in percolator_file:
+    line = line.split("\t")
+    if float(line[2]) <= args.qvalue:
+        parcial_output.write(str('\t'.join(line)))
 
-with pd.option_context('mode.chained_assignment', None):
-    df_parsed = df.loc[df['q-value'] <= float(args.qvalue)]
+parcial_output.close()
 
-# Save all
-df_parsed.to_csv(f"{args.basename}_raw_qvalue_output.tsv", sep="\t", index=False)
-
-def seek_pattern(pattern, uniq_save, peptide, all_ids, spectrum, text_font, non_uniq_save):
-    match = re.findall(rf".*{pattern}.*", text_font, re.M|re.I)
-    for result in match:
-        print(result)
-        result = ','.join(str(result).split("\t")[5:])
-        # if matches with more than one protein, this is not an unique spectrum
-        if len(result) == 0:
-            # Save unique peptides in a dictionary
-            # peptide is key, protein_id is value
-            uniq_save.append(f'{peptide}\t{all_ids}\t{spectrum}\t')
-        else:
-            non_uniq_save.append(f"{peptide}\t{all_ids},{result}\t{spectrum}\t")
 # ---------- Parse information ----------------
-
-# Primeira coluna
-# De tras pra frente > num_charge_spectrum
-# [...]/Proteome/10_TDGW20_GPI_Tripo_Tr1_Run3_1695_2_1
 
 # open file that will be used to extract peptides
 percolator_out = open(f"{args.basename}_qvalue_filtered.tsv", "r").readlines()
-# open text that will be used to search peptides
-percolator_search = open(f"{args.basename}_qvalue_filtered.tsv", "r").read().split("\n")
+# Check if there are valid queries for qvalue used as cutoff
+if len(percolator_out) < 2:
+    warnings.warn(f"INFO: file {args.basename}_qvalue_filtered.tsv return no valid queries for qvalue", stacklevel=2)
+    sys.exit(2)
+# Remove index
 del percolator_out[0]
 
-percolator_search = open("testes/percolator_output.tsv", "r").read().split("\n")
-del percolator_search[0]
-unique_peptide = []
-non_unique_peptide = []
-unique_spectrum = []
-non_unique_spectrum = []
+dict_write = {}
 # regex remover numeros estranhos no peptideo >> \[[0-9].*\]
 for line in percolator_out:
-    # delete line that will search (prevent false positive)
-    del percolator_search[0]
-    # rejoin list as text >> enable to search pattern
-    percolator_search = '\n'.join(percolator_search)
     line_split = line.rstrip("\n").split("\t")
     # Protein Id > can have more than one
-    all_ids = ",".join(line_split[5:])
-    score = line_split[1]
-    # tirar marcacoes ou procurar marcadoo?
-    # regex remover numeros estranhos no peptideo >> \[[0-9].*\]
+    all_ids = line_split[5:]
     peptide = line_split[4]
     filecontent = line_split[0].split("/")[-1]
     idname, spectrum, charge, num = filecontent.rsplit("_", 3)
-    # If there are more than one protein with this peptide, this one is not unique
-    if len(all_ids) == 1:
-        seek_pattern(peptide, unique_peptide, peptide, all_ids, spectrum, percolator_search, non_unique_peptide)
+    if len(all_ids)> 1:
+        for proteinID in all_ids:
+            if proteinID not in dict_write.keys():
+                dict_write[f'{proteinID}'] = [f"{peptide}\t{spectrum}\n"]
+            else:
+                dict_write[f'{proteinID}'].append([f"{peptide}\t{spectrum}\n"])
     else:
-        non_unique_peptide.append(f"{peptide}\t{all_ids}\t{spectrum}\t")
-    # seek for unique spectrum
-    seek_pattern(f"_{spectrum}_", unique_spectrum, peptide, all_ids, spectrum, percolator_search, non_unique_spectrum)
-    percolator_search = percolator_search.split("\n")
-    break
+        # If list contains only one element, get this guy
+        only_id = all_ids[0]
+        if only_id not in dict_write.keys():
+            dict_write[only_id] = [f"{peptide}\t{spectrum}\n"]
+        else:
+            dict_write[only_id].append([f"{peptide}\t{spectrum}\n"])
 
-with open(f"{args.basename}_parsed.tsv", "r") as output:
-    output.write("ProteinID\t#peptídeo único\t# de peptídeos\t# espectro unicos\t# de espectros")
+
+with open(f"{args.basename}_parsed.tsv", "w") as output:
+    output.write("ProteinID\tPeptide\tSpectrum\n")
+    for key in sorted(dict_write.keys()) :
+        info = dict_write.get(key)
+        for peptide in info:
+            output.write(f"{key}\t{''.join(peptide)}")

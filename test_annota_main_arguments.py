@@ -12,6 +12,7 @@
 
 from Bio import SeqIO
 from shutil import which
+import pandas as pd
 import argparse
 import configparser
 import logging
@@ -317,7 +318,6 @@ def kallisto_check_parameters():
                 kallisto_method = kallisto_check[1]                    
 
 
-
 def percolator_check_parameters():
     if len(config['PERCOLATOR'].get('percolator_bash')) == 0:
         logger.error("[PERCOLATOR]: path to software is empty, but comet was setted")
@@ -448,6 +448,40 @@ def is_tool(name):
         sys.exit(1)
 
 
+def add_features(feature, data, save):
+    parcial_feature = data.groupby(['ProteinID', f"{feature}"]).size().sort_values(ascending=False).reset_index(name=f'Unique {feature}')
+    parcial_feature_2 = parcial_feature.groupby(['ProteinID']).size().sort_values(ascending=False).reset_index(name=f'Total {feature}')
+    feature_process = parcial_feature.loc[parcial_feature[f'Unique {feature}'] == 1].drop(columns=[f"{feature}"])
+    feature_process_2 = feature_process.groupby("ProteinID").count().reset_index()
+    if 'ProteinID' not in save.columns:
+        save["ProteinID"] = parcial_feature_2["ProteinID"]
+    # Add unique feature column
+    save = save.set_index("ProteinID").join(feature_process_2.set_index("ProteinID")).reset_index()
+    # Add total feature column
+    save = save.set_index("ProteinID").join(parcial_feature_2.set_index("ProteinID")).reset_index()
+    return save
+
+
+def quantitative_proteomics(path):
+    # get all percolator parsed files
+    parsed_files = pathlib.Path(path).glob('*_parsed.tsv')
+
+    # Start Empty dataframe to store all _parsed files
+    data = pd.DataFrame({'ProteinID':[], \
+                        'Peptide':[], \
+                        'Spectrum':[]}) 
+    for file in parsed_files:
+        df = pd.read_csv(file, sep='\t', header=0)
+        data = data.append(df)
+
+    # Empty dataframe to save
+    total = pd.DataFrame({}) 
+    total = add_features('Peptide', data, total)
+    total = add_features('Spectrum', data, total)
+    total = total.fillna(0).astype({"Unique Peptide": int, "Unique Spectrum": int})
+    total.to_csv(f"{args.basename}_Total_Proteomics_Quantification.tsv", sep="\t", index=False)
+
+
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
 
 sections_config = config.sections()
@@ -495,13 +529,6 @@ annota_pwd = pathlib.Path(home_dir_pwd / home_dir)
 
 pathlib.Path(annota_pwd).mkdir(exist_ok=True)
 
-
-# CREATE CUSTOM LEVEL LOG
-# logger.info(f"PATH {annota_pwd}")
-# JONAS = 5 # Numeric error
-# logging.addLevelName(JONAS, "JONAS")
-# logger.setLevel(JONAS)
-# logger.log(JONAS,"teste")
 #-----------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
 if len(comet.get('comet_bash')) == 0:
@@ -548,11 +575,11 @@ else:
     logger.info("PERCOLATOR execution has started")
 
     for comet_output_file in file_names:
-        # get only filename (without path), and remove comet range from filename (ex: filename.2-200.pin)
+        #get only filename (without path), and remove comet range from filename (ex: filename.2-200.pin)
         percolator_out_basename = re.sub(r"\.[0-9].*","",comet_output_file.stem)
         percolator_command = f"{percolator.get('percolator_bash')} -r {percolator_out_basename}_peptide_output.tsv" \
-                            f"-m {percolator_out_basename}_percolator_output.tsv" \
-                            f"-B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
+                             f"-m {percolator_out_basename}_percolator_output.tsv" \
+                             f"-B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
         logger.info(f"Runing percolator with sample: {comet_output_file}")
         logger.debug(percolator_command)
         subprocess.getoutput(percolator_command)
@@ -561,18 +588,17 @@ else:
         check_file(f"{percolator_out_basename}_percolator_output.tsv")
         parser_percolator_command = f"{python_exe} {str(pipeline_pwd / 'percolator_parser.py')}" \
                             f" -p {comet_output_file} -qv {percolator.get('qvalue')}" \
-                            f" -b {AnnotaBasename}_{percolator_out_basename}_parsed"
+                            f" -b {AnnotaBasename}_{percolator_out_basename}"
         logger.debug(parser_percolator_command)
-
         try:
-            pass
             subprocess.getoutput(parser_percolator_command)
         except Exception as warn:
             logger.warning(f"Failed trying to parser {percolator_out_basename}_percolator_output.tsv")
             logger.debug(f"code error {warn}")
 
     logger.info("PERCOLATOR parsing is finished")
-
+    logger.info("Creating quantitative report of Spectrum and Peptides")
+    quantitative_proteomics(f"{comet_output_path}")
 
 # Return to AnnotaPipeline basedir
 os.chdir(annota_pwd)
