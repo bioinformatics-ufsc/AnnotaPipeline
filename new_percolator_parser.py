@@ -144,21 +144,27 @@ def quantitative_proteomics(path):
     #duplicated_spec = data[data.duplicated(['Peptide'], keep=False)]
     #unique_spectrum = data[data.duplicated(['Spectrum'], keep=False)==False]
 
-    total = pd.DataFrame({'ProteinID':[], \
-                    'Unique Peptide':[], \
-                    'Total Peptide':[], \
-                    'Unique Spectrum':[], \
-                    'Total Spectrum':[]
-                    }) 
+    total = pd.DataFrame({'ProteinID':[]}) 
     # REPETIR PARA SPECTRUM
-    parcial = data.groupby(['ProteinID', 'Peptide']).size().sort_values(ascending=False).reset_index(name='Unique Peptide')
-    parcial2 = parcial.groupby(['ProteinID']).size().sort_values(ascending=False).reset_index(name='Total')
-    tmp = parcial.loc[parcial['Unique_Peptide'] == 1].drop(columns=["Peptide"])
-    tmp2 = tmp.groupby("ProteinID").count().reset_index()
-    total["ProteinID"] = parcial2["ProteinID"]
-    total.set_index("ProteinID").join(tmp2.set_index("ProteinID")).reset_index()
-    # Tem q dar um sort talvez? ou usar join que garante que pega o proteinID? sla
-    total["Total Peptide"] = parcial2["Total"]
+    parcial_peptide = data.groupby(['ProteinID', 'Peptide']).size().sort_values(ascending=False).reset_index(name='Unique Peptide')
+    parcial_peptide_2 = parcial_peptide.groupby(['ProteinID']).size().sort_values(ascending=False).reset_index(name='Total Peptide')
+    peptide_process = parcial_peptide.loc[parcial_peptide['Unique Peptide'] == 1].drop(columns=["Peptide"])
+    peptide_process_2 = peptide_process.groupby("ProteinID").count().reset_index()
+    total["ProteinID"] = parcial_peptide_2["ProteinID"]
+    # Add unique Peptide column
+    total = total.set_index("ProteinID").join(peptide_process_2.set_index("ProteinID")).reset_index()
+    # Add total Peptide column
+    total = total.set_index("ProteinID").join(parcial_peptide_2.set_index("ProteinID")).reset_index()
+
+    #SPECTRUM
+    parcial_spectrum = data.groupby(['ProteinID', 'Spectrum']).size().sort_values(ascending=False).reset_index(name='Unique Spectrum')
+    parcial_spectrum_2 = parcial_spectrum.groupby(['ProteinID']).size().sort_values(ascending=False).reset_index(name='Total Spectrum')
+    spectrum_process = parcial_spectrum.loc[parcial_spectrum['Unique Spectrum'] == 1].drop(columns=["Spectrum"])
+    spectrum_process_2 = spectrum_process.groupby("ProteinID").count().reset_index()
+    # Add Unique Spectrum
+    total = total.set_index("ProteinID").join(spectrum_process_2.set_index("ProteinID")).reset_index()
+    # Add Total Spectrum
+    total = total.set_index("ProteinID").join(parcial_spectrum_2.set_index("ProteinID")).reset_index()
 
     #parcial.loc[parcial['Total_Peptide'] == 1]
     #data.groupby(['ProteinID', 'Spectrum']).size().sort_values(ascending=False).reset_index(name='Total_Spectrum')
