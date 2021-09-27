@@ -478,7 +478,7 @@ def quantitative_proteomics(path):
     total = pd.DataFrame({}) 
     total = add_features('Peptide', data, total)
     total = add_features('Spectrum', data, total)
-    total = total.fillna(0).astype({"Unique Peptide": int, "Unique Spectrum": int})
+    total = total.fillna(0).astype({"Unique Peptide": int, "Unique Spectrum": int}).sort_values(by='ProteinID', ascending=False)
     total.to_csv(f"{args.basename}_Total_Proteomics_Quantification.tsv", sep="\t", index=False)
 
 
@@ -567,9 +567,6 @@ else:
     if len(file_names) == 0:
         logger.error("COMET returns no output")
         log_quit()
-    # we know that they exist, i'm interested if they aren't empty
-    for comet_out in file_names:
-        check_file(comet_out)
 
     logger = logging.getLogger('PERCOLATOR')
     logger.info("PERCOLATOR execution has started")
@@ -587,9 +584,10 @@ else:
         logger.info(f"Parsing {percolator_out_basename}_percolator_output.tsv")
         check_file(f"{percolator_out_basename}_percolator_output.tsv")
         parser_percolator_command = f"{python_exe} {str(pipeline_pwd / 'percolator_parser.py')}" \
-                            f" -p {comet_output_file} -qv {percolator.get('qvalue')}" \
+                            f" -p {percolator_out_basename}_percolator_output.tsv" \
+                            f" -qv {percolator.get('qvalue')}" \
                             f" -b {AnnotaBasename}_{percolator_out_basename}"
-        logger.debug(parser_percolator_command)
+ 
         try:
             subprocess.getoutput(parser_percolator_command)
         except Exception as warn:

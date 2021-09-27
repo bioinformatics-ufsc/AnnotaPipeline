@@ -32,8 +32,7 @@ def quantitative_proteomics(path):
     total = pd.DataFrame({}) 
     total = add_features('Peptide', data, total)
     total = add_features('Spectrum', data, total)
-    total = total.fillna(0).astype({"Unique Peptide": int, "Unique Spectrum": int})
+    total = total.fillna(0).astype({"Unique Peptide": int, "Unique Spectrum": int}).sort_values(by='ProteinID', ascending=False)
     total.to_csv("Total_Proteomics_Quantification.tsv", sep="\t", index=False)
 
-# path to _parsed.tsv files
-# quantitative_proteomics(f"{}")
+quantitative_proteomics("/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline")
