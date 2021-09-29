@@ -566,20 +566,16 @@ else:
     logger.info(commet_command)
     subprocess.getoutput(commet_command)
     logger.info("COMET execution is finished")
-
     # ----------- Create Comet Output path --------------------------
     comet_path = pathlib.Path(comet_output_path / str("COMET_Output"))
     pathlib.Path(comet_path).mkdir(exist_ok=True)
     # ----------------------------------------------------------------
-    
     # Get all output files from mass_path >> default output path
     file_names = pathlib.Path(mass_path).glob('*.pin')
-
     # ----------- Create Percolator Output path ----------------------
     logger = logging.getLogger('PERCOLATOR')
     logger.info("PERCOLATOR execution has started")
     # ----------------------------------------------------------------
-
     # ----------- Create Percolator Output path ----------------------
     percolator_path_raw = pathlib.Path(comet_output_path / str("Percolator_RAW"))
     pathlib.Path(percolator_path_raw).mkdir(exist_ok=True)
@@ -618,7 +614,7 @@ else:
 
     logger.info("PERCOLATOR parsing is finished")
     logger.info("Creating quantitative report of Spectrum and Peptides")
-    quantitative_proteomics(f"{comet_output_path}", AnnotaBasename)
+    quantitative_proteomics(f"{percolator_path_parsed}", AnnotaBasename)
 
 # Return to AnnotaPipeline basedir
 os.chdir(annota_pwd)
