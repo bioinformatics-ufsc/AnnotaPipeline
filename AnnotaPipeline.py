@@ -1097,9 +1097,9 @@ else:
     for comet_output_file in file_names:
         # get only filename (without path), and remove comet range from filename (ex: filename.2-200.pin)
         percolator_out_basename = re.sub(r"\.[0-9].*","",comet_output_file.stem)
-        percolator_command = f"{percolator.get('percolator_bash')} -r {percolator_out_basename}_peptide_output.tsv" \
-                            f"-m {percolator_out_basename}_percolator_output.tsv" \
-                            f"-B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
+        percolator_command = f"{percolator.get('percolator_bash')} -r {percolator_out_basename}_peptide_output.tsv " \
+                            f" -m {percolator_out_basename}_percolator_output.tsv" \
+                            f" -B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
         logger.info(f"Runing percolator with sample: {comet_output_file}")
         logger.debug(percolator_command)
         subprocess.getoutput(percolator_command)
