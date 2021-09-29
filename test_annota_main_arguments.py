@@ -349,6 +349,13 @@ def comet_check_parameters():
             if len(config['COMET'].get(argument)) == 0:
                 logger.error(f"Parameter [{argument}] from section [COMET] is null")
                 log_quit()
+                # ------------ check extension mass files ------
+        if len(config['COMET'].get('mass_files_ext').split()) < 1:
+            logger.error(f"[COMET]: Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] is null")
+            log_quit()
+        elif len(config['COMET'].get('mass_files_ext').split()) > 1:
+            logger.error(f"[COMET]: Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] have more than one argument")
+            log_quit()
         # ------------ Specific conditions -----------------------
         # XOR conditional >> check if one value is True and another is False
         if last_check ^ first_check:
@@ -535,9 +542,9 @@ if len(comet.get('comet_bash')) == 0:
     pass
 else:
     if kallisto_method == None or args.protein is not None:
-        comet_output_path = pathlib.Path(annota_pwd / str("4_PeptideIdentification" + AnnotaBasename))
+        comet_output_path = pathlib.Path(annota_pwd / str("4_PeptideIdentification_" + AnnotaBasename))
     else:
-        comet_output_path = pathlib.Path(annota_pwd / str("5_PeptideIdentification" + AnnotaBasename))
+        comet_output_path = pathlib.Path(annota_pwd / str("5_PeptideIdentification_" + AnnotaBasename))
     logger = logging.getLogger('COMET')
     # Mudar loogger no log, facilita identificacao pra debug
     # Go to /X_PeptideIdentification
@@ -553,7 +560,7 @@ else:
     mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
     commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
                 f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
-                     f"{first_last_param} {str(comet.get('mass_files')).rstrip('/')}/*"
+                     f"{first_last_param} {str(comet.get('mass_files')).rstrip('/')}/*{comet.get('mass_files_ext')}"
 
     logger.info("COMET execution has started")
     logger.info(commet_command)

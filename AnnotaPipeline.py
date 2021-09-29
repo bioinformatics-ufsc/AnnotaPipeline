@@ -362,6 +362,13 @@ def comet_check_parameters():
             if len(config['COMET'].get(argument)) == 0:
                 logger.error(f"[COMET]: Parameter [{argument}] from section [COMET] is null")
                 log_quit()
+        # ------------ check extension mass files ------
+        if len(config['COMET'].get('mass_files_ext').split()) < 1:
+            logger.error(f"[COMET]: Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] is null")
+            log_quit()
+        elif len(config['COMET'].get('mass_files_ext').split()) > 1:
+            logger.error(f"[COMET]: Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] have more than one argument")
+            log_quit()
         # ------------ Specific conditions -----------------------
         # XOR conditional >> check if one value is True and another is False
         if last_check ^ first_check:
