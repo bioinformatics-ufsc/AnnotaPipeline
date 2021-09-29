@@ -583,7 +583,6 @@ else:
     percolator_path_parsed = pathlib.Path(comet_output_path / str("Percolator_PARSED"))
     pathlib.Path(percolator_path_parsed).mkdir(exist_ok=True)
     # ----------------------------------------------------------------
-
     for comet_output_file in file_names:
         # -----------------------------------------
         # Copy Comet output files
