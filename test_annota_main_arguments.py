@@ -462,7 +462,7 @@ def add_features(feature, data, save):
     return save
 
 
-def quantitative_proteomics(path):
+def quantitative_proteomics(path, basename):
     # get all percolator parsed files
     parsed_files = pathlib.Path(path).glob('*_parsed.tsv')
 
@@ -479,7 +479,7 @@ def quantitative_proteomics(path):
     total = add_features('Peptide', data, total)
     total = add_features('Spectrum', data, total)
     total = total.fillna(0).astype({"Unique Peptide": int, "Unique Spectrum": int}).sort_values(by='ProteinID', ascending=False)
-    total.to_csv(f"{args.basename}_Total_Proteomics_Quantification.tsv", sep="\t", index=False)
+    total.to_csv(f"{basename}_Total_Proteomics_Quantification.tsv", sep="\t", index=False)
 
 
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
@@ -563,11 +563,6 @@ else:
     # Get all output files from mass_path >> default output path
     file_names = pathlib.Path(mass_path).glob('*.pin')
 
-    # Check_files for comet_output
-    if len(file_names) == 0:
-        logger.error("COMET returns no output")
-        log_quit()
-
     logger = logging.getLogger('PERCOLATOR')
     logger.info("PERCOLATOR execution has started")
 
@@ -596,7 +591,7 @@ else:
 
     logger.info("PERCOLATOR parsing is finished")
     logger.info("Creating quantitative report of Spectrum and Peptides")
-    quantitative_proteomics(f"{comet_output_path}")
+    quantitative_proteomics(f"{comet_output_path}", AnnotaBasename)
 
 # Return to AnnotaPipeline basedir
 os.chdir(annota_pwd)
