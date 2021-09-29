@@ -560,7 +560,7 @@ else:
     mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
     commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
                 f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
-                f"{first_last_param} {str(comet.get('mass_files')).rstrip('/')}/*.{comet.get('mass_files_ext')}"
+                f"{first_last_param} {mass_path}/*.{comet.get('mass_files_ext')}"
 
     logger.info("COMET execution has started")
     logger.info(commet_command)
