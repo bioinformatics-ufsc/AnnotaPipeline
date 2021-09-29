@@ -566,35 +566,55 @@ else:
     logger.info(commet_command)
     subprocess.getoutput(commet_command)
     logger.info("COMET execution is finished")
+
+    # ----------- Create Comet Output path --------------------------
+    comet_path = pathlib.Path(comet_output_path / str("COMET_Output"))
+    pathlib.Path(comet_path).mkdir(exist_ok=True)
+    # ----------------------------------------------------------------
     
     # Get all output files from mass_path >> default output path
     file_names = pathlib.Path(mass_path).glob('*.pin')
 
+    # ----------- Create Percolator Output path ----------------------
     logger = logging.getLogger('PERCOLATOR')
     logger.info("PERCOLATOR execution has started")
+    # ----------------------------------------------------------------
+
+    # ----------- Create Percolator Output path ----------------------
+    percolator_path_raw = pathlib.Path(comet_output_path / str("Percolator_RAW"))
+    pathlib.Path(percolator_path_raw).mkdir(exist_ok=True)
+    # ----------------------------------------------------------------
+    percolator_path_parsed = pathlib.Path(comet_output_path / str("Percolator_PARSED"))
+    pathlib.Path(percolator_path_parsed).mkdir(exist_ok=True)
+    # ----------------------------------------------------------------
 
     for comet_output_file in file_names:
-        #get only filename (without path), and remove comet range from filename (ex: filename.2-200.pin)
+        # -----------------------------------------
+        # Copy Comet output files
+        shutil.copy(comet_output_file, comet_path)
+        # -----------------------------------------
+        # --------- RUN Percolator inside Percolator RAW path -------------------
+        os.chdir(percolator_path_raw)
         percolator_out_basename = re.sub(r"\.[0-9].*","",comet_output_file.stem)
         percolator_command = f"{percolator.get('percolator_bash')} -r {percolator_out_basename}_peptide_output.tsv" \
                              f" -m {percolator_out_basename}_percolator_output.tsv" \
                              f" -B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
         logger.info(f"Runing percolator with sample: {comet_output_file}")
-        logger.debug(percolator_command)
         subprocess.getoutput(percolator_command)
-
         logger.info(f"Parsing {percolator_out_basename}_percolator_output.tsv")
         check_file(f"{percolator_out_basename}_percolator_output.tsv")
+        # --------- RUN Percolator parser inside Percolator PARSED path -------------------
+        os.chdir(percolator_path_parsed)
         parser_percolator_command = f"{python_exe} {str(pipeline_pwd / 'percolator_parser.py')}" \
-                            f" -p {percolator_out_basename}_percolator_output.tsv" \
+                            f" -p {percolator_path_raw}/{percolator_out_basename}_percolator_output.tsv" \
                             f" -qv {percolator.get('qvalue')}" \
                             f" -b {AnnotaBasename}_{percolator_out_basename}"
- 
         try:
             subprocess.getoutput(parser_percolator_command)
         except Exception as warn:
             logger.warning(f"Failed trying to parser {percolator_out_basename}_percolator_output.tsv")
             logger.debug(f"code error {warn}")
+        os.chdir(comet_output_path)
 
     logger.info("PERCOLATOR parsing is finished")
     logger.info("Creating quantitative report of Spectrum and Peptides")
