@@ -146,3 +146,11 @@
 23/09/2021 21:51:56 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
 23/09/2021 21:51:56 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
 23/09/2021 21:51:56 | AnnotaPipeline | INFO | Exiting
+29/09/2021 11:08:19 | AnnotaPipeline | INFO | Arguments for Kallisto are empty. This step will be skipped.
+29/09/2021 11:08:19 | AnnotaPipeline | INFO | WARNING [COMET]: values for 'fist' and 'last' will overwrite those in params file
+29/09/2021 11:08:19 | COMET | INFO | COMET execution has started
+29/09/2021 11:08:19 | COMET | INFO | comet -Pjonas.config -D/mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/AnnotaPipeline_TrangeliSC58/AnnotaPipeline_TrangeliSC58_proteins.fasta -F1 -L1 /mnt/c/Users/Pharaohs.son/Desktop/LAB/Ativo/AnnotaPipeline/testes/*mzXML
+29/09/2021 11:08:19 | COMET | INFO | COMET execution is finished
+29/09/2021 11:08:19 | PERCOLATOR | INFO | PERCOLATOR execution has started
+29/09/2021 11:08:19 | PERCOLATOR | INFO | PERCOLATOR parsing is finished
+29/09/2021 11:08:19 | PERCOLATOR | INFO | Creating quantitative report of Spectrum and Peptides
