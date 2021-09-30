@@ -597,23 +597,24 @@ def add_features(feature, data, save):
 
 
 
-def quantitative_proteomics(path):
+def quantitative_proteomics(path, basename):
     # get all percolator parsed files
     parsed_files = pathlib.Path(path).glob('*_parsed.tsv')
 
     # Start Empty dataframe to store all _parsed files
-    data = pd.DataFrame({'ProteinID':[],\
-                    'Peptide':[], \
-                    'Spectrum':[]})
+    data = pd.DataFrame({'ProteinID':[], \
+                        'Peptide':[], \
+                        'Spectrum':[]}) 
     for file in parsed_files:
-        df = pd.read_csv(f"{file}", sep='\t', header=0)
+        df = pd.read_csv(file, sep='\t', header=0)
         data = data.append(df)
 
+    # Empty dataframe to save
     total = pd.DataFrame({}) 
     total = add_features('Peptide', data, total)
     total = add_features('Spectrum', data, total)
     total = total.fillna(0).astype({"Unique Peptide": int, "Unique Spectrum": int}).sort_values(by='ProteinID', ascending=False)
-    total.to_csv(f"{args.basename}_Total_Proteomics_Quantification.tsv", sep="\t", index=False)
+    total.to_csv(f"{basename}_pre_total_Proteomics_Quantification.tsv", sep="\t", index=False)
 
 
 # ------------------------------------------------------------------------------
@@ -1119,7 +1120,16 @@ else:
     logger.info("PERCOLATOR parsing is finished")
     # -------------------------------------------------------------------------------------------------
     logger.info("Creating quantitative report of Spectrum and Peptides")
-    quantitative_proteomics(comet_output_path)
+    quantitative_proteomics(comet_output_path, AnnotaBasename)
+    try:
+        # Sort spectrum count
+        os.system(f"sort -V {AnnotaBasename}_pre_total_Proteomics_Quantification.tsv " \
+                  f"-o  {AnnotaBasename}_Total_Proteomics_Quantification.tsv")
+        os.remove(f"{AnnotaBasename}_pre_total_Proteomics_Quantification.tsv")
+    except Exception as warn:
+        logger.warning("Failed to sort All_annotation_products.txt")
+        logger.debug(f"code error: {warn}")
+        pass
 
 # Return to AnnotaPipeline basedir
 os.chdir(annota_pwd)

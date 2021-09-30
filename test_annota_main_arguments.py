@@ -486,7 +486,7 @@ def quantitative_proteomics(path, basename):
     total = add_features('Peptide', data, total)
     total = add_features('Spectrum', data, total)
     total = total.fillna(0).astype({"Unique Peptide": int, "Unique Spectrum": int}).sort_values(by='ProteinID', ascending=False)
-    total.to_csv(f"{basename}_Total_Proteomics_Quantification.tsv", sep="\t", index=False)
+    total.to_csv(f"{basename}_pre_total_Proteomics_Quantification.tsv", sep="\t", index=False)
 
 
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
@@ -585,7 +585,7 @@ else:
     # ----------------------------------------------------------------
     for comet_output_file in file_names:
         # -----------------------------------------
-        # Copy Comet output files
+        # Move Comet output files
         shutil.move(comet_output_file, comet_path)
         # -----------------------------------------
         # --------- RUN Percolator inside Percolator RAW path -------------------
@@ -614,6 +614,15 @@ else:
     logger.info("PERCOLATOR parsing is finished")
     logger.info("Creating quantitative report of Spectrum and Peptides")
     quantitative_proteomics(f"{percolator_path_parsed}", AnnotaBasename)
+    try:
+    # Sort spectrum count
+        os.system(f"sort -V {AnnotaBasename}_pre_total_Proteomics_Quantification.tsv " \
+                f"-o  {AnnotaBasename}_Total_Proteomics_Quantification.tsv")
+        os.remove(f"{AnnotaBasename}_pre_total_Proteomics_Quantification.tsv")
+    except Exception as warn:
+        logger.warning("Failed to sort All_annotation_products.txt")
+        logger.debug(f"code error: {warn}")
+        pass
 
 # Return to AnnotaPipeline basedir
 os.chdir(annota_pwd)
