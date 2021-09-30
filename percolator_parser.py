@@ -13,6 +13,7 @@ parser = argparse.ArgumentParser(
     add_help=False,
     description='''
 Script to parse Percolator Outputs
+INFO: DECOY results will also be removed
     ''',
     epilog="""Shadows will fade... someday...""",
     formatter_class=argparse.RawTextHelpFormatter
