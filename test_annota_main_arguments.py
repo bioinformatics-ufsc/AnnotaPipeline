@@ -586,7 +586,7 @@ else:
     for comet_output_file in file_names:
         # -----------------------------------------
         # Copy Comet output files
-        shutil.copy(comet_output_file, comet_path)
+        shutil.move(comet_output_file, comet_path)
         # -----------------------------------------
         # --------- RUN Percolator inside Percolator RAW path -------------------
         os.chdir(percolator_path_raw)

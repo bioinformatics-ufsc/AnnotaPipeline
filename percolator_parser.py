@@ -71,7 +71,11 @@ parcial_output.write(str(percolator_file[0]))
 del percolator_file[0]
 for line in percolator_file:
     line = line.split("\t")
-    if float(line[2]) <= args.qvalue:
+    id = line[0]
+    # escape decoy results
+    if "DECOY_" in id:
+        pass
+    elif float(line[2]) <= args.qvalue:
         parcial_output.write(str('\t'.join(line)))
 
 parcial_output.close()
