@@ -371,6 +371,24 @@ def comet_check_parameters():
         percolator_check_parameters()
 
 
+def modify_comet_params(comet_params):
+    with open(f"{comet_params}") as comet_params_read:
+        new_comet_params_read = comet_params_read.read()
+        new_comet_params_read = re.sub(r"decoy_search\s*=\s*[0-9]", "decoy_search = 1", new_comet_params_read)
+        new_comet_params_read = re.sub(r"output_pepxmlfile\s*=\s*[0-9]", "output_pepxmlfile = 0", new_comet_params_read)
+        new_comet_params_read = re.sub(r"output_percolatorfile\s*=\s*[0-9]", "output_percolatorfile = 1", new_comet_params_read)
+        # \s escape
+        # this is not a bug, its a feature
+        whitespace = (" "*18) # as of python3.8.5 this is the only way to write \s using re package
+        try:
+            new_comet_params_read = re.sub(r"decoy_prefix\s*=\s*.*#", rf"decoy_prefix = DECOY_{whitespace}#", new_comet_params_read)
+        except Exception as warn:
+            logger.warning(f"Cannot replace decoy_prefix in {comet_params}, change this value manually to: DECOY_")
+            logger.debug(warn)
+    with open(f"{comet_params}", "w") as comet_params_write:
+        comet_params_write.write(new_comet_params_read) 
+
+
 def check_parameters(sections):
     # Variables to check databases
     # swissprot database
@@ -558,6 +576,9 @@ else:
         first_last_param = str()
     # Mass files location
     mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
+
+    # Add percolator output in comet.params
+    modify_comet_params()
     commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
                 f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
                 f"{first_last_param} {mass_path}*.{comet.get('mass_files_ext')}"
