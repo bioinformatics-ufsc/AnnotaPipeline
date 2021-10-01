@@ -609,7 +609,12 @@ else:
 
         # -----------------------------------------
         # Move Comet output files
-        shutil.move(str(comet_output_file), str(comet_path))
+        try:
+            shutil.move(str(comet_output_file), str(comet_path))
+        except Exception as warn:
+            logger.warning(f"Failed trying move comet output files to {comet_path}")
+            logger.debug(f"code error {warn}")
+        
         os.chdir(comet_output_path)
 
     logger.info("PERCOLATOR parsing is finished")
@@ -621,9 +626,8 @@ else:
                 f"-o  {AnnotaBasename}_Total_Proteomics_Quantification.tsv")
         os.remove(f"{AnnotaBasename}_pre_total_Proteomics_Quantification.tsv")
     except Exception as warn:
-        logger.warning("Failed to sort All_annotation_products.txt")
+        logger.warning(f"Failed to sort {AnnotaBasename}_pre_total_Proteomics_Quantification.tsv")
         logger.debug(f"code error: {warn}")
-        pass
 
 # Return to AnnotaPipeline basedir
 os.chdir(annota_pwd)
