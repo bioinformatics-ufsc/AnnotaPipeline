@@ -72,11 +72,8 @@ parcial_output.write(str(percolator_file[0]))
 del percolator_file[0]
 for line in percolator_file:
     line = line.split("\t")
-    id = line[0]
     # escape decoy results
-    if "DECOY_" in id:
-        pass
-    elif float(line[2]) <= args.qvalue:
+    if float(line[2]) <= args.qvalue:
         parcial_output.write(str('\t'.join(line)))
 
 parcial_output.close()
@@ -103,14 +100,20 @@ for line in percolator_out:
     idname, spectrum, charge, num = filecontent.rsplit("_", 3)
     if len(all_ids)> 1:
         for proteinID in all_ids:
-            if proteinID not in dict_write.keys():
+            # remove decoy matches
+            if "DECOY" in proteinID:
+                pass
+            elif proteinID not in dict_write.keys():
                 dict_write[f'{proteinID}'] = [f"{peptide}\t{spectrum}\n"]
             else:
                 dict_write[f'{proteinID}'].append([f"{peptide}\t{spectrum}\n"])
     else:
         # If list contains only one element, get this guy
         only_id = all_ids[0]
-        if only_id not in dict_write.keys():
+         # remove decoy matches
+        if "DECOY" in only_id:
+            pass
+        elif only_id not in dict_write.keys():
             dict_write[only_id] = [f"{peptide}\t{spectrum}\n"]
         else:
             dict_write[only_id].append([f"{peptide}\t{spectrum}\n"])

@@ -560,7 +560,7 @@ else:
     mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
     commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
                 f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
-                f"{first_last_param} {mass_path}/*.{comet.get('mass_files_ext')}"
+                f"{first_last_param} {mass_path}*.{comet.get('mass_files_ext')}"
 
     logger.info("COMET execution has started")
     logger.info(commet_command)
@@ -585,9 +585,6 @@ else:
     # ----------------------------------------------------------------
     for comet_output_file in file_names:
         # -----------------------------------------
-        # Move Comet output files
-        shutil.move(comet_output_file, comet_path)
-        # -----------------------------------------
         # --------- RUN Percolator inside Percolator RAW path -------------------
         os.chdir(percolator_path_raw)
         percolator_out_basename = re.sub(r"\.[0-9].*","",comet_output_file.stem)
@@ -609,6 +606,10 @@ else:
         except Exception as warn:
             logger.warning(f"Failed trying to parser {percolator_out_basename}_percolator_output.tsv")
             logger.debug(f"code error {warn}")
+
+        # -----------------------------------------
+        # Move Comet output files
+        shutil.move(str(comet_output_file), str(comet_path))
         os.chdir(comet_output_path)
 
     logger.info("PERCOLATOR parsing is finished")

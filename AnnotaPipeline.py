@@ -259,7 +259,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
     )
     logger.info(f"KALLISTO parsing has started")
     subprocess.getoutput(kallisto_parser_command)
-    check_file(f"{basename}_transcript_evidence.tsv")
+    check_file(f"{basename}_Transcript_Quantification.tsv")
 
 
 def kallisto_check_parameters():
