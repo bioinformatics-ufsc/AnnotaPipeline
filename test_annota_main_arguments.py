@@ -578,7 +578,8 @@ else:
     mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
 
     # Add percolator output in comet.params
-    modify_comet_params()
+    # change arguments for comet
+    modify_comet_params(comet.get('params'))
     commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
                 f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
                 f"{first_last_param} {mass_path}*.{comet.get('mass_files_ext')}"
