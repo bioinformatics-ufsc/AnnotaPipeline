@@ -1167,3 +1167,5 @@ else:
 os.chdir(annota_pwd)
 # close logger
 logging.shutdown()
+
+# PARSER FINAL
