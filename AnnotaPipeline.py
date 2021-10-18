@@ -596,7 +596,6 @@ def add_features(feature, data, save):
     return save
 
 
-
 def quantitative_proteomics(path, basename):
     # get all percolator parsed files
     parsed_files = pathlib.Path(path).glob('*_parsed.tsv')
@@ -1069,65 +1068,71 @@ else:
     # Return to AnnotaPipeline basedir
     os.chdir(annota_pwd)
 
-# -----------------------------------------------------------------------
+#-----------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
 if len(comet.get('comet_bash')) == 0:
     pass
 else:
-    # ----------------------------------- Path name  --------------------------------------------------
     if kallisto_method == None or args.protein is not None:
-        comet_output_path = pathlib.Path(annota_pwd / str("4_PeptideIdentification" + AnnotaBasename))
+        comet_output_path = pathlib.Path(annota_pwd / str("4_PeptideIdentification_" + AnnotaBasename))
     else:
-        comet_output_path = pathlib.Path(annota_pwd / str("5_PeptideIdentification" + AnnotaBasename))
-    # -------------------------------------------------------------------------------------------------
-    # Change logger
+        comet_output_path = pathlib.Path(annota_pwd / str("5_PeptideIdentification_" + AnnotaBasename))
     logger = logging.getLogger('COMET')
+    # Mudar loogger no log, facilita identificacao pra debug
     # Go to /X_PeptideIdentification
     pathlib.Path(comet_output_path).mkdir(exist_ok=True)
     os.chdir(comet_output_path)
-    # -------------------------------------------------------------------------------------------------
+
     # Check if overwrite parameters will be used
     if use_last_and_first == True:
         first_last_param = f"-F{comet.get('first')} -L{comet.get('last')}"
     else:
         first_last_param = str()
-    # -------------------------------------------------------------------------------------------------
+    # Mass files location
     mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
+
+    # Add percolator output in comet.params
+    # change arguments for comet
+    modify_comet_params(comet.get('params'))
     commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
-                     f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
-                     f"{first_last_param} {mass_path}*"
-    # -------------------------------------------------------------------------------------------------
+                f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
+                f"{first_last_param} {mass_path}*.{comet.get('mass_files_ext')}"
+
     logger.info("COMET execution has started")
-    logger.debug(commet_command)
+    logger.info(commet_command)
     subprocess.getoutput(commet_command)
     logger.info("COMET execution is finished")
-    logger.info("Parsing COMET output")
-    # -------------------------------------------------------------------------------------------------
+    # ----------- Create Comet Output path --------------------------
+    comet_path = pathlib.Path(comet_output_path / str("COMET_Output"))
+    pathlib.Path(comet_path).mkdir(exist_ok=True)
+    # ----------------------------------------------------------------
     # Get all output files from mass_path >> default output path
     file_names = pathlib.Path(mass_path).glob('*.pin')
-    # Check_files for comet_output
-    if len(file_names) == 0:
-        logger.error("COMET returns no output")
-        log_quit()
-    # -------------------------------------------------------------------------------------------------
+    # ----------- Create Percolator Output path ----------------------
     logger = logging.getLogger('PERCOLATOR')
     logger.info("PERCOLATOR execution has started")
-    # ----------------------------------PERCOLATOR RUN-------------------------------------------------
+    # ----------------------------------------------------------------
+    # ----------- Create Percolator Output path ----------------------
+    percolator_path_raw = pathlib.Path(comet_output_path / str("Percolator_RAW"))
+    pathlib.Path(percolator_path_raw).mkdir(exist_ok=True)
+    # ----------------------------------------------------------------
+    percolator_path_parsed = pathlib.Path(comet_output_path / str("Percolator_PARSED"))
+    pathlib.Path(percolator_path_parsed).mkdir(exist_ok=True)
+    # ----------------------------------------------------------------
     for comet_output_file in file_names:
-        # get only filename (without path), and remove comet range from filename (ex: filename.2-200.pin)
+        # -----------------------------------------
+        # --------- RUN Percolator inside Percolator RAW path -------------------
+        os.chdir(percolator_path_raw)
         percolator_out_basename = re.sub(r"\.[0-9].*","",comet_output_file.stem)
-        percolator_command = f"{percolator.get('percolator_bash')} -r {percolator_out_basename}_peptide_output.tsv " \
-                            f" -m {percolator_out_basename}_percolator_output.tsv" \
-                            f" -B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
-        logger.info(f"Runing percolator with sample: {comet_output_file}")
-        logger.debug(percolator_command)
+        percolator_command = f"{percolator.get('percolator_bash')} -r {percolator_out_basename}_peptide_output.tsv" \
+                             f" -m {percolator_out_basename}_percolator_output.tsv" \
+                             f" -B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
         subprocess.getoutput(percolator_command)
-
-        logger.info(f"Parsing {percolator_out_basename}_percolator_output.tsv")
         check_file(f"{percolator_out_basename}_percolator_output.tsv")
-        # --------------------------- PERCOLATOR PARSING -----------------------------------------------
+        # --------- RUN Percolator parser inside Percolator PARSED path -------------------
+        os.chdir(percolator_path_parsed)
         parser_percolator_command = f"{python_exe} {str(pipeline_pwd / 'percolator_parser.py')}" \
-                            f" -p {percolator_out_basename}_percolator_output.tsv" \
+                            f" -p {percolator_path_raw}/{percolator_out_basename}_percolator_output.tsv" \
                             f" -qv {percolator.get('qvalue')}" \
                             f" -b {AnnotaBasename}_{percolator_out_basename}"
         try:
@@ -1135,19 +1140,28 @@ else:
         except Exception as warn:
             logger.warning(f"Failed trying to parser {percolator_out_basename}_percolator_output.tsv")
             logger.debug(f"code error {warn}")
-    logger.info("PERCOLATOR parsing is finished")
-    # -------------------------------------------------------------------------------------------------
+
+        # -----------------------------------------
+        # Move Comet output files
+        try:
+            shutil.move(str(comet_output_file), str(comet_path))
+        except Exception as warn:
+            logger.warning(f"Failed trying move comet output files to {comet_path}")
+            logger.debug(f"code error {warn}")
+        
+        os.chdir(comet_output_path)
+
+    logger.info("PERCOLATOR execution and parsing is finished")
     logger.info("Creating quantitative report of Spectrum and Peptides")
-    quantitative_proteomics(comet_output_path, AnnotaBasename)
+    quantitative_proteomics(f"{percolator_path_parsed}", AnnotaBasename)
     try:
-        # Sort spectrum count
+    # Sort spectrum count
         os.system(f"sort -V {AnnotaBasename}_pre_total_Proteomics_Quantification.tsv " \
-                  f"-o  {AnnotaBasename}_Total_Proteomics_Quantification.tsv")
+                f"-o  {AnnotaBasename}_Total_Proteomics_Quantification.tsv")
         os.remove(f"{AnnotaBasename}_pre_total_Proteomics_Quantification.tsv")
     except Exception as warn:
-        logger.warning("Failed to sort All_annotation_products.txt")
+        logger.warning(f"Failed to sort {AnnotaBasename}_pre_total_Proteomics_Quantification.tsv")
         logger.debug(f"code error: {warn}")
-        pass
 
 # Return to AnnotaPipeline basedir
 os.chdir(annota_pwd)

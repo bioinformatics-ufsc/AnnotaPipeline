@@ -613,9 +613,7 @@ else:
         percolator_command = f"{percolator.get('percolator_bash')} -r {percolator_out_basename}_peptide_output.tsv" \
                              f" -m {percolator_out_basename}_percolator_output.tsv" \
                              f" -B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
-        logger.info(f"Runing percolator with sample: {comet_output_file}")
         subprocess.getoutput(percolator_command)
-        logger.info(f"Parsing {percolator_out_basename}_percolator_output.tsv")
         check_file(f"{percolator_out_basename}_percolator_output.tsv")
         # --------- RUN Percolator parser inside Percolator PARSED path -------------------
         os.chdir(percolator_path_parsed)
@@ -639,7 +637,7 @@ else:
         
         os.chdir(comet_output_path)
 
-    logger.info("PERCOLATOR parsing is finished")
+    logger.info("PERCOLATOR execution and parsing is finished")
     logger.info("Creating quantitative report of Spectrum and Peptides")
     quantitative_proteomics(f"{percolator_path_parsed}", AnnotaBasename)
     try:
