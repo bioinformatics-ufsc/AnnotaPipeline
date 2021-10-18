@@ -848,7 +848,7 @@ logger.debug(str(interpro_command_line))
 
 subprocess.getoutput(interpro_command_line)
 
-# INTERPROSCAN parser (info_parser.py) can run without this result, but must be a valid file.
+# INTERPROSCAN parser (info_parser.py) cant run without this result, but must be a valid file.
 if os.path.isfile(str(AnnotaBasename + "_interproscan_annotated_output.gff3")) == 0:
     # Generate valid file
     open(f"{str(AnnotaBasename)}_interproscan_annotated_output.gff3", "w").close()
