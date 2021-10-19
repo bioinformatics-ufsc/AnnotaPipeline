@@ -75,9 +75,6 @@ group.add_argument(
     metavar='[NR_database]',
     help='destination to NR database',
 )
-# optional arguments
-#   no argument: uses default
-#   type (default): string
 
 optionalNamed.add_argument(
     '-id', '--identity', dest='id',
@@ -130,8 +127,6 @@ optionalNamed.add_argument(
     help='evalue flag from blastp [int] (default: 0.00001)'
 )
 
-
-
 # custom [--help] argument
 optionalNamed.add_argument(
     '-h', '-help', '--help',
@@ -142,10 +137,6 @@ optionalNamed.add_argument(
 
 # arguments saved here
 args = parser.parse_args()
-
-'''---SOFTWARE VERSIONS------------------------------------------------------'''
-
-# BLAST - BLAST 2.9.0+
 
 # ----------------------- Create LogFile ------------------------------------
 
@@ -259,7 +250,7 @@ def parser_trembl(basename, result_blast, identidade, positividade, cov):
     #   to make sure the script goes through each HSP in every query
     # it's important that these lists are set back to NULL
     #   and the counter is set to zero before we start
-    old_id = swiss[0].split("\t")  # recebe a primeira query para começar a contagem
+    old_id = swiss[0].split("\t") 
     old_id = old_id[0]
     annots = []
     nhyp_list = []
