@@ -118,6 +118,20 @@ optionalNamed.add_argument(
     help='number of threads [int] (default: 20)'
 )
 
+optionalNamed.add_argument(
+    '-hsps', dest='hsps',
+    metavar='', type=int, default=10,
+    help='max_hsps flag from blastp [int] (default: 10)'
+)
+
+optionalNamed.add_argument(
+    '-evalue', dest='evalue',
+    metavar='', type=float, default=0.00001,
+    help='evalue flag from blastp [int] (default: 0.00001)'
+)
+
+
+
 # custom [--help] argument
 optionalNamed.add_argument(
     '-h', '-help', '--help',
@@ -192,15 +206,15 @@ class hit:
         return self.bitscore > other.bitscore
 
 
-def blast(arq1, arq2, db):
+def blast(arq1, arq2, db, hsps, evalue):
     datab = str(db)
     fmt = str("\"6 qseqid sseqid sacc bitscore"
               + " evalue ppos pident qcovs stitle\"")
 
     command = f"blastp -query {arq1} -out {arq2}" \
-                    f" -db {datab} -evalue 0.00001" \
+                    f" -db {datab} -evalue {evalue}" \
                     f" -outfmt {fmt}" \
-                    f" -max_hsp 10" \
+                    f" -max_hsps {hsps}" \
                     f" -num_threads {str(args.threads)}"
     logger.info(command)
     subprocess.getoutput(command)
@@ -610,7 +624,7 @@ def no_hit(basename, blast6):
 
 def swiss_run():
     logger.info("Running BLAST against SwissProt")
-    blast(args.seq, swiss_out, args.spdb)
+    blast(args.seq, swiss_out, args.spdb, args.hsps, args.evalue)
     logger.info("Running parser SwissProt")
 
 
@@ -627,7 +641,7 @@ if args.nr is not None:
     odb_out_name = f"{str(args.basename)}_BLASTp_AAvsNRDB.outfmt6"
     logger.info("Running BLAST against NR")
     # Use the file above without sequences already annotated by swissprot
-    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.nr)
+    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.nr, args.hsps, args.evalue)
     # ------------------------------
     logger.info("Running parser NR")
     parser_nr(args.basename, odb_out_name, args.id, args.pos, args.cov)
@@ -640,7 +654,7 @@ elif args.trembl is not None:
     odb = args.trembl
     logger.info("Running BLAST against TrEMBL")
     # Use the file above without sequences already annotated by swissprot
-    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.trembl)
+    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.trembl, args.hsps, args.evalue)
     # ------------------------------
     logger.info("Running parser TrEMBL")
     parser_trembl(args.basename, odb_out_name, args.id, args.pos, args.cov)
@@ -654,7 +668,7 @@ elif args.specificdb is not None:
     odb = args.specificdb
     logger.info("Running BLAST against specificDB")
     # Use the file above without sequences already annotated by swissprot
-    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.specificdb)
+    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.specificdb, args.hsps, args.evalue)
     # ------------------------------
     logger.info("Running parser specificDB")
     parser_trytrip(args.basename, odb_out_name, args.id, args.pos, args.cov)

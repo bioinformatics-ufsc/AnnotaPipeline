@@ -804,7 +804,11 @@ subprocess.run([
     "-kw",
     str(keyword_list),
     "-t",
-    str(AnnotaPipeline.get('threads'))
+    str(AnnotaPipeline.get('threads')), 
+    "-hsps", 
+    str(blast.get('max_hsps')), 
+    "-evalue", 
+    str(blast.get('evalue'))
     ]
 )
 
