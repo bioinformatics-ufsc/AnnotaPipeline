@@ -113,7 +113,7 @@ def parser_interproscan(arq_entrada, arq_ipr, arq_saida):
     interp = entrada[0].split("##sequence-region")  # WE'LL BE USING ONLY THE FIRST PART OF THE GFF3 OUTPUT FILE
     del interp[0]
     ipr = open(str(arq_ipr), "w")
-    saida = open(str(arq_saida), "a")
+    output = open(str(arq_saida), "a")
 
     db_list = ["Coils", "MobiDBLite"]  # THIS IS SPECIFIC TO MY ANALYSIS: I'M NOT LOOKING FOR STRUCTURAL EVIDENCE
 
@@ -149,7 +149,9 @@ def parser_interproscan(arq_entrada, arq_ipr, arq_saida):
                         if "Dbxref" in query:
                             interpro = query.replace('"', "").replace("Dbxref=", "")
                     ipr.write(f"{name_subject}\t{correct_db}\t{name}\t{anotation_db}\t{interpro}\t{ontology}\n")
-                    saida.write(f"{name_subject}\t{correct_db}\t{name}\t{anotation_db}\t{interpro}\t{ontology}\n")
+                    output.write(f"{name_subject}\t{correct_db}\t{name}\t{anotation_db}\t{interpro}\t{ontology}\n")
+    output.close()
+    ipr.close()
 
 
 def pfam_format(arq_entrada, arq_saida):
@@ -179,6 +181,7 @@ def parser_pfam(arq_entrada, arq_saida):
         name = line[1]
         interpro = str(None)
         output.write(f"{query}\t{db}\t{name}\t{anotacao_db}\t{interpro}\t{ontologia}\n")
+    output.close()
 
 
 def parser_rpsblast(arq_entrada, arq_rps, arq_saida):

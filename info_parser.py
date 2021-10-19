@@ -103,9 +103,9 @@ def parser_interproscan(arq_entrada, arq_ipr):
                         if linha == seq_reg[0]:
                                 linha = linha.split(" ")
                                 del linha[0]
-                        # nome_query = linha[0]
-                        # start_query = linha[1]
-                        # stop_query = linha[2]
+                                # nome_query = linha[0]
+                                # start_query = linha[1]
+                                # stop_query = linha[2]
                         elif linha == seq_reg[1]:
                                 # IGNORING THE FIRST LINE ON EACH GROUP OF QUERIES, AS IT'S NON-INFORMATIVE
                                 pass
