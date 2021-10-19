@@ -1,0 +1,14 @@
+19/10/2021 11:52:43 | AnnotaPipeline | INFO | Arguments for KALLISTO are empty. This step will be skipped.
+19/10/2021 11:52:43 | AnnotaPipeline | WARNING | [COMET]: values for 'fist' and 'last' will overwrite those in params file
+19/10/2021 11:52:43 | AnnotaPipeline | INFO | BLAST execution and parsing has started
+19/10/2021 11:52:43 | AnnotaPipeline | INFO | BLAST execution and parsing is finished
+19/10/2021 11:52:43 | INTERPROSCAN | INFO | Preparing file for INTERPROSCAN Hypothetical Proteins execution
+19/10/2021 11:52:43 | INTERPROSCAN | INFO | Hypothetical Proteins file preparation complete
+19/10/2021 11:52:43 | INTERPROSCAN | INFO | Running with Hypothetical Proteins
+19/10/2021 11:52:43 | INTERPROSCAN | DEBUG | /opt/interproscan-5.50-84.0/interproscan.sh -i Hypothetical_Products.fasta -o TrangeliSC58_interproscan_hypothetical_output.gff3 -f GFF3 -t p -goterms -iprlookup -goterms
+19/10/2021 11:52:43 | INTERPROSCAN | INFO | INTERPROSCAN finished for Hypothetical Proteins
+19/10/2021 11:52:43 | INTERPROSCAN | INFO | Preparing file for INTERPROSCAN Annotated Proteins execution
+19/10/2021 11:52:43 | INTERPROSCAN | INFO | Annotated Proteins file preparation complete
+19/10/2021 11:52:43 | INTERPROSCAN | INFO | Running with Annotated Proteins
+19/10/2021 11:52:43 | INTERPROSCAN | DEBUG | /opt/interproscan-5.50-84.0/interproscan.sh -i Annotated_Products.fasta -o TrangeliSC58_interproscan_annotated_output.gff3 -f GFF3 -t p -goterms -iprlookup -goterms
+19/10/2021 11:52:43 | INTERPROSCAN | INFO | INTERPROSCAN finished for Annotated Proteins
