@@ -115,7 +115,7 @@ def parser_interproscan(arq_entrada, arq_ipr, arq_saida):
     ipr = open(str(arq_ipr), "w")
     saida = open(str(arq_saida), "a")
 
-    lista = ["Coils", "MobiDBLite"]  # THIS IS SPECIFIC TO MY ANALYSIS: I'M NOT LOOKING FOR STRUCTURAL EVIDENCE
+    db_list = ["Coils", "MobiDBLite"]  # THIS IS SPECIFIC TO MY ANALYSIS: I'M NOT LOOKING FOR STRUCTURAL EVIDENCE
 
     # TREATING EACH QUERY, RETRIEVING THE INFORMATION THAT WILL BE WRITTEN ON THE FIRST OUTPUT FILE
     for seq_reg in interp:
@@ -124,110 +124,102 @@ def parser_interproscan(arq_entrada, arq_ipr, arq_saida):
             if linha == seq_reg[0]:
                 linha = linha.split(" ")
                 del linha[0]
-                # nome_query = linha[0]
-                # start_query = linha[1]
-                # stop_query = linha[2]
             elif linha == seq_reg[1]:  # IGNORING THE FIRST LINE ON EACH GROUP OF QUERIES, AS IT'S NON-INFORMATIVE
                 pass
             else:
-                ontologia = str(None)
-                anotacao_db = str(None)
+                ontology = str(None)
+                anotation_db = str(None)
                 name = str(None)
                 interpro = str(None)
                 linha = linha.split("\t")
                 # start_query = linha[3]
                 # stop_query = linha[4]
-                nome_subject = linha[0]
+                name_subject = linha[0]
                 db = linha[1]
-                if not any(s in db for s in lista):
-                    db_certo = db
-                    anotacao = linha[-1].split(";")
-                    for a in anotacao:
-                        if "Ontology" in a:
-                            ontologia = a.replace('"', "").replace("Ontology_term=", "")
-                        if "signature_" in a:
-                            anotacao_db = a.replace("signature_desc=", "")
-                        if "Name" in a:
-                            name = a.replace('"', "").replace("Name=", "")
-                        if "Dbxref" in a:
-                            interpro = a.replace('"', "").replace("Dbxref=", "")
-                    ipr.write(str(nome_subject) + "\t" + str(db_certo) + "\t" + str(name) + "\t" +
-                              str(anotacao_db) + "\t" + str(interpro) + "\t" + str(ontologia) + "\n")
-                    saida.write(str(nome_subject) + "\t" + str(db_certo) + "\t" + str(name) + "\t" +
-                                str(anotacao_db) + "\t" + str(interpro) + "\t" + str(ontologia) + "\n")
+                if not any(unwanted in db for unwanted in db_list):
+                    correct_db = db
+                    anotation = linha[-1].split(";")
+                    for query in anotation:
+                        if "Ontology" in query:
+                            ontology = query.replace('"', "").replace("Ontology_term=", "")
+                        if "signature_" in query:
+                            anotation_db = query.replace("signature_desc=", "")
+                        if "Name" in query:
+                            name = query.replace('"', "").replace("Name=", "")
+                        if "Dbxref" in query:
+                            interpro = query.replace('"', "").replace("Dbxref=", "")
+                    ipr.write(f"{name_subject}\t{correct_db}\t{name}\t{anotation_db}\t{interpro}\t{ontology}\n")
+                    saida.write(f"{name_subject}\t{correct_db}\t{name}\t{anotation_db}\t{interpro}\t{ontology}\n")
 
 
 def pfam_format(arq_entrada, arq_saida):
-    entrada = open(str(arq_entrada), "r").read().splitlines()
-    saida = open(str(arq_saida), "w")
-    del entrada[0:3]  # Del cabeçalho
-    del entrada[-10:]  # Del rodapé
-    for linha in entrada:
-        linha = re.sub(r'\s+', ' ', linha).split(" ")  # retira todos os espaços e quebra as colunas
-        aux = " ".join(linha[18:])  # reune as palavras por espaço
-        del linha[18:]  # depois da coluna 18 apenas palavras
-        linha.append(aux)  # reescreve a linha
-        saida.write("\t".join(linha) + "\n")
-    saida.close()
+    input = open(str(arq_entrada), "r").read().splitlines()
+    output = open(str(arq_saida), "w")
+    del input[0:3]  # Del cabeçalho
+    del input[-10:]  # Del rodapé
+    for line in input:
+        line = re.sub(r'\s+', ' ', line).split(" ")  # retira todos os espaços e quebra as colunas
+        aux = " ".join(line[18:])  # reune as palavras por espaço
+        del line[18:]  # depois da coluna 18 apenas palavras
+        line.append(aux)  # reescreve a linha
+        output.write("\t".join(line) + "\n")
+    output.close()
 
 
 def parser_pfam(arq_entrada, arq_saida):
-    entrada = open(str(arq_entrada), "r").read().splitlines()
-    saida = open(str(arq_saida), "a")
-    for linha in entrada:
-        linha = linha.strip()
-        linha = linha.split("\t")
-        query = linha[2]
+    input = open(str(arq_entrada), "r").read().splitlines()
+    output = open(str(arq_saida), "a")
+    for line in input:
+        line = line.strip()
+        line = line.split("\t")
+        query = line[2]
         db = "Pfam"  # ESPECIFICALLY WRITING THIS, AS THERE ARE NO OTHER DBs ON THIS PART OF THE ANALYSIS
         ontologia = str(None)
-        anotacao_db = linha[-1]
-        name = linha[1]
+        anotacao_db = line[-1]
+        name = line[1]
         interpro = str(None)
-        saida.write(str(query) + "\t" + str(db) + "\t" + str(name) + "\t" + str(anotacao_db) + "\t" +
-                    str(interpro) + "\t" + str(ontologia) + "\n")
+        output.write(f"{query}\t{db}\t{name}\t{anotacao_db}\t{interpro}\t{ontologia}\n")
 
 
 def parser_rpsblast(arq_entrada, arq_rps, arq_saida):
-    entrada = open(str(arq_entrada), "r").read().splitlines()
+    input = open(str(arq_entrada), "r").read().splitlines()
     rps = open(str(arq_rps), "w")
-    saida = open(str(arq_saida), "a")
-    for linha in entrada:
-        hit = linha.split("\t")
+    output = open(str(arq_saida), "a")
+    for line in input:
+        hit = line.split("\t")
         query = hit[0]
         db = "CDD"
         name = hit[1]  # Acesso_DB
-        anotacao = hit[-1]
+        anotation = hit[-1]
         interpro = str(None)
-        ontologia = str(None)
-        rps.write(
-            str(query) + "\t" + str(db) + "\t" + str(name) + "\t" + str(anotacao) + "\t" + str(interpro) +
-            "\t" + str(ontologia) + "\n")
-        saida.write(
-            str(query) + "\t" + str(db) + "\t" + str(name) + "\t" + str(anotacao) + "\t" + str(interpro) +
-            "\t" + str(ontologia) + "\n")
+        ontology = str(None)
+        rps.write(f"{query}\t{db}\t{name}\t{anotation}\t{interpro}\t{ontology}\n")
+        output.write(f"{query}\t{db}\t{name}\t{anotation}\t{interpro}\t{ontology}\n")
+    output.close()
+    rps.close()
 
 
 def sort_arq(arq_entrada, arq_saida):
     hits = open(str(arq_entrada), "r")
-    ordem = open(str(arq_saida), "w")
-    ordem.write("ID\tDB\tDB_ACCESS\tDESCRIPTION\tIPR\tGO\n")
+    ordered = open(str(arq_saida), "w")
+    ordered.write("ID\tDB\tDB_ACCESS\tDESCRIPTION\tIPR\tGO\n")
     lines = hits.readlines()
     lines.sort()
     for line in lines:
-        ordem.write(str(line))
+        ordered.write(str(line))
+    ordered.close()
 
 
-parser_interproscan(args.interpro, str("InterProScan_Out_" + args.basename + ".txt"),
-                    str("Temp_" + args.basename + ".txt"))
+parser_interproscan(args.interpro, f"InterProScan_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
 logger.info("InterProScan parser done")
-pfam_format(args.hmm, str("Hmmscan_Out_" + args.basename + ".txt"))
+pfam_format(args.hmm, f"Hmmscan_Out_{args.basename}.txt")
 logger.info("Hmmscan format done")
-parser_pfam(str("Hmmscan_Out_" + args.basename + ".txt"), str("Temp_" + args.basename + ".txt"))
+parser_pfam(f"Hmmscan_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
 logger.info("Hmmscan parser done")
-parser_rpsblast(args.rpsblast, str("RPSblast_Out_" + args.basename + ".txt"), str("Temp_" + args.basename + ".txt"))
+parser_rpsblast(args.rpsblast, f"RPSblast_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
 logger.info("RPSblast parser done")
-sort_arq(str("Temp_" + args.basename + ".txt"), str(args.basename + "_Grouped_Hypothetical_Information.txt"))
+sort_arq(f"Temp_{args.basename}.txt", f"{args.basename}_Grouped_Hypothetical_Information.txt")
 logger.info("Sorting querys in files")
-os.system("rm " + str("Temp_" + args.basename + ".txt"))
+os.system(f"rm Temp_{args.basename}.txt")
 logger.info("Temporary file removed")
 logger.info("Functional Annotation step is completed")
