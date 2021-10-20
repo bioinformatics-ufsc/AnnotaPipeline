@@ -1029,8 +1029,7 @@ if kallisto_method != None or args.seq is not None:
     kallisto_run(str(python_exe),
         kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
         AnnotaBasename, f"{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_transcripts.fasta'}"
-        f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
-    )
+        )
 
     logger.info("KALLISTO execution and parsing is finished")
 
