@@ -1000,10 +1000,10 @@ else:  # User selected run Augustus
     logger.info("Generating annotated GFF file")
     run_fastatogff(str(python_exe))
     logger.info(f"GFF file is ready - Check {str(AnnotaBasename)}_Annotated_GFF.gff")
+    # Transfer annotation from proteins to Transcript (codingseq) file
+    annotate_codingseq(annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + "_proteins.fasta"), 
+        augustus_folder / str("AUGUSTUS_" + AnnotaBasename + ".codingseq"), AnnotaBasename)
 
-# Transfer annotation from proteins to Transcript (codingseq) file
-annotate_codingseq(annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + "_proteins.fasta"), 
-    augustus_folder / str("AUGUSTUS_" + AnnotaBasename + ".codingseq"), AnnotaBasename)
 
 logger.info("AnnotaPipeline has annotated the annotations on the annotated file.")
 
