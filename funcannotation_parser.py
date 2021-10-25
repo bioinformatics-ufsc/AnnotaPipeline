@@ -115,7 +115,7 @@ def parser_interproscan(arq_entrada, arq_ipr, arq_saida):
     ipr = open(str(arq_ipr), "w")
     output = open(str(arq_saida), "a")
 
-    db_list = ["Coils", "MobiDBLite"]  # THIS IS SPECIFIC TO MY ANALYSIS: I'M NOT LOOKING FOR STRUCTURAL EVIDENCE
+    db_list = ["Coils", "MobiDBLite"]
 
     # TREATING EACH QUERY, RETRIEVING THE INFORMATION THAT WILL BE WRITTEN ON THE FIRST OUTPUT FILE
     for seq_reg in interp:
