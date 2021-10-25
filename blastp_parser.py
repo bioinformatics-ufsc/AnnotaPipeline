@@ -269,23 +269,17 @@ def parser_trembl(basename, result_blast, identidade, positividade, cov):
         #            to the first line of the hyp_file.txt
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
-                nhyp.write(str(old_id))
-                nhyp.write(str('\t'))
+                nhyp.write(f"{str(old_id)}\t")
                 # Sort annotations by identity
                 annots.sort()
                 # Get best identity, first position of array
-                nhyp.write(str(annots[0].desc))
+                nhyp.write(f"{str(annots[0].desc)}\n")
                 nhyp.write(str('\n'))
                 nhyp_list.append(str(old_id))
 
-                all_anot.write(str(old_id + "\t" + str(len(desc)) + " Annotation(s): [" + ";".join(desc_list) + "]"))
-                all_anot.write(str('\n'))
-            # instead of writing to a .txt file immediately
-            #   it will append the pseudogene results to a list
-            #     that will be treated further down the script
+                all_anot.write(f"{old_id}\t{len(desc)} Annotation(s): [{';'.join(desc_list)}]\n")
             else:
-                hyp.write(str(old_id))
-                hyp.write(str('\n'))
+                hyp.write(f"{str(old_id)}\n")
             # this just resets the count back to zero, before it starts again
             classification.clear()
             annots.clear()
@@ -355,23 +349,17 @@ def parser_trytrip(basename, result_blast, identidade, positividade, cov):
         #            to the first line of the hyp_file.txt
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
-                nhyp.write(str(old_id))
-                nhyp.write(str('\t'))
+                nhyp.write(f"{str(old_id)}\t")
                 # Sort annotations by identity
                 annots.sort()
                 # Get best identity, first position of array
-                nhyp.write(str(annots[0].desc))
-                nhyp.write(str('\n'))
+                nhyp.write(f"{str(annots[0].desc)}\n")
                 nhyp_list.append(str(old_id))
 
-                all_anot.write(str(old_id + "\t" + str(len(desc)) + " Annotation(s): [" + ";".join(desc_list) + "]"))
+                all_anot.write(f"{old_id}\t{len(desc)} Annotation(s): [{';'.join(desc_list)}]")
                 all_anot.write(str('\n'))
-            # instead of writing to a .txt file immediately
-            #   it will append the pseudogene results to a list
-            #     that will be treated further down the script
             else:
-                hyp.write(str(old_id))
-                hyp.write(str('\n'))
+                hyp.write(f"{str(old_id)}\n")
             # this just resets the count back to zero, before it starts again
             classification.clear()
             annots.clear()
@@ -444,21 +432,14 @@ def parser_nr(basename, result_blast, identidade, positividade, cov):
         #            to the first line of the hyp_file.txt
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
-                nhyp.write(str(old_id))
-                nhyp.write(str('\t'))
+                nhyp.write(f"{str(old_id)}\t")
                 # Sort annotations by identity
                 annots.sort()
                 # Get best identity, first position of array
-                nhyp.write(str(annots[0].desc))
-                nhyp.write(str('\n'))
-                # instead of writing to a .txt file immediately
-                #   it will append the pseudogene results to a list
-                #     that will be treated further down the script
-                all_anot.write(str(old_id + "\t" + str(len(desc)) + " Annotation(s): [" + ";".join(desc_list) + "]"))
-                all_anot.write(str('\n'))
+                nhyp.write(f"{str(annots[0].desc)}\n")
+                all_anot.write(f"{old_id}\t{len(desc)} Annotation(s): [{';'.join(desc_list)}]\n")
             else:
-                hyp.write(str(old_id))
-                hyp.write(str('\n'))
+                hyp.write(f"{str(old_id)}\n")
             # this just resets the count back to zero, before it starts again
             classification.clear()
             annots.clear()
@@ -531,27 +512,20 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
         #            to the first line of the hyp_file.txt
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
-                nhyp.write(str(old_id))
+                nhyp.write(f"{str(old_id)}\t")
                 nhyp_list.append(str(old_id))
-
-                nhyp.write(str('\t'))
                 # Sort annotations by identity
                 annots.sort()
                 # Get best identity, first position of array
-                nhyp.write(str(annots[0].desc))
-                nhyp.write(str('\n'))
+                nhyp.write(f"{str(annots[0].desc)}\n")
 
                 nhyp_list.append(str(old_id))
 
-                swiss_anot.write(str(old_id + "\t" + str(len(desc)) + " Annotation(s): [" + ";".join(desc) + "]"))
-                swiss_anot.write(str('\n'))
+                swiss_anot.write(f"{old_id}\t{len(desc)} Annotation(s): [{';'.join(desc)}]\n")
 
             desc.clear()
             classification.clear()
             annots.clear()
-            # instead of writing to a .txt file immediately
-            #   it will append the pseudogene results to a list
-            #     that will be treated further down the script
         else:
             if float(line_split[7]) > float(cov):
                 # ifcov # mesmo q colocar flag qndo roda o blast -- apenas resultados acima rodar 30-90
@@ -589,13 +563,9 @@ def no_hit(basename, blast6):
 
     # =============================== Parser sequences with no hit =============================
     # Get hit headers
-    # list_hit = subprocess.getoutput("cat " + str(blast6) + " | cut -f 1 | uniq")
-    # list_hit = list_hit.strip().split()
     list_hit = set([line.strip().split()[0] for line in open(blast6, "r")])
 
     # Get all headers
-    # list_all = subprocess.getoutput("grep '>' " + str(basename) + "_BLASTp_AA_SwissProted.fasta")
-    # list_all = [query.replace(">", "").strip().split() for query in list_all]
     list_all = [
         line.strip().replace(">", "")
         for line in open(f"{str(basename)}_BLASTp_AA_SwissProted.fasta", "r")
@@ -607,7 +577,7 @@ def no_hit(basename, blast6):
         if annotated in list_all:
             list_all.remove(annotated)
     if len(list_all) > 0:
-        no_hit_file.write("\n".join(list_all) + "\n")
+        no_hit_file.write(f"{'\n'.join(list_all)}\n")
         no_hit_file.close()
 
     # =========================================================================================
@@ -632,7 +602,7 @@ if args.nr is not None:
     odb_out_name = f"{str(args.basename)}_BLASTp_AAvsNRDB.outfmt6"
     logger.info("Running BLAST against NR")
     # Use the file above without sequences already annotated by swissprot
-    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.nr, args.hsps, args.evalue)
+    blast(f"{args.basename}_BLASTp_AA_SwissProted.fasta", odb_out_name, args.nr, args.hsps, args.evalue)
     # ------------------------------
     logger.info("Running parser NR")
     parser_nr(args.basename, odb_out_name, args.id, args.pos, args.cov)
@@ -645,7 +615,7 @@ elif args.trembl is not None:
     odb = args.trembl
     logger.info("Running BLAST against TrEMBL")
     # Use the file above without sequences already annotated by swissprot
-    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.trembl, args.hsps, args.evalue)
+    blast(f"{args.basename}_BLASTp_AA_SwissProted.fasta", odb_out_name, args.trembl, args.hsps, args.evalue)
     # ------------------------------
     logger.info("Running parser TrEMBL")
     parser_trembl(args.basename, odb_out_name, args.id, args.pos, args.cov)
@@ -659,7 +629,7 @@ elif args.specificdb is not None:
     odb = args.specificdb
     logger.info("Running BLAST against specificDB")
     # Use the file above without sequences already annotated by swissprot
-    blast(str(args.basename) + "_BLASTp_AA_SwissProted.fasta", odb_out_name, args.specificdb, args.hsps, args.evalue)
+    blast(f"{args.basename}_BLASTp_AA_SwissProted.fasta", odb_out_name, args.specificdb, args.hsps, args.evalue)
     # ------------------------------
     logger.info("Running parser specificDB")
     parser_trytrip(args.basename, odb_out_name, args.id, args.pos, args.cov)
