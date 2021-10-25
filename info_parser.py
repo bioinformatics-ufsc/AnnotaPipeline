@@ -222,7 +222,7 @@ def intepro_process(ids_dict):
                                 gos.append(go)
                 old_id = new_id
 
-        write_no_ipr()
+        write_no_ipr(ids_dict)
         os.remove("Interpro_out_tmp.txt")
 
 
