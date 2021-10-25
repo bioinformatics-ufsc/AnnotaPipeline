@@ -94,7 +94,7 @@ def parser_interproscan(arq_entrada, arq_ipr):
         del interp[0]
         ipr = open(str(arq_ipr), "a")
 
-        lista = ["Coils", "MobiDBLite"]  # THIS IS SPECIFIC TO MY ANALYSIS: I'M NOT LOOKING FOR STRUCTURAL EVIDENCE
+        lista = ["Coils", "MobiDBLite"] 
 
         # TREATING EACH QUERY, RETRIEVING THE INFORMATION THAT WILL BE WRITTEN ON THE FIRST OUTPUT FILE
         for seq_reg in interp:
@@ -136,30 +136,28 @@ def parser_interproscan(arq_entrada, arq_ipr):
                                                         name = a.replace('"', "").replace("Name=", "")
                                                 if "Dbxref" in a:
                                                         interpro = a.replace('"', "").replace("Dbxref=", "")
-                                        ipr.write(str(nome_subject) + "\t" + str(db_certo) + "\t" + str(name) + "\t" + str(evalue) + "\t" +
-                                                        str(anotacao_db) + "\t" + str(interpro) + "\t" + str(ontologia) + "\n")
+                                        ipr.write(f"{nome_subject}\t{db_certo}\t{name}\t{evalue}\t{anotacao_db}\t{interpro}\t{ontologia}\n")
         ipr.close()
 
 
 # Function to write ids with no ipr and no GO (no result from InterproScan)
-def write_no_ipr():
+def write_no_ipr(ids_dict):
         # If there's any id without hit in interproscan file
         # It's will write here, without IPR or GO
         if len(ids_dict.keys()) > 0:
-                # print(len(ids_dict.keys()))
                 for anot in ids_dict.keys():
-                        output.write(str(anot) + "\t" + str(ids_dict.get(anot)).strip() + "\n")
+                        output.write(f"{anot}\t{str(ids_dict.get(anot)).strip()}\n")
         if len(hypo) > 0:
                 for hyp in hypo:
-                        output.write(str(hyp) + "\thypothetical protein\n")
+                        output.write(f"{hyp}\thypothetical protein\n")
         if len(nohit) > 0:
                 for hyp in nohit:
-                        output.write(str(hyp) + "\thypothetical protein\n")
+                        output.write(f"{hyp}\thypothetical protein\n")
         output.close()
 
 
 # Function to join IPRs and GOs from InterproScan with IDs hypothetical or without hits
-def intepro_process():
+def intepro_process(ids_dict):
         # File pre-precessed with IDs, IPRs and GOs
         interpro_out = open("Interpro_out_tmp.txt", "r").read().splitlines()
         temporary_query(interpro_out)
@@ -183,53 +181,37 @@ def intepro_process():
                         except Exception:
                                 # No GO or IP for this protein (not a true warning)
                                 pass
-
                         # Check if interpro_result is in annotated
                         if old_id in ids_dict.keys():
                                 if (len(iprs) > 0) and (len(gos) > 0):
-                                        output.write(
-                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() +
-                                                " (" + str(",".join(iprs)) + "," + str(
-                                                        ",".join(gos)) + ")\n")
+                                        output.write(f"{old_id}\t{str(ids_dict.get(old_id)).strip()} ({str(','.join(iprs))},{str(','.join(gos))})\n")
                                 elif (len(iprs) > 0) and (len(gos) == 0):
-                                        output.write(
-                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + " (" +
-                                                str(",".join(iprs)) + ")\n")
+                                        output.write(f"{old_id}\t{str(ids_dict.get(old_id)).strip()} ({str(','.join(iprs))})\n")
                                 elif (len(iprs) == 0) and (len(gos) > 0):
-                                        output.write(
-                                                str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() +
-                                                " (" + str(",".join(gos)) + ")\n")
+                                        output.write(f"{old_id}\t{str(ids_dict.get(old_id)).strip()} ({str(','.join(gos))})\n")
                                 else:
-                                        output.write(str(old_id) + "\t" + str(ids_dict.get(old_id)).strip() + "\n")
+                                        output.write(f"{old_id}\t{str(ids_dict.get(old_id)).strip()}\n")
                                 del ids_dict[old_id]
                         # Else, interpro_result must be in hyphotetical
                         elif old_id in hypo:
                                 if (len(iprs) > 0) and (len(gos) > 0):
-                                        output.write(
-                                                str(old_id) + "\thypothetical protein (" + str(",".join(iprs)) + ","
-                                                + str(",".join(gos)) + ")\n")
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(iprs))},{str(','.join(gos))})\n")
                                 elif (len(iprs) > 0) and (len(gos) == 0):
-                                        output.write(str(old_id) + "\thypothetical protein ("
-                                                     + str(",".join(iprs)) + ")\n")
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(iprs))})\n")
                                 elif (len(iprs) == 0) and (len(gos) > 0):
-                                        output.write(str(old_id) + "\thypothetical protein ("
-                                                     + str(",".join(gos)) + ")\n")
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(gos))})\n")
                                 else:
-                                        output.write(str(old_id) + "\thypothetical protein\n")
+                                        output.write(f"{old_id}\thypothetical protein\n")
                                 hypo.remove(old_id)
                         else:
                                 if (len(iprs) > 0) and (len(gos) > 0):
-                                        output.write(
-                                                str(old_id) + "\thypothetical protein (" + str(",".join(iprs)) + "," +
-                                                str(",".join(gos)) + ")\n")
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(iprs))},{str(','.join(gos))})\n")
                                 elif (len(iprs) > 0) and (len(gos) == 0):
-                                        output.write(str(old_id) + "\thypothetical protein (" +
-                                                     str(",".join(iprs)) + ")\n")
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(iprs))})\n")
                                 elif (len(iprs) == 0) and (len(gos) > 0):
-                                        output.write(str(old_id) + "\thypothetical protein (" +
-                                                     str(",".join(gos)) + ")\n")
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(gos))})\n")
                                 else:
-                                        output.write(str(old_id) + "\thypothetical protein\n")
+                                        output.write(f"{old_id}\thypothetical protein\n")
                                 nohit.remove(old_id)
                         gos.clear()
                         iprs.clear()
@@ -280,6 +262,6 @@ else:
 output = open("All_annotation_products.txt", "w")
 
 if os.path.getsize(args.ipr1) == 0 and os.path.getsize(args.ipr2) == 0:
-        write_no_ipr()
+        write_no_ipr(ids_dict)
 else:
-        intepro_process()
+        intepro_process(ids_dict)
