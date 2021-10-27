@@ -577,7 +577,7 @@ def no_hit(basename, blast6):
         if annotated in list_all:
             list_all.remove(annotated)
     if len(list_all) > 0:
-        no_hit_file.write(f"{'\n'.join(list_all)}\n")
+        no_hit_file.write(str("\n".join(list_all)))
         no_hit_file.close()
 
     # =========================================================================================
