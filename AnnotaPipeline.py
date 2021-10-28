@@ -283,14 +283,14 @@ def interpro_run(type, basename, blast_path, augustus_path, augustus_file, inter
     logger.info(f"Preparing file for INTERPROSCAN {type.capitalize()} Proteins execution")
 
     if type == "hyphotetical":
-        hyphotetical_id = str(blast_path / str(f"{basename}_{type.capitalize()}_products.txt"))
+        hyphotetical_id = str(blast_path / str(f"{basename}_{type}_products.txt"))
         no_hit_id = str(blast_path / str(f"{basename}_no_hit_products.txt"))
         hyphotetical_id_strip = [line.strip() for line in open(hyphotetical_id, "r")]
         no_hit_id_strip = [line.strip() for line in open(no_hit_id, "r")]
+        concatenate_list = [*hyphotetical_id_strip, *no_hit_id_strip]
 
         fasta_fetcher(str(augustus_path / str(f"Clear_{augustus_file}")),
-                (hyphotetical_id_strip + no_hit_id_strip),
-                f"{type.capitalize()}_Products.fasta")
+                concatenate_list, f"{type.capitalize()}_Products.fasta")
     else:
         annotated_file = str(blast_folder / str(f"{basename}_{type}_products.txt"))
         annotated_id = [line.strip().split()[0] for line in open(annotated_file, "r")]
