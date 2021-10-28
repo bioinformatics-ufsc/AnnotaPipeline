@@ -1012,7 +1012,7 @@ logger.info("AnnotaPipeline has annotated the annotations on the annotated file.
 # Run kallisto
 # If kalisto_method is empty, lack arguments for kallisto >> skip
 # If proteins were given, lack cdscexon files >> skip
-if kallisto_method != None or args.seq is not None:
+if kallisto_method != None and args.seq is not None:
     kallisto_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
     # kallisto_output_path = pathlib.Path(f"{annota_pwd / f'4_TranscriptQuantification_{AnnotaBasename}'}")
     # testei e funciona
