@@ -281,13 +281,13 @@ def augustus_run(basename):
 def interpro_run(type, basename, blast_path, augustus_path, augustus_file, interpro_section, interpro_exe):
     logger = logging.getLogger('INTERPROSCAN')
     logger.info(f"Preparing file for INTERPROSCAN {type.capitalize()} Proteins execution")
-
-    if type == "hyphotetical":
-        hyphotetical_id = str(blast_path / str(f"{basename}_{type}_products.txt"))
+    
+    if type == "hypothetical":
+        hypothetical_id = str(blast_path / str(f"{basename}_{type}_products.txt"))
         no_hit_id = str(blast_path / str(f"{basename}_no_hit_products.txt"))
-        hyphotetical_id_strip = [line.strip() for line in open(hyphotetical_id, "r")]
+        hypothetical_id_strip = [line.strip() for line in open(hypothetical_id, "r")]
         no_hit_id_strip = [line.strip() for line in open(no_hit_id, "r")]
-        concatenate_list = [*hyphotetical_id_strip, *no_hit_id_strip]
+        concatenate_list = [*hypothetical_id_strip, *no_hit_id_strip]
 
         fasta_fetcher(str(augustus_path / str(f"Clear_{augustus_file}")),
                 concatenate_list, f"{type.capitalize()}_Products.fasta")
@@ -828,7 +828,7 @@ interpro_folder = pathlib.Path(annota_pwd / str("3_FunctionalAnnotation_" + Anno
 pathlib.Path(interpro_folder).mkdir(exist_ok=True)
 os.chdir(interpro_folder)
 
-# Running interproscan with hyphotetical proteins
+# Running interproscan with hypothetical proteins
 interpro_run("hypothetical", AnnotaBasename, blast_folder, augustus_folder, aug_parsing, interpro, AnnotaPipeline.get('interpro_exe'))
 
 # Running interproscan with annotated proteins 
