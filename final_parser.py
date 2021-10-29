@@ -138,6 +138,3 @@ def get_interpro_info(arq_entrada):
 get_interpro_info("TrangeliSC58_interproscan_hypothetical_output.gff3")
 #get_interpro_info("TrangeliSC58_interproscan_annotated_output.gff3")
 
-print(len(ipr_dict.keys()))
-print(len(go_dict.keys()))
-
