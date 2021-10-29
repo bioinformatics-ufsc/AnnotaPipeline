@@ -193,11 +193,11 @@ def is_tool(name):
 def check_file(file):
     logger = logging.getLogger('AnnotaPipeline')
     if os.path.isfile(file) == 0:
-        logging.error(f"File {str(file)} does not exist, please check earlier steps")
+        logger.error(f"File {str(file)} does not exist, please check earlier steps")
         log_quit()
     elif os.path.getsize(file) == 0:
-        logging.warning(f"File {str(file)} is empty, please check earlier steps")
-        logging.warning("Trying to continue, but failures may occur")
+        logger.warning(f"File {str(file)} is empty, please check earlier steps")
+        logger.warning("Trying to continue, but failures may occur")
         logger.info("Sometimes things don't work as we expect... and that's ok. "
                     "But, seriously, check your inputs and outputs and rerun.")
 
