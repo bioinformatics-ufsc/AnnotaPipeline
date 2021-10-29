@@ -1004,7 +1004,7 @@ else:  # User selected run Augustus
     annotate_codingseq(annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + "_proteins.fasta"), 
         augustus_folder / str("AUGUSTUS_" + AnnotaBasename + ".codingseq"), AnnotaBasename)
 
-
+# hyphotetical 
 logger.info("AnnotaPipeline has annotated the annotations on the annotated file.")
 
 # -----------------------------------------------------------------------
