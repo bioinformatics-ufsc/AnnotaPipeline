@@ -292,10 +292,10 @@ def interpro_run(type, basename, blast_path, augustus_path, augustus_file, inter
         fasta_fetcher(str(augustus_path / str(f"Clear_{augustus_file}")),
                 concatenate_list, f"{type.capitalize()}_Products.fasta")
     else:
-        annotated_file = str(blast_folder / str(f"{basename}_{type}_products.txt"))
+        annotated_file = str(blast_path / str(f"{basename}_{type}_products.txt"))
         annotated_id = [line.strip().split()[0] for line in open(annotated_file, "r")]
-        fasta_fetcher(str(augustus_path / str(f"Clear_{augustus_file}")), annotated_id,
-                    f"{type.capitalize()}_Products.fasta")
+        fasta_fetcher(str(augustus_path / str(f"Clear_{augustus_file}")), 
+                    annotated_id, f"{type.capitalize()}_Products.fasta")
 
 
     # Check if expected file exists
