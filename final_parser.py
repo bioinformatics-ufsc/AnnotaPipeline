@@ -2,7 +2,7 @@
 import argparse
 import os
 import os.path
-
+import re
 # parser = argparse.ArgumentParser(
 #         add_help=False,  # removes original [--help]
 #         description='''Script join information from Annotations, Functional annotations, transcriptomics and Proteomics
@@ -69,8 +69,6 @@ import os.path
 superfamily_dict = {}
 ipr_dict = {}
 go_dict = {}
-annotation_dict = {}
-
 
 def get_interpro_info(arq_entrada):
         entrada = open(str(arq_entrada), "r").read().split("##FASTA")  # SPLITTING THE GFF3 FILE IN TWO CATEGORIES
@@ -96,7 +94,7 @@ def get_interpro_info(arq_entrada):
                 if not interpro:
                         interpro.append("None")
                 if not superfamily:
-                        interpro.append("None")
+                        superfamily.append("None")
 
         # TREATING EACH QUERY, RETRIEVING THE INFORMATION THAT WILL BE WRITTEN ON THE FIRST OUTPUT FILE
         for seq_reg in interp:
@@ -135,6 +133,60 @@ def get_interpro_info(arq_entrada):
                                         ontologia, interpro, superfamily = create_or_reset_lists()
 
 
-get_interpro_info("TrangeliSC58_interproscan_hypothetical_output.gff3")
-#get_interpro_info("TrangeliSC58_interproscan_annotated_output.gff3")
+annotation_dict = {}
 
+def get_annotation(file):
+        annotations = open(file, "r").read().splitlines()
+        for line in annotations:
+                line = line.split("\t")
+                #annotation = re.split("(Interpro|(GO", line[1])[0]
+                annotation_dict[line[0]] = re.split(r'\(InterPro|\(GO', line[1])[0].strip()
+
+transcript_dict = {}
+
+def get_transcripts(file):
+        transcripts = open(file, "r").read().splitlines()
+        # Remove header
+        del transcripts[0]
+        for line in transcripts:
+                line = line.split("\t")
+                transcript_dict[line[0]] = line[1] 
+
+unique_peptide = {}
+total_peptide = {}
+
+def get_proteomics(file):
+        proteomics = open(file, "r").read().splitlines()
+        # Remove header
+        del proteomics[0]
+        for line in proteomics:
+                line = line.split("\t")
+                total_peptide[line[0]] = line[1]
+                if line[1] != "0":
+                        unique_peptide[line[0]] = line[2]
+
+
+
+# Get interpro info
+get_interpro_info("testes/TrangeliSC58_interproscan_hypothetical_output.gff3")
+get_interpro_info("testes/TrangeliSC58_interproscan_annotated_output.gff3")
+get_annotation("testes/All_Annotated_Products.txt")
+get_transcripts("testes/TrangeliSC58_Transcript_Quantification.tsv")
+get_proteomics("testes/TrangeliSC58_Total_Proteomics_Quantification.tsv")
+
+dictList = [total_peptide, unique_peptide, transcript_dict, annotation_dict, go_dict, ipr_dict, superfamily_dict]
+unique_id_proteins = []
+for Dict in dictList:
+        [unique_id_proteins.append(key) for key in Dict.keys() if key not in unique_id_proteins]
+
+file_output = open("AnnotaPipeline_Summary.tsv", "a")
+file_output.write("ProteinID\tAnnotation\tSuperfamily\tIPR\tGO\tTranscript\tExpression\tTotal_Peptide\tUnique_Peptide\n")
+for protein in unique_peptide:
+        if total_peptide.get(protein) != "None":
+                expression = "True"
+        else:   expression = "False"
+        file_output.write(f"{protein}\t{annotation_dict.get(protein)}\t{superfamily_dict.get(protein)}"
+                        f"\t{str(ipr_dict.get(protein)).replace('InterPro:', '')}\t{str(go_dict.get(protein)).replace('GO:', '')}"
+                        f"\t{expression}\t{total_peptide.get(protein)}\t{unique_peptide.get(protein)}\n")
+
+file_output.close()
