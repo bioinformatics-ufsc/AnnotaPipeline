@@ -1145,6 +1145,13 @@ if kallisto_method != None and args.seq is not None:
     summary_parser_command_line = summary_parser_command_line + f" -proteomics {str(comet_output_file / str(AnnotaBasename + 'Total_Proteomics_Quantification.tsv'))}"
 
 #This is the end of the line
-subprocess.getoutput(summary_parser_command_line)
+try:
+    logger.info("Generating Summary file")
+    subprocess.getoutput(summary_parser_command_line)
+except Exception:
+    logger.error("Failed to create summary file, check files")
+    logger.debug(summary_parser_command_line)
+
+logger.info("That's all folks")
 # close logger
 logging.shutdown()
