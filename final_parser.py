@@ -3,67 +3,67 @@ import argparse
 import os
 import os.path
 import re
-# parser = argparse.ArgumentParser(
-#         add_help=False,  # removes original [--help]
-#         description='''Script join information from Annotations, Functional annotations, transcriptomics and Proteomics
+parser = argparse.ArgumentParser(
+        add_help=False,  # removes original [--help]
+        description='''Script join information from Annotations, Functional annotations, transcriptomics and Proteomics
 
-# Expected output will be a xlsx file like with this columns:
+Expected output will be a xlsx file like with this columns:
 
-# Protein_ID  Annotation  Superfamily IPR GO  Transcript (present|absent) Total_peptide Unique_Peptide
+Protein_ID  Annotation  Superfamily IPR GO  Transcript (present|absent) Total_peptide Unique_Peptide
 
-# ''',
-#         epilog="""Rise to fame, your time has come!""", formatter_class=argparse.RawTextHelpFormatter
-# )
+''',
+        epilog="""Rise to fame, your time has come!""", formatter_class=argparse.RawTextHelpFormatter
+)
 
-# requiredNamed = parser.add_argument_group('required arguments')
-# optionalNamed = parser.add_argument_group('optional arguments')
+requiredNamed = parser.add_argument_group('required arguments')
+optionalNamed = parser.add_argument_group('optional arguments')
 
-# # mandatory arguments
-# #   type (default): string
-# requiredNamed.add_argument(
-#         '-annot', dest='annot',
-#         metavar='[All_annotation.txt]',
-#         help='Annotapipeline Output containing proteins annotated',
-#         required=True
-# )
+# mandatory arguments
+#   type (default): string
+requiredNamed.add_argument(
+        '-annot', dest='annot',
+        metavar='[All_annotation.txt]',
+        help='Annotapipeline Output containing proteins annotated',
+        required=True
+)
 
-# requiredNamed.add_argument(
-#         '-ipr_annot', dest='ipr_annot',
-#         metavar='[interproscan_annotated_output.gff3]',
-#         help='Output from InterproScan with Annotated Proteins',
-#         required=True
-# )
+requiredNamed.add_argument(
+        '-ipr_annot', dest='ipr_annot',
+        metavar='[interproscan_annotated_output.gff3]',
+        help='Output from InterproScan with Annotated Proteins',
+        required=True
+)
 
-# requiredNamed.add_argument(
-#         '-ipr_hyp', dest='ipr_hyp',
-#         metavar='[interproscan_hypothetical_output.gff3]',
-#         help='Output from InterproScan with hypothetical Proteins',
-#         required=True
-# )
+requiredNamed.add_argument(
+        '-ipr_hyp', dest='ipr_hyp',
+        metavar='[interproscan_hypothetical_output.gff3]',
+        help='Output from InterproScan with hypothetical Proteins',
+        required=True
+)
 
-# optionalNamed.add_argument(
-#         '-tr', dest='tr',
-#         metavar='[interproscan_Transcript_Quantification.tsv]',
-#         help='Summary from transcriptomics analysis (optional)',
-# )
+optionalNamed.add_argument(
+        '-tr', dest='tr',
+        metavar='[interproscan_Transcript_Quantification.tsv]',
+        help='Summary from transcriptomics analysis (optional)',
+)
 
-# optionalNamed.add_argument(
-#         '-proteomics', dest='proteomics',
-#         metavar='[interproscan_Total_Proteomics_Quantification.tsv]',
-#         help='Summary from proteomics analysis (optional)',
-# )
+optionalNamed.add_argument(
+        '-proteomics', dest='proteomics',
+        metavar='[interproscan_Total_Proteomics_Quantification.tsv]',
+        help='Summary from proteomics analysis (optional)',
+)
 
-# # custom [--help] argument
-# optionalNamed.add_argument(
-#         '-h', '-help', '--help',
-#         action='help',
-#         default=argparse.SUPPRESS,  # hidden argument
-#         help='Ooh, Life is good... \
-#         As good as you wish!'
-# )
+# custom [--help] argument
+optionalNamed.add_argument(
+        '-h', '-help', '--help',
+        action='help',
+        default=argparse.SUPPRESS,  # hidden argument
+        help='Ooh, Life is good... \
+        As good as you wish!'
+)
 
-# # arguments saved here
-# args = parser.parse_args()
+# arguments saved here
+args = parser.parse_args()
 
 
 superfamily_dict = {}
@@ -168,11 +168,17 @@ def get_proteomics(file):
 
 
 # Get interpro info
-get_interpro_info("testes/TrangeliSC58_interproscan_hypothetical_output.gff3")
-get_interpro_info("testes/TrangeliSC58_interproscan_annotated_output.gff3")
-get_annotation("testes/All_Annotated_Products.txt")
-get_transcripts("testes/TrangeliSC58_Transcript_Quantification.tsv")
-get_proteomics("testes/TrangeliSC58_Total_Proteomics_Quantification.tsv")
+get_interpro_info(args.ipr_annot)
+get_interpro_info(args.ipr_hyp)
+get_annotation(args.annot)
+dictList = [annotation_dict, go_dict, ipr_dict, superfamily_dict]
+# Join optional analysis if needed
+if args.tr:
+        get_transcripts(args.tr)
+        dictList.append(transcript_dict)
+if args.proteomics:
+        get_proteomics(args.proteomics)
+        dictList.append(total_peptide, unique_peptide)
 
 dictList = [total_peptide, unique_peptide, transcript_dict, annotation_dict, go_dict, ipr_dict, superfamily_dict]
 unique_id_proteins = []
