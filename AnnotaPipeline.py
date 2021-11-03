@@ -1132,7 +1132,7 @@ if len(comet.get('comet_bash')) != 0:
 
 # Return to AnnotaPipeline basedir
 os.chdir(annota_pwd)
-
+logger = logging.getLogger('AnnotaPipeline')
 # --------------------------------------------------------------------------------------------------
 # summary PARSER 
 summary_parser_command_line = f"{python_exe} {str(pipeline_pwd / 'summary_parser.py')}" \
