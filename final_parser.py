@@ -21,6 +21,13 @@ optionalNamed = parser.add_argument_group('optional arguments')
 # mandatory arguments
 #   type (default): string
 requiredNamed.add_argument(
+        '-b', dest='basename',
+        help='AnnotaBasename',
+        required=True
+)
+
+
+requiredNamed.add_argument(
         '-annot', dest='annot',
         metavar='[All_annotation.txt]',
         help='Annotapipeline Output containing proteins annotated',
@@ -189,7 +196,7 @@ unique_id_proteins = []
 for Dict in dictList:
         [unique_id_proteins.append(key) for key in Dict.keys() if key not in unique_id_proteins]
 
-file_output = open("AnnotaPipeline_Summary.tsv", "a")
+file_output = open(f"AnnotaPipeline_{args.basename}_Summary.tsv", "a")
 file_output.write("ProteinID\tAnnotation\tIPR\tGO\tSuperfamily\tTranscript\tTPM\tExpression\tTotal_Peptide\tUnique_Peptide\n")
 for protein in unique_id_proteins:
         if str(transcript_dict.get(protein)) != "None":
