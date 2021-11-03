@@ -94,7 +94,7 @@ def parser_interproscan(arq_entrada, arq_ipr):
         del interp[0]
         ipr = open(str(arq_ipr), "a")
 
-        lista = ["Coils", "MobiDBLite"] 
+        lista = ["Coils", "Gene3D", "MobiDBLite"]
 
         # TREATING EACH QUERY, RETRIEVING THE INFORMATION THAT WILL BE WRITTEN ON THE FIRST OUTPUT FILE
         for seq_reg in interp:
