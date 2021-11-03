@@ -1086,7 +1086,8 @@ if len(comet.get('comet_bash')) != 0:
     pathlib.Path(percolator_path_parsed).mkdir(exist_ok=True)
     # ----------------------------------------------------------------
     for comet_output_file in file_names:
-        # -----------------------------------------
+        # -------- check files created by comet to run percolator ---------------
+        check_file(f"{comet_output_file}.pin")
         # --------- RUN Percolator inside Percolator RAW path -------------------
         os.chdir(percolator_path_raw)
         percolator_out_basename = re.sub(r"\.[0-9].*","",comet_output_file.stem)
