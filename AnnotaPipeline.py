@@ -1036,7 +1036,7 @@ if kallisto_method != None and args.seq is not None:
     # Return to AnnotaPipeline basedir
     os.chdir(annota_pwd)
 
-#-----------------------------------------------------------
+#------------------------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
 if len(comet.get('comet_bash')) != 0:
     if kallisto_method == None or args.seq is None:
@@ -1132,7 +1132,19 @@ if len(comet.get('comet_bash')) != 0:
 
 # Return to AnnotaPipeline basedir
 os.chdir(annota_pwd)
+
+# --------------------------------------------------------------------------------------------------
+# summary PARSER 
+summary_parser_command_line = f"{python_exe} {str(pipeline_pwd / 'summary_parser.py')}" \
+                            f" -annot All_Annotated_Products.txt -ipr_hyp {str(interpro_folder / str(AnnotaBasename + '_interproscan_hypothetical_output.gff3'))}" \
+                            f" -ipr_annot {str(interpro_folder / str(AnnotaBasename + '_interproscan_annotated_output.gff3'))} -b {AnnotaBasename}"
+
+if len(comet.get('comet_bash')) != 0:
+    summary_parser_command_line = summary_parser_command_line + f" -tr {str(kallisto_output_path / str(AnnotaBasename + '_Transcript_Quantification.tsv'))}"
+if kallisto_method != None and args.seq is not None:
+    summary_parser_command_line = summary_parser_command_line + f" -proteomics {str(comet_output_file / str(AnnotaBasename + 'Total_Proteomics_Quantification.tsv'))}"
+
+#This is the end of the line
+subprocess.getoutput(summary_parser_command_line)
 # close logger
 logging.shutdown()
-
-# PARSER FINAL
