@@ -75,7 +75,7 @@ def get_interpro_info(arq_entrada):
         interp = entrada[0].split("##sequence-region")  # WE'LL BE USING ONLY THE FIRST PART OF THE GFF3 OUTPUT FILE
         del interp[0]
 
-        unwanted_db = ["Coils", "MobiDBLite"] 
+        unwanted_db = ["Coils", "Gene3D", "MobiDBLite"]
 
         def create_or_reset_lists():
                 ontologia = []
@@ -83,10 +83,11 @@ def get_interpro_info(arq_entrada):
                 superfamily = []
                 return ontologia, interpro, superfamily
 
-        def add_to_dicts(id):
-                superfamily_dict[id] = ",".join(superfamily)
-                ipr_dict[id] = ",".join(interpro)
-                go_dict[id] = ",".join(ontologia)
+        def add_to_dicts(id, go, ipr, superfamily):
+                # Remove duplicates from lists and add to dict
+                superfamily_dict[id] = ",".join(sorted(list(set(superfamily))))
+                ipr_dict[id] = ",".join(sorted(list(set(ipr))))
+                go_dict[id] = ",".join(sorted(ontologia))
 
         def add_none_to_empty():
                 if not ontologia:
@@ -107,7 +108,7 @@ def get_interpro_info(arq_entrada):
                         elif linha == seq_reg[1]:
                                 if linha == seq_reg[-1]:
                                         add_none_to_empty()
-                                        add_to_dicts(nome_subject)
+                                        add_to_dicts(nome_subject, ontologia, interpro, superfamily)
                                         ontologia, interpro, superfamily = create_or_reset_lists()
                                 # IGNORING THE FIRST LINE ON EACH GROUP OF QUERIES, AS IT'S NON-INFORMATIVE
                                 pass
@@ -119,7 +120,10 @@ def get_interpro_info(arq_entrada):
                                         anotation = linha[-1].split(";")
                                         for field in anotation:
                                                 if "Ontology" in field:
-                                                        ontologia.append(field.replace('"', "").replace("Ontology_term=", ""))
+                                                        go = field.replace('"', "").replace("Ontology_term=", "").split(",")
+                                                        for hit in go:
+                                                                if hit not in ontologia:
+                                                                        ontologia.append(hit)
                                                 if "Dbxref" in field:
                                                         interpro.append(field.replace('"', "").replace("Dbxref=", ""))
                                         if "SUPERFAMILY" in db:
@@ -129,7 +133,7 @@ def get_interpro_info(arq_entrada):
                                                                 superfamily.append(field.replace('"', "").replace("Name=", ""))
                                 if '\t'.join(linha) == seq_reg[-1]:
                                         add_none_to_empty()
-                                        add_to_dicts(nome_subject)
+                                        add_to_dicts(nome_subject, ontologia, interpro, superfamily)
                                         ontologia, interpro, superfamily = create_or_reset_lists()
 
 
@@ -150,7 +154,7 @@ def get_transcripts(file):
         del transcripts[0]
         for line in transcripts:
                 line = line.split("\t")
-                transcript_dict[line[0]] = line[1] 
+                transcript_dict[line[0]] = round(float(line[1]), 2)
 
 unique_peptide = {}
 total_peptide = {}
@@ -178,21 +182,26 @@ if args.tr:
         dictList.append(transcript_dict)
 if args.proteomics:
         get_proteomics(args.proteomics)
-        dictList.append(total_peptide, unique_peptide)
+        dictList.append(unique_peptide)
+        dictList.append(total_peptide)
 
-dictList = [total_peptide, unique_peptide, transcript_dict, annotation_dict, go_dict, ipr_dict, superfamily_dict]
 unique_id_proteins = []
 for Dict in dictList:
         [unique_id_proteins.append(key) for key in Dict.keys() if key not in unique_id_proteins]
 
 file_output = open("AnnotaPipeline_Summary.tsv", "a")
-file_output.write("ProteinID\tAnnotation\tSuperfamily\tIPR\tGO\tTranscript\tExpression\tTotal_Peptide\tUnique_Peptide\n")
-for protein in unique_peptide:
-        if total_peptide.get(protein) != "None":
+file_output.write("ProteinID\tAnnotation\tIPR\tGO\tSuperfamily\tTranscript\tTPM\tExpression\tTotal_Peptide\tUnique_Peptide\n")
+for protein in unique_id_proteins:
+        if str(transcript_dict.get(protein)) != "None":
+                transcript = "True"
+        else:   transcript = "False"
+        if str(total_peptide.get(protein)) != "None":
                 expression = "True"
         else:   expression = "False"
-        file_output.write(f"{protein}\t{annotation_dict.get(protein)}\t{superfamily_dict.get(protein)}"
-                        f"\t{str(ipr_dict.get(protein)).replace('InterPro:', '')}\t{str(go_dict.get(protein)).replace('GO:', '')}"
-                        f"\t{expression}\t{total_peptide.get(protein)}\t{unique_peptide.get(protein)}\n")
+        # Remove duplicates from dicts
+
+        file_output.write(f"{protein}\t{annotation_dict.get(protein)}\t{str(ipr_dict.get(protein)).replace('InterPro:', '').strip()}"
+                        f"\t{str(go_dict.get(protein)).strip()}\t{superfamily_dict.get(protein)}\t{transcript}"
+                        f"\t{transcript_dict.get(protein)}\t{expression}\t{total_peptide.get(protein)}\t{unique_peptide.get(protein)}\n")
 
 file_output.close()
