@@ -923,7 +923,7 @@ subprocess.run([
 # Cleaning the house
 try:
     os.remove("hmmscan.err")
-    os.rmdir("temp/")
+    shutil.rmtree("temp/")
 except Exception as warn:
     logger.warning("Failed to remove HMMSCAN log and temp dir")
     logger.debug(f"code error: {warn}")
