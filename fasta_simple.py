@@ -77,7 +77,7 @@ del fasta[0]  # remove empty value
 
 # ============== Write fasta file with new header ==========================
 
-out = open(f"Annota_{str(args.basename)}.fasta", "w")
+out = open(f"AnnotaPipeline_{str(args.basename)}_proteins.fasta", "w")
 ids_warn = []  # store ids with no annotation
 for sequence in fasta:
 	sequence = sequence.split("\n")

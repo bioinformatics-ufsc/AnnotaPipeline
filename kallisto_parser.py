@@ -95,4 +95,4 @@ else:
         df_kt_threshold = df_kallisto.loc[df_kallisto["tpm"] >= float(tpm)]
         df_kt_threshold.drop(columns=["length", "eff_length", "est_counts"], inplace=True)
 
-df_kt_threshold.to_csv(f"{args.basename}_transcript_evidence.txt", sep="\t", index=False)
+df_kt_threshold.to_csv(f"{args.basename}_Transcript_Quantification.tsv", sep="\t", index=False)
