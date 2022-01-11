@@ -1004,7 +1004,6 @@ else:  # User selected run Augustus
     annotate_codingseq(annota_pwd / str("AnnotaPipeline_" + AnnotaBasename + "_proteins.fasta"), 
         augustus_folder / str("AUGUSTUS_" + AnnotaBasename + ".codingseq"), AnnotaBasename)
 
-# hyphotetical 
 logger.info("AnnotaPipeline has annotated the annotations on the annotated file.")
 
 # -----------------------------------------------------------------------
@@ -1014,10 +1013,6 @@ logger.info("AnnotaPipeline has annotated the annotations on the annotated file.
 # If proteins were given, lack cdscexon files >> skip
 if kallisto_method != None and args.seq is not None:
     kallisto_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
-    # kallisto_output_path = pathlib.Path(f"{annota_pwd / f'4_TranscriptQuantification_{AnnotaBasename}'}")
-    # testei e funciona
-    # documentacao do Pathlib
-    # SubDeskTop = Path.joinpath(Desktop, "subdir")
     pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
     # Go to /4_TranscriptQuantification_
     os.chdir(kallisto_output_path)
@@ -1105,6 +1100,7 @@ if len(comet.get('comet_bash')) != 0:
         try:
             subprocess.getoutput(parser_percolator_command)
         except Exception as warn:
+            # Empty sheets will fall here
             logger.warning(f"Failed trying to parser {percolator_out_basename}_percolator_output.tsv")
             logger.debug(f"code error {warn}")
 
@@ -1124,7 +1120,7 @@ if len(comet.get('comet_bash')) != 0:
     try:
     # Sort spectrum count
         os.system(f"sort -V {AnnotaBasename}_pre_total_Proteomics_Quantification.tsv " \
-                f"-o  {AnnotaBasename}_Total_Proteomics_Quantification.tsv")
+                  f"-o  {AnnotaBasename}_Total_Proteomics_Quantification.tsv")
         os.remove(f"{AnnotaBasename}_pre_total_Proteomics_Quantification.tsv")
     except Exception as warn:
         logger.warning(f"Failed to sort {AnnotaBasename}_pre_total_Proteomics_Quantification.tsv")
@@ -1141,6 +1137,7 @@ summary_parser_command_line = f"{python_exe} {str(pipeline_pwd / 'summary_parser
                               f" -ipr_hyp {str(interpro_folder / str(AnnotaBasename + '_interproscan_hypothetical_output.gff3'))}" \
                               f" -ipr_annot {str(interpro_folder / str(AnnotaBasename + '_interproscan_annotated_output.gff3'))}"
 
+# Add optional parametes (if kallisto and/or comet were executed)
 if kallisto_method != None and args.seq is not None:
     summary_parser_command_line = summary_parser_command_line + f" -tr {str(kallisto_output_path / str(AnnotaBasename + '_Transcript_Quantification.tsv'))}"
 if len(comet.get('comet_bash')) != 0:
