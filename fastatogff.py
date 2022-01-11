@@ -8,9 +8,10 @@ import warnings
 parser = argparse.ArgumentParser(
         add_help=False,
         description='''
-        AnnotaPipeline Subscript Parser GFF
+        AnnotaPipeline script to parse GFF
 
         Input GFF file and All annotated Products to join annotation into GFF
+
         NOTE: If you make a subset from All_Annotated_Products.txt and input in this script,
         the output will have only this subset.
         ''',
@@ -102,9 +103,6 @@ for gene in gff:
                 if stat is gene_stats[-1]:
                         if id_gene in dict_anot.keys():
                                 try:
-                                        #outfile.write(f"{'\n'.join(infos[0:count_transcript])}\n" 
-                                        #              f"{transcript_line}\t{dict_anot.get(id_gene)}" 
-                                        #              f"{'\n'.join(infos[count_transcript:])}")
                                         outfile.write("\n".join(infos[0:count_transcript]) + "\n" +
                                                                   transcript_line + "\t" + dict_anot.get(id_gene)
                                                                   + "\n".join(infos[count_transcript:]))

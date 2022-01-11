@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser(
 	add_help=False,  # removes original [--help]
 	description='''Script to join sequence and annotations in a simple way (alternative to gff_to fasta, if you don't
 have a gff file)
-Squence's headers will be like this:
+Sequence's headers will be like this:
 ><sequence_id> | Organism: <given organism> | Description: <info>
 Example:
 >g1.t1 | Organism: Homo sapiens | Description: Glucose-6-phosphate 1

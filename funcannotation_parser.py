@@ -10,8 +10,8 @@ import sys
 parser = argparse.ArgumentParser(
     add_help=False,  # removes original [--help]
     description='''    
-    Script to parser Interproscan, RPSblast and Pfam results.
-    WARNING: Results from Coils and MobiDBLite won't be parsed
+    Script to parser Interproscan, RPSblast and HMMer results.
+    WARNING: Results from Coils, Gene3D and MobiDBLite won't be parsed
     ''',
     epilog="""And shall the hopeful words bring love inside your heart ...""",
     formatter_class=argparse.RawTextHelpFormatter
@@ -132,8 +132,6 @@ def parser_interproscan(arq_entrada, arq_ipr, arq_saida):
                 name = str(None)
                 interpro = str(None)
                 linha = linha.split("\t")
-                # start_query = linha[3]
-                # stop_query = linha[4]
                 name_subject = linha[0]
                 db = linha[1]
                 if not any(unwanted in db for unwanted in db_list):
@@ -157,13 +155,13 @@ def parser_interproscan(arq_entrada, arq_ipr, arq_saida):
 def pfam_format(arq_entrada, arq_saida):
     input = open(str(arq_entrada), "r").read().splitlines()
     output = open(str(arq_saida), "w")
-    del input[0:3]  # Del cabeçalho
-    del input[-10:]  # Del rodapé
+    del input[0:3] 
+    del input[-10:]  
     for line in input:
-        line = re.sub(r'\s+', ' ', line).split(" ")  # retira todos os espaços e quebra as colunas
-        aux = " ".join(line[18:])  # reune as palavras por espaço
-        del line[18:]  # depois da coluna 18 apenas palavras
-        line.append(aux)  # reescreve a linha
+        line = re.sub(r'\s+', ' ', line).split(" ")  
+        aux = " ".join(line[18:]) 
+        del line[18:]  
+        line.append(aux) 
         output.write("\t".join(line) + "\n")
     output.close()
 
@@ -212,17 +210,22 @@ def sort_arq(arq_entrada, arq_saida):
         ordered.write(str(line))
     ordered.close()
 
-
+# ----------- Start -------------
+# Parse interproscan file
 parser_interproscan(args.interpro, f"InterProScan_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
 logger.info("InterProScan parser done")
+# Parse HMMer file
 pfam_format(args.hmm, f"Hmmscan_Out_{args.basename}.txt")
 logger.info("Hmmscan format done")
 parser_pfam(f"Hmmscan_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
 logger.info("Hmmscan parser done")
+# Parse RPSblast file
 parser_rpsblast(args.rpsblast, f"RPSblast_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
 logger.info("RPSblast parser done")
+# Group and sort 
 sort_arq(f"Temp_{args.basename}.txt", f"{args.basename}_Grouped_Hypothetical_Information.txt")
 logger.info("Sorting querys in files")
+# Cleaning the house
 os.system(f"rm Temp_{args.basename}.txt")
 logger.info("Temporary file removed")
 logger.info("Functional Annotation step is completed")

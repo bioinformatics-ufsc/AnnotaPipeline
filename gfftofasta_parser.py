@@ -6,7 +6,7 @@ import warnings
 parser = argparse.ArgumentParser(
     add_help=False,  # removes original [--help]
     description='''Script to write gff info into fasta sequences
-Squence's headers will be like this:
+Sequence's headers will be like this:
 ><sequence_id> | Organism: <given organism> | Location: <scaffold/chromossome> | Start: <info> | End: <info> | Strand: <+/-> | Description: <info>
 Example:
 >g1.t1 | Organism: Homo sapiens | Location: scaffold1 | Start: 12768 | End: 14450 | Strand: + | Description: Glucose-6-phosphate 1

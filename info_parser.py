@@ -6,9 +6,9 @@ from shutil import ExecError
 
 parser = argparse.ArgumentParser(
         add_help=False,  # removes original [--help]
-        description='''Script to create annotations of hypothetical proteins with info from hmmer, interproscan and rpsblast
+        description='''Script to create annotations of proteins with info from hmmer, interproscan and rpsblast
 
-Input  - Sorted Terms [file_preparsed]
+Input  - Sorted Terms [file_pre-parsed]
 Ouput  - File with Id and annotation in the following way:
 
 id      hypothetical protein (IPR[...],GO[...])
@@ -25,21 +25,21 @@ optionalNamed = parser.add_argument_group('optional arguments')
 requiredNamed.add_argument(
         '-ipr1', '--ipr1', dest='ipr1',
         metavar='[InterProScan_Out.txt]',
-        help='Output Interpro',
+        help='Output Interpro [annotated]',
         required=True
 )
 
 requiredNamed.add_argument(
         '-ipr2', '--ipr2', dest='ipr2',
         metavar='[InterProScan_Out.txt]',
-        help='Output Interpro Info',
+        help='Output Interpro Info [hypothetical]',
         required=True
 )
 
 requiredNamed.add_argument(
         '-a', '--annotated', dest='annot',
         metavar='[Annotated_products.txt]',
-        help='File with id and annotations',
+        help='File with id and annotations, from blast',
         required=True
 )
 
@@ -53,7 +53,7 @@ requiredNamed.add_argument(
 requiredNamed.add_argument(
         '-hy', '--hypothetical', dest='hypo',
         metavar='[hypothetical_products.txt]',
-        help='File with id of hypothetical proteins',
+        help='File with id of hypothetical proteins, from blast',
         required=True
 )
 
@@ -65,13 +65,6 @@ optionalNamed.add_argument(
         help='Ooh, Life is good... \
         As good as you wish!'
 )
-
-'''Output must be
-id \t hypothetical protein (InterPro:IPR039726,GO:0004308,GO:0009405)
-'''
-# Input format fields
-# id    DB      Acession        Annot   IPR     GO
-# -------------------------------------------
 
 # arguments saved here
 args = parser.parse_args()
@@ -103,9 +96,6 @@ def parser_interproscan(arq_entrada, arq_ipr):
                         if linha == seq_reg[0]:
                                 linha = linha.split(" ")
                                 del linha[0]
-                                # nome_query = linha[0]
-                                # start_query = linha[1]
-                                # stop_query = linha[2]
                         elif linha == seq_reg[1]:
                                 # IGNORING THE FIRST LINE ON EACH GROUP OF QUERIES, AS IT'S NON-INFORMATIVE
                                 pass
@@ -115,8 +105,6 @@ def parser_interproscan(arq_entrada, arq_ipr):
                                 name = str(None)
                                 interpro = str(None)
                                 linha = linha.split("\t")
-                                # start_query = linha[3]
-                                # stop_query = linha[4]
                                 nome_subject = linha[0]
                                 db = linha[1]
                                 try:
@@ -162,7 +150,7 @@ def intepro_process(ids_dict):
         interpro_out = open("Interpro_out_tmp.txt", "r").read().splitlines()
         temporary_query(interpro_out)
 
-        old_id = interpro_out[0].split("\t")  # recebe a primeira query para começar a contagem
+        old_id = interpro_out[0].split("\t") 
         old_id = old_id[0]
 
         # Initialize lists
@@ -221,7 +209,6 @@ def intepro_process(ids_dict):
                         if (go != "None") and (go not in gos):
                                 gos.append(go)
                 old_id = new_id
-
         write_no_ipr(ids_dict)
         os.remove("Interpro_out_tmp.txt")
 
