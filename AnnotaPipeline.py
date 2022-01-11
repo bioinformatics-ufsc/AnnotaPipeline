@@ -68,8 +68,8 @@ parser = argparse.ArgumentParser(
     Make sure all required parameters are given
     More instructions are in AnnotaPipeline.config
 
-    If you already have protein file, give it through the flag -p, this way, Augustus prediction will be
-    ignored. If you have a gff file for this protein file, give it throuth -gff flag to get complete annotations.
+    If you already have protein file, pass it through the flag -p, this way,
+    Augustus prediction will be skipped.
 
 ''',
     epilog=""" >>>> -s and -p are mutually exclusive arguments <<<<
@@ -177,7 +177,7 @@ config.sections()  # get sections of each program
 
 
 # ---------------------- FUNCTIONS ---------------------------------------------
-# Function to close log and quit AnnootaPipeline if some expected file/parameter cant be found
+# Function to close log and quit AnnotaPipeline if some expected file/parameter cant be found
 def log_quit():
     logger.info("Exiting")
     logging.shutdown()
