@@ -30,7 +30,7 @@ Please notice that the submited ```gff_file.gff``` needs to be in the GFF format
 # Output
 Depending on which option you decided to execute the AnnotaPipeline, it will output three files (among many others in their respective folders):  
 ```All_Annotated_Products.txt``` which contains all unique sequence identifiers and their respective annotations (with functional annotations, when present).  
-``` AnnotaPipeline_(basename)_proteins.fasta``` which contains all the protein sequences and their annotations (with functional annotations, when present) in FASTA format. 
+``` AnnotaPipeline_(basename)_proteins.fasta``` which contains all the protein sequences and their annotations (with functional annotations, when present) in FASTA format.  
 ```AnnotaPipeline_(basename)_Summary.tsv``` which contains an overview of all the annotations, functional annotations, gene family and more.  
 ```AnnotaPipeline_(basename)_transcripts.fasta``` which contains all the nucleotide sequences and their annotations (with functional annotations, when present) in FASTA format.  
 ```(basename)_Annotated_GFF.gff``` which contains all the sequences and their annotations (com anotações funcionais, quando presente) in GFF3 format.  
