@@ -22,6 +22,11 @@ This is the most complete version of AnnotaPipeline execution.
 It will execute gene and protein prediction on the ```genomic_data.fasta``` utilizing Augustus, and then utilize the predicted proteins to initiate the annotation process.  
 Because of this first step, it is important that you have trained Augustus to your particular species before executing AnnotaPipeline.  
 
+```python3 AnnotaPipeline.py -p protein_sequences.fasta -gff gff_file.gff```
+You can execute the AnnotaPipeline utilizing this command line, in case you already have a protein sequence file and a GFF file.
+The annotation process is the same as the first option, the difference being you will also have an annotated GFF file as output.
+Please notice that the submited ```gff_file.gff``` needs to be in the GFF format provided by Augustus.
+
 # Output
 Depending on which option you decided to execute the AnnotaPipeline, it will output three files (among many others in their respective folders):  
 ```All_Annotated_Products.txt``` which contains all unique sequence identifiers and their respective annotations (with functional annotations, when present).  
