@@ -25,6 +25,8 @@ setup(
     packages=find_packages(),
     version='1.0',
     description='Pipeline to predict and annotate eukaryotic genes',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     install_requires=requirements,
     author='Guilherme Augusto Maia, Eric Kazuo Kawagoe, Vilmar Benetti Filho, \
             Tatiany Aparecida Soratto, Renato Simões Glauber Wagner',
