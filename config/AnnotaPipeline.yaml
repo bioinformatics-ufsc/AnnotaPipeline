@@ -1,0 +1,81 @@
+#############################################
+###   AnnotaPipeline CONFIGURATION FILE   ###
+#############################################
+
+# IMPORTANT NOTES --------------------------------------------------------------
+
+# Possible values are included between brackets and separated by '/':
+#   EXAMPLE: [ option-a / option-b / option-c ]
+
+# Output flags from each program are not listed: they are generic and named after your given basename
+# FLAGS THAT ARE NOT LISTED, HAVE NOT BEEN TESTED: you can *try*, but results are not guaranteed
+
+# A AVENTURA VAI COMEÇAR -------------------------------------------------------
+
+pipeline:
+  threads: 8    # [int] number of threads to run all programs (default: 8)
+  organism:     # EXAMPLE: Genus species
+  basename:     # EXAMPLE: Gspecies
+  keywords: >-  # specific keywords to classify each hsp found in blast/diamond as "annotated" or "hypothetical"
+    fragment, hypothetical, partial, uncharacterized, unknown, unspecified
+
+databases:
+  swissprot-db: /full/path/to/swissprot.db
+  secondary-db:   # [path] secondary database [accepted any of eupathdb], nrdb or trembldb
+  cdd-db:
+  pfam:
+
+interproscan:
+  interproscan-exe: /full/path/to/interproscan.sh
+  ms:   # OPTIONAL: minimum nucleotide size
+
+hmmer:
+  hmmscan: /full/path/to/hmmscan
+  E:      # e-value [1e-n] (n is an integer)
+  domE:   # filter per-domain output based on evalue [1e-n] (n is an integer)
+
+augustus:
+  augustus-exe: /full/path/to/augustus/bin/augustus
+  augustus-config: /full/path/to/augustus/config
+  strand:      # [ both / forward / backward ]
+  genemodel:   # [ partial / intronless / complete / atleastone / exactlyone ]
+  species:     # based on species within /path/to/augustus/config/species
+  protein:     # [ on / off ]
+  introns:     # [ on / off ]
+  start:       # [ on / off ]
+  stop:        # [ on / off ]
+  cds:         # [ on / off ]
+  # OPTIONAL here
+
+seq-cleaner:
+  minsize-seq:      # [int] minimal size for input sequences
+  clean-percent:    # [int] minimal % of unknown nucleotides (N)
+
+local-aligner:
+  software:     # [ blast / diamond ]
+  evalue: 1e-5  # [float] e-value (default: 0.00001)
+  identity:     # [int] identity threshold to filter blast results
+  positivity:   # [int] positivity threshold to filter blast results
+  coverage: 30  # [int] query coverage threshold to filter blast results
+                #       for a more restrict search, use a higher value (default: 30)
+  hsp-max: 10   # [int] exact number of alignments (recommended: 10)
+
+# RPSBLAST runs by default with:
+#   [-outfmt "6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle"]
+#   these flags are not listed
+rpsblast:
+  evalue:    # [float] e-value
+  hsp-max:   # maximum number of high scoring pairs
+
+kallisto:
+  kallisto-exe: /full/path/to/kallisto
+  rna-seq:      # FILE(s): path to rna-seq reads
+                #          2 files for paired-end data or 1 file for single-end data
+                # EXAMPLE: rna-seq: /path/to/R1.fastq /path/to/R2.fastq
+  l:            # [float] estimated average fragment length
+  s:            # [float] estimated standard deviation of fragment length
+  threshold:    # [ median / mean ]
+                # calculate TPM mean from Kallisto abundance file and use this value as cutoff
+  value:        # [float] use specific tpm value from kallisto abundance file as cutoff
+                #         EXAMPLE: value = 297.83
+  bootstrap: 0  # [int] default is 0
