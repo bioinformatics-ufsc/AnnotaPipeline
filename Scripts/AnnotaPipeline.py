@@ -273,7 +273,6 @@ def augustus_run(basename):
     aug_file = f"AUGUSTUS_{str(basename)}"
 
     subprocess.run([
-        "perl",
         str(augustus_script),
         str(aug_file + ".gff"),
         str("--seqfile=" + str(seq_file))
