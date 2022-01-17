@@ -508,15 +508,15 @@ def kallisto_check_parameters():
 # Part of check parameters function >> check specific entries for percolator (proteomics)
 def percolator_check_parameters():
     if len(config['PERCOLATOR'].get('percolator_bash')) == 0:
-        logger.error("[PERCOLATOR]: path to software is empty, but comet was setted")
-        logger.warning("[PERCOLATOR]: leave comet fields empty or pass parameters for PERCOLATOR")
+        logger.error("[PERCOLATOR]: path to software is empty, but COMET was provided")
+        logger.warning("PERCOLATOR leave COMET fields empty or pass parameters for PERCOLATOR")
         log_quit()
     if len(config['PERCOLATOR'].get('qvalue')) == 0:
         logger.error("[PERCOLATOR]: qvalue cutoff is empty, check this parameter")
         log_quit()
     # check value for parser
     if not (0 <= float(config['PERCOLATOR'].get('qvalue')) <= 1):
-        logger.error("[PERCOLATOR]: qvalue cutoff invalid. Must be float between [0-1]")
+        logger.error("[PERCOLATOR] qvalue cutoff invalid. Must be float between [0-1]")
         log_quit()
 
 # Part of check parameters function >> check specific entries for comet (proteomics)
@@ -534,14 +534,14 @@ def comet_check_parameters():
         # ----------------------------------------------
         for argument in ("params", "mass_files"):
             if len(config['COMET'].get(argument)) == 0:
-                logger.error(f"[COMET]: Parameter [{argument}] from section [COMET] is null")
+                logger.error(f"[COMET] Parameter [{argument}] from section [COMET] is null")
                 log_quit()
         # ------------ check extension mass files ------
         if len(config['COMET'].get('mass_files_ext').split()) < 1:
-            logger.error(f"[COMET]: Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] is null")
+            logger.error(f"[COMET] Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] is null")
             log_quit()
         elif len(config['COMET'].get('mass_files_ext').split()) > 1:
-            logger.error(f"[COMET]: Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] have more than one argument")
+            logger.error(f"[COMET] Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] have more than one argument")
             log_quit()
         # ------------ Specific conditions -----------------------
         # XOR conditional >> check if one value is True and another is False
@@ -550,7 +550,7 @@ def comet_check_parameters():
             logger.error("[COMET]: Leave both empty or give both")
             log_quit()
         elif last_check == first_check == True:
-            logger.warning("[COMET]: values for 'fist' and 'last' will overwrite those in params file")
+            logger.warning("COMET values for 'fist' and 'last' will overwrite those in params file")
             global use_last_and_first
             use_last_and_first = True
         else:
