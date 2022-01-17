@@ -1,0 +1,18 @@
+name: AnnotaPipeline
+channels:
+  - defaults
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.6.9
+  - setuptools
+  - pip
+  - bioconda::blast>=2.9.0+
+  - bioconda::interproscan>=5.52_86.0
+  - bioconda::hmmer>=3.1b2
+  - bioconda::kallisto>=0.46.1
+  - bioconda::comet-ms>=2019015
+  - bioconda::percolator>=3.05.0
+  - bioconda::augustus>=3.3.3
+  # - pip:
+  #     - git+

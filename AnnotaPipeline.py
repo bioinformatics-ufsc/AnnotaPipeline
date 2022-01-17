@@ -701,7 +701,7 @@ logger.info("IT'S DANGEROUS TO GO ALONE! TAKE THIS.")
 
 sections_config = config.sections()
 logger = logging.getLogger('AnnotaPipeline')
-
+logger.info("---------------------------------------------------------------")
 logger.info("Checking parameters in AnnotaPipeline.config file")
 check_parameters(sections_config)
 
@@ -745,6 +745,8 @@ os.chdir(augustus_folder)
 
 # ==============================================================================
 # Run Augustus or start with protein file?
+logger.info("---------------------------------------------------------------")
+logger.info("----------------- Gene Prediction has started -----------------")
 if args.protein is None:
     augustus_run(AnnotaBasename)
 else:
@@ -775,6 +777,8 @@ pathlib.Path(blast_folder).mkdir(exist_ok=True)
 os.chdir(blast_folder)
 
 # BLAST: command line
+logger.info("---------------------------------------------------------------")
+logger.info("--------------- Similarity Analysis has started ---------------")
 logger.info("BLAST execution and parsing has started")
 
 # Select secondary database from config file
@@ -831,7 +835,8 @@ os.chdir(annota_pwd)
 interpro_folder = pathlib.Path(annota_pwd / str("3_FunctionalAnnotation_" + AnnotaBasename))
 pathlib.Path(interpro_folder).mkdir(exist_ok=True)
 os.chdir(interpro_folder)
-
+logger.info("---------------------------------------------------------------")
+logger.info("------------- Functional Annotation has started ---------------")
 # Running interproscan with hypothetical proteins
 interpro_run("hypothetical", AnnotaBasename, blast_folder, augustus_folder, aug_parsing, interpro, AnnotaPipeline.get('interpro_exe'))
 
@@ -908,6 +913,8 @@ logger.info("RPSBLAST is finished")
 
 # -----------------------------------------------------------------------
 logger = logging.getLogger('AnnotaPipeline')
+logger.info("---------------------------------------------------------------")
+logger.info("---------------- Generating Annotation Files ------------------")
 logger.info("Parsing information from INTERPROSCAN, HMMSCAN and RPSBLAST")
 
 subprocess.run([
@@ -1016,6 +1023,8 @@ logger.info("AnnotaPipeline has annotated the annotations on the annotated file.
 # If kalisto_method is empty, lack arguments for kallisto >> skip
 # If proteins were given, lack cdscexon files >> skip
 if kallisto_method != None and args.seq is not None:
+    logger.info("---------------------------------------------------------------")
+    logger.info("---------- Transcript Quantification has started --------------")
     kallisto_output_path = pathlib.Path(annota_pwd / str("4_TranscriptQuantification_" + AnnotaBasename))
     pathlib.Path(kallisto_output_path).mkdir(exist_ok=True)
     # Go to /4_TranscriptQuantification_
@@ -1038,6 +1047,8 @@ if kallisto_method != None and args.seq is not None:
 #------------------------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
 if len(comet.get('comet_bash')) != 0:
+    logger.info("---------------------------------------------------------------")
+    logger.info("------------ Peptide Identification has started ---------------")
     if kallisto_method == None or args.seq is None:
         comet_output_path = pathlib.Path(annota_pwd / str("4_PeptideIdentification_" + AnnotaBasename))
     else:
