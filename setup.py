@@ -34,20 +34,18 @@ setup(
             Tatiany Aparecida Soratto, Renato Moreira Simões, Glauber Wagner',
     author_email='labinfo.ufsc@gmail.com',
     zip_safe=False,
-    data_files=[('config', ['AnnotaPipeline.config'])],
-    scripts=[('Scripts/',
-            [
-                'AnnotaPipeline.py',
-                'blastp_parser.py',
-                'fasta_simple.py',
-                'fastatogff.py',
-                'funcannotation_parser.py',
-                'gfftofasta_parser.py',
-                'info_parser.py',
-                'kallisto_parser.py',
-                'percolator_parser.py',
-                'summary_parser.py'
-             ])
+    data_files=[('config', ['config/AnnotaPipeline.config'])],
+    scripts=[
+                'Scripts/AnnotaPipeline.py',
+                'Scripts/blastp_parser.py',
+                'Scripts/fasta_simple.py',
+                'Scripts/fastatogff.py',
+                'Scripts/funcannotation_parser.py',
+                'Scripts/gfftofasta_parser.py',
+                'Scripts/info_parser.py',
+                'Scripts/kallisto_parser.py',
+                'Scripts/percolator_parser.py',
+                'Scripts/summary_parser.py'
              ],
     license = "BSD",            #alterar pra licensa
     include_package_data=True,
