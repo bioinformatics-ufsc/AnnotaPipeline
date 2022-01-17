@@ -49,7 +49,7 @@ group.add_argument(
 group.add_argument(
 	"-tpmval", "--tpm-threshold", dest="tpm_value",
 	metavar="-tpmth 100",
-	help="use a specific number as threshold for tpm"
+	help="use a specific value as threshold for tpm"
 )
 
 # custom [--help] argument

@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(
     add_help=False,
     description='''
 Script to parse Percolator Outputs
-INFO: DECOY results will also be removed
+INFO: DECOY results will also be parsed
     ''',
     epilog="""Shadows will fade... someday...""",
     formatter_class=argparse.RawTextHelpFormatter
@@ -72,7 +72,6 @@ parcial_output.write(str(percolator_file[0]))
 del percolator_file[0]
 for line in percolator_file:
     line = line.split("\t")
-    # escape decoy results
     if float(line[2]) <= args.qvalue:
         parcial_output.write(str('\t'.join(line)))
 
@@ -90,7 +89,6 @@ if len(percolator_out) < 2:
 del percolator_out[0]
 
 dict_write = {}
-# regex remover numeros estranhos no peptideo >> \[[0-9].*\]
 for line in percolator_out:
     line_split = line.rstrip("\n").split("\t")
     # Protein Id > can have more than one

@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 import argparse
-import os
 import os.path
 import re
 parser = argparse.ArgumentParser(
         add_help=False,  # removes original [--help]
-        description='''Script join information from Annotations, Functional annotations, transcriptomics and Proteomics
+        description='''Script to join information from Annotations, Functional annotations, Transcriptomics and Proteomics
 
-Expected output will be a xlsx file like with this columns:
-
-Protein_ID  Annotation  Superfamily IPR GO  Transcript (present|absent) Total_peptide Unique_Peptide
+Expected output will be a tsv file.
 
 ''',
         epilog="""Rise to fame, your time has come!""", formatter_class=argparse.RawTextHelpFormatter
@@ -26,11 +23,10 @@ requiredNamed.add_argument(
         required=True
 )
 
-
 requiredNamed.add_argument(
         '-annot', dest='annot',
         metavar='[All_annotation.txt]',
-        help='Annotapipeline Output containing proteins annotated',
+        help='AnnotaPipeline Output containing annotated proteins',
         required=True
 )
 
@@ -94,7 +90,7 @@ def get_interpro_info(arq_entrada):
                 # Remove duplicates from lists and add to dict
                 superfamily_dict[id] = ",".join(sorted(list(set(superfamily))))
                 ipr_dict[id] = ",".join(sorted(list(set(ipr))))
-                go_dict[id] = ",".join(sorted(ontologia))
+                go_dict[id] = ",".join(sorted(go))
 
         def add_none_to_empty():
                 if not ontologia:
@@ -143,14 +139,12 @@ def get_interpro_info(arq_entrada):
                                         add_to_dicts(nome_subject, ontologia, interpro, superfamily)
                                         ontologia, interpro, superfamily = create_or_reset_lists()
 
-
 annotation_dict = {}
 
 def get_annotation(file):
         annotations = open(file, "r").read().splitlines()
         for line in annotations:
                 line = line.split("\t")
-                #annotation = re.split("(Interpro|(GO", line[1])[0]
                 annotation_dict[line[0]] = re.split(r'\(InterPro|\(GO', line[1])[0].strip()
 
 transcript_dict = {}
@@ -172,9 +166,9 @@ def get_proteomics(file):
         del proteomics[0]
         for line in proteomics:
                 line = line.split("\t")
-                total_peptide[line[0]] = line[1]
+                total_peptide[line[0]] = line[2]
                 if line[1] != "0":
-                        unique_peptide[line[0]] = line[2]
+                        unique_peptide[line[0]] = line[1]
 
 
 
@@ -205,8 +199,6 @@ for protein in unique_id_proteins:
         if str(total_peptide.get(protein)) != "None":
                 expression = "True"
         else:   expression = "False"
-        # Remove duplicates from dicts
-
         file_output.write(f"{protein}\t{annotation_dict.get(protein)}\t{str(ipr_dict.get(protein)).replace('InterPro:', '').strip()}"
                         f"\t{str(go_dict.get(protein)).strip()}\t{superfamily_dict.get(protein)}\t{transcript}"
                         f"\t{transcript_dict.get(protein)}\t{expression}\t{total_peptide.get(protein)}\t{unique_peptide.get(protein)}\n")

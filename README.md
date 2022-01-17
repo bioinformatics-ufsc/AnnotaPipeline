@@ -31,6 +31,7 @@ python3 AnnotaPipeline.py -s genomic_data.fasta
 
 This is the most complete version of AnnotaPipeline execution.
 
+
 It will execute gene and protein prediction on the `genomic_data.fasta` utilizing AUGUSTUS, and then utilize the predicted proteins to initiate the annotation process.
 
 Because of this first step, it is important that you have trained AUGUSTUS to your particular species before executing AnnotaPipeline.

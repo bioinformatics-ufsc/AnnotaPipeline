@@ -22,8 +22,8 @@ from shutil import which
 
 parser = argparse.ArgumentParser(
     add_help=False,  # removes original [--help]
-    description='''Scritp to run and parse output from Swissprot and other database [NR or Trytrip],
-    Please give at least one, through flags -spdb, -trbl or -nr    
+    description='''Scritp to run and parse output from Swissprot and other database [NR, EupathDB, Trembl],
+    Please give at least one, through flags -nr, -spdb or -trbl   
     ''',
     epilog=""">>>> -nr, -spdb and -trbl are mutually exclusive arguments <<<<
     
@@ -79,15 +79,15 @@ group.add_argument(
 optionalNamed.add_argument(
     '-id', '--identity', dest='id',
     metavar='', default=40,
-    help=('Minimal identity to transfer annotation. If a Query have just results below this threshold '
-          'will be considered as hypothetical'
+    help=('Minimal identity to transfer annotation. If a query has results below this threshold '
+          'it will be classified as hypothetical'
           + ' (default: 40)')
 )
 
 optionalNamed.add_argument(
     '-cov', '--coverage', dest='cov',
     metavar='', default=30,
-    help=('Minimal coverage to analise query result. Matchs below this threshold '
+    help=('Minimal coverage to analyse query result. Matches below this threshold '
           'will not be considered'
           + ' (default: 30)')
 )
@@ -104,8 +104,8 @@ optionalNamed.add_argument(
 optionalNamed.add_argument(
     '-pos', '--positivity', dest='pos',
     metavar='', default=60,
-    help=('Minimal positivity to transfer annotation. If a Query have just results below this threshold '
-          'will be considered as hypothetical'
+    help=('Minimal positivity to transfer annotation. If a query has results below this threshold '
+          'it will be classified as hypothetical'
           + ' (default: 60)')
 )
 
@@ -284,12 +284,10 @@ def parser_trembl(basename, result_blast, identidade, positividade, cov):
             classification.clear()
             annots.clear()
             desc_list.clear()
-        # if the HSP is a pseudogene (based on its title)
-        #   it's counted separately from the other two
         else:
             if float(line_split[7]) > float(cov):
                 # Check annotations, if any word doesn't match with keywords
-                if not any(s in desc.lower() for s in keyword_list):
+                if not any(word in desc.lower() for word in keyword_list):
                     # Results that doesn't have match with keyword_list pass
                     # Check positivity and identity with subject
                     # If it's lower than threshold, it's not trustworthy, so, it's considered hypothetical
@@ -364,12 +362,10 @@ def parser_trytrip(basename, result_blast, identidade, positividade, cov):
             classification.clear()
             annots.clear()
             desc_list.clear()
-        # if the HSP is a pseudogene (based on its title)
-        #   it's counted separately from the other two
         else:
             if float(title[7]) > float(cov):
                 # Check annotations, if any word doesn't match with keywords
-                if not any(s in desc.lower() for s in keyword_list):
+                if not any(word in desc.lower() for word in keyword_list):
                     # Results that doesn't have match with keyword_list pass
                     # Check positivity and identity with subject
                     # If it's lower than threshold, it's not trustworthy, so, it's considered hypothetical
@@ -444,12 +440,10 @@ def parser_nr(basename, result_blast, identidade, positividade, cov):
             classification.clear()
             annots.clear()
             desc_list.clear()
-        # if the HSP is a pseudogene (based on its title)
-        #   it's counted separately from the other two
         else:
             if float(title[7]) > float(cov):
                 # Check annotations, if any word doesn't match with keywords
-                if not any(s in desc.lower() for s in keyword_list):
+                if not any(word in desc.lower() for word in keyword_list):
                     # Results that doesn't have match with keyword_list pass
                     # Check positivity and identity with subject
                     # If it's lower than threshold, it's not trustworthy, so, it's considered hypothetical
@@ -528,8 +522,7 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
             annots.clear()
         else:
             if float(line_split[7]) > float(cov):
-                # ifcov # mesmo q colocar flag qndo roda o blast -- apenas resultados acima rodar 30-90
-                if not any(s in description.lower() for s in keyword_list):
+                if not any(word in description.lower() for word in keyword_list):
                     if float(line_split[5]) >= float(positividade) and float(line_split[6]) >= float(identidade):
                         # If annotation is strong, is considered as non_hypothetical
                         classification.append("non_hypothetical")
