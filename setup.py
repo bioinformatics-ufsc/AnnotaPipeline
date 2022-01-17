@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 # setar as versoes sertinho (>=x ou ==x)
 requirements = [
-                'bioopython>=1.73',
+                'biopython>=1.73',
                 #'shutil',
                 'pandas>=0.24.1',
                 #'argparse',
