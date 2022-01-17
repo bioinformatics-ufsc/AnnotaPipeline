@@ -2,20 +2,22 @@ from setuptools import setup, find_packages
 
 # setar as versoes sertinho (>=x ou ==x)
 requirements = [
-                'Bio',
-                'shutil',
-                'pandas',
-                'argparse',
-                'configparser',
-                'logging',
-                'os',
-                'pathlib',
-                'shutil',
-                'subprocess',
-                'sys',
-                're',
-                'warnings'
+                'bioopython>=1.73',
+                #'shutil',
+                'pandas>=0.24.1',
+                #'argparse',
+                #'configparser',
+                #'logging',
+                #'os',
+                #'pathlib',
+                #'subprocess',
+                #'sys',
+                #'re',
+                #'warnings'
                 ]
+
+# default python libraries
+# https://docs.python.org/3/library/
 
 with open('README.md') as rm:
     long_description = rm.read()
@@ -29,22 +31,26 @@ setup(
     long_description_content_type='text/markdown',
     install_requires=requirements,
     author='Guilherme Augusto Maia, Eric Kazuo Kawagoe, Vilmar Benetti Filho, \
-            Tatiany Aparecida Soratto, Renato Simões Glauber Wagner',
+            Tatiany Aparecida Soratto, Renato Moreira Simões, Glauber Wagner',
     author_email='labinfo.ufsc@gmail.com',
     zip_safe=False,
-    package_data={'': ['*.config']},
+    data_files=[('config', ['AnnotaPipeline.config'])],
+    scripts=['AnnotaPipeline.py',
+             'blastp_parser.py',
+             'fasta_simple.py',
+             'fastatogff.py',
+             'funcannotation_parser.py',
+             'gfftofasta_parser.py',
+             'info_parser.py',
+             'kallisto_parser.py',
+             'percolator_parser.py',
+             'summary_parser.py'
+             ], # adicionar cada um dos scripts
     include_package_data=True,
-    python_requires=">=3",
-    url='https://github.com/GuiMaia/AnnotaPipeline/tree/v1.0',
+    python_requires=">=3.6.9", # versao minima pra ter pathlib
+    url='https://github.com/GuiMaia/AnnotaPipeline/tree/v1.0.git',
     download_url='https://github.com/GuiMaia/AnnotaPipeline/archive/refs/heads/v1.0.zip',
     classifiers=[
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',  # pathlib is born
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9'
     ],
 )
 
