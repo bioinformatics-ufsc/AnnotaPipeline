@@ -231,9 +231,16 @@ def fasta_fetcher(input_fasta, id_list, fetcher_output):
 def augustus_run(basename):
     # create AUGUSTUS directory
     logger = logging.getLogger('AUGUSTUS')
-    augustus_dir = pathlib.Path(augustus_main['augustus_path'])
-    augustus_bin = augustus_dir / "bin" / "augustus"
-    augustus_config = augustus_dir / "config"
+    if augustus_main['augustus_path'].lower() == 'conda':
+        # Runing with conda
+        augustus_bin = "augustus"
+        augustus_config = pathlib.Path(sys.prefix, 'config')
+        augustus_script = "getAnnoFasta.pl"
+    else:
+        # Runing custom
+        augustus_bin = pathlib.Path(augustus_main['augustus_path']) / "bin" / "augustus"
+        augustus_config = pathlib.Path(augustus_main['augustus_path']) / "config"
+        augustus_script = pathlib.Path(augustus_main['augustus_path']) / "scripts" / "getAnnoFasta.pl"
 
     logger.info("AUGUSTUS prediction has started")
 
@@ -262,8 +269,6 @@ def augustus_run(basename):
 
     # Parsing AUGUSTUS files
     logger.info("AUGUSTUS parsing has started")
-
-    augustus_script = augustus_dir / "scripts" / "getAnnoFasta.pl"
 
     aug_file = f"AUGUSTUS_{str(basename)}"
 

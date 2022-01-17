@@ -4,7 +4,6 @@
 
 import argparse
 import sys
-from pathlib import Path
 import warnings
 
 # PARSER ARGUMENTS -------------------------------------------------------------
