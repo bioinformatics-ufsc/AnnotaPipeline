@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 # setar as versoes sertinho (>=x ou ==x)
 requirements = [
                 'biopython>=1.73',
-                #'shutil',
                 'pandas>=0.24.1',
+                #'shutil',
                 #'argparse',
                 #'configparser',
                 #'logging',
@@ -35,22 +35,32 @@ setup(
     author_email='labinfo.ufsc@gmail.com',
     zip_safe=False,
     data_files=[('config', ['AnnotaPipeline.config'])],
-    scripts=['AnnotaPipeline.py',
-             'blastp_parser.py',
-             'fasta_simple.py',
-             'fastatogff.py',
-             'funcannotation_parser.py',
-             'gfftofasta_parser.py',
-             'info_parser.py',
-             'kallisto_parser.py',
-             'percolator_parser.py',
-             'summary_parser.py'
-             ], # adicionar cada um dos scripts
+    scripts=[('Scripts/',
+            [
+                'AnnotaPipeline.py',
+                'blastp_parser.py',
+                'fasta_simple.py',
+                'fastatogff.py',
+                'funcannotation_parser.py',
+                'gfftofasta_parser.py',
+                'info_parser.py',
+                'kallisto_parser.py',
+                'percolator_parser.py',
+                'summary_parser.py'
+             ])
+             ],
+    license = "BSD",            #alterar pra licensa
     include_package_data=True,
     python_requires=">=3.6.9", # versao minima pra ter pathlib
     url='https://github.com/GuiMaia/AnnotaPipeline/tree/v1.0.git',
     download_url='https://github.com/GuiMaia/AnnotaPipeline/archive/refs/heads/v1.0.zip',
+
+# USA esse cara pra fz o classifier
+# https://pypi.org/pypi?%3Aaction=list_classifiers
     classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Topic :: Utilities",
+        "License :: OSI Approved :: BSD License",    #alterar pra licensa
     ],
 )
 
