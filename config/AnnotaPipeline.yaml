@@ -79,3 +79,5 @@ kallisto:
   value:        # [float] use specific tpm value from kallisto abundance file as cutoff
                 #         EXAMPLE: value = 297.83
   bootstrap: 0  # [int] default is 0
+
+# comet from here
