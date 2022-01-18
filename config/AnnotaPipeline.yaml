@@ -19,7 +19,7 @@ pipeline:
   threads: 8                  # [int] number of threads to run all programs (default: 8)
   organism:                   # EXAMPLE: Genus species
   basename:                   # EXAMPLE: Gspecies
-  keywords: >-                # specific keywords to classify each hsp found in blast/diamond as "annotated" or "hypothetical"
+  keywords: >-                # specific keywords to classify each hsp found in blast as "hypothetical"
     fragment, hypothetical, partial, uncharacterized, unknown, unspecified
 
 databases:
