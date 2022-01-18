@@ -10,6 +10,9 @@
 
 # Output flags from each program are not listed: they are generic and named after your given basename
 # FLAGS THAT ARE NOT LISTED, HAVE NOT BEEN TESTED: you can *try*, but results are not guaranteed
+#   For flags that are not listed, please inform it in a short way, when it's possible.
+#   Software usually have 2 ways to pass an argument, with - or --
+#   We normally use the first one, because... why not?
 
 # A AVENTURA VAI COMEÇAR -------------------------------------------------------
 
@@ -26,9 +29,19 @@ databases:
   swissprot-db: /full/path/to/swissprot.db
   secondary-db:       # [path] secondary database [accepted any of eupathdb], nrdb or trembldb
   secondary-format:   # file formatted as [ eupathdb / nrdb / trembldb ]
-  cdd-db:
-  pfam:
+  cdd-db:             # cdd database
+  pfam:               # [path] pfam hmm profile
 
+# INTERPROSCAN/HMMER -----------------------------------------------------------
+
+# interproscan runs default parameters (these flags are not listed):
+#   -f GFF3
+#   -t p
+#   -goterms
+#   -iprlookup
+# if you pass a flag that by default doesn't have a value please inform "value: flag"
+# EXAMPLE:
+#   goterms: flag
 interproscan:
   interproscan-exe: /full/path/to/interproscan.sh
   ms:   # OPTIONAL: minimum nucleotide size
@@ -37,6 +50,8 @@ hmmer:
   hmmscan: /full/path/to/hmmscan
   E:      # e-value [1e-n] (n is an integer)
   domE:   # filter per-domain output based on evalue [1e-n] (n is an integer)
+
+# AUGUSTUS ---------------------------------------------------------------------
 
 augustus:
   augustus-exe: /full/path/to/augustus/bin/augustus
@@ -49,7 +64,12 @@ augustus:
   start:              # [ on / off ]
   stop:               # [ on / off ]
   cds:                # [ on / off ]
-  # following options have *not* been tested in AnnotaPipeline (leave empty to deconsider)
+
+# following options have *not* been tested in AnnotaPipeline (leave empty to deconsider)
+#   if you pass a flag that by default doesn't have a value please inform "value: flag"
+#   EXAMPLE:
+#     goterms: flag
+augustus-optional:
   hintsfile:          # [path] /full/path/to/hintsfile.gff
                       # OPTIONAL: prediction considers hints (extrinsic information) if turned on
   extrinsicCfgFile:   # [path] /full/path/to/cfgfile
@@ -57,17 +77,22 @@ augustus:
   UTR:                # [ on / off ]
                       # OPTIONAL: currently *only* works for human, galdieria, toxoplasma and caenorhabditis
 
+# SEQUENCE CLEANER -------------------------------------------------------------
+
 seq-cleaner:
   minsize-seq:      # [int] minimal size for input sequences
-  clean-percent:    # [int] minimal % of unknown nucleotides (N)
+  clean-percent:    # [int] minimal percentage of unknown nucleotides (N)
 
+# BLAST ------------------------------------------------------------------------
+
+# blast will run *exclusively* with these parameters (any others will be ignored)
 local-aligner:
   blast: /full/path/to/blast
   evalue: 1e-5  # [float] e-value (default: 0.00001)
   identity:     # [int] identity threshold to filter blast results
   positivity:   # [int] positivity threshold to filter blast results
   coverage: 30  # [int] query coverage threshold to filter blast results
-                #       for a more restrict search, use a higher value (default: 30)
+                #       use a higher value for more restrict results (default: 30)
   hsp-max: 10   # [int] exact number of alignments (recommended: 10)
 
 # RPSBLAST runs by default with:
@@ -77,18 +102,28 @@ rpsblast:
   evalue:    # [float] e-value
   hsp-max:   # maximum number of high scoring pairs
 
+# KALLISTO/RNA-seq -------------------------------------------------------------
+
+# kallisto is OPTIONAL
+# WARNINGS:
+#   flags -l and -s are required for single-end data
+#     if one file was given in rna-seq, provide a value for these parameters
+#   do not fill if you don't want to use these flags with paired-end data
 kallisto:
-  kallisto-exe: /full/path/to/kallisto
-  rna-seq:      # FILE(s): path to rna-seq reads
-                #          2 files for paired-end data or 1 file for single-end data
-                # EXAMPLE: rna-seq: /path/to/R1.fastq /path/to/R2.fastq
-  l:            # [float] estimated average fragment length
-  s:            # [float] estimated standard deviation of fragment length
-  threshold:    # [ median / mean ]
-                # calculate TPM mean from Kallisto abundance file and use this value as cutoff
-  value:        # [float] use specific tpm value from kallisto abundance file as cutoff
-                #         EXAMPLE: value = 297.83
-  bootstrap: 0  # [int] default is 0
+  kallisto-exe:   # [path] /full/path/to/kallisto
+  rna-seq:        # FILE(s): path to rna-seq reads
+                  #          2 files for paired-end data or 1 file for single-end data
+                  # EXAMPLE: rna-seq: /path/to/R1.fastq /path/to/R2.fastq
+  l:              # [float] estimated average fragment length
+  s:              # [float] estimated standard deviation of fragment length
+  threshold:      # [ median / mean ]
+                  # calculate TPM mean from Kallisto abundance file and use this value as cutoff
+  value:          # [float]  use specific tpm value from kallisto abundance file as cutoff
+                  # EXAMPLE:
+                  #   value: 297.83
+  bootstrap:      # [int] default is 0
+
+# COMET/PERCOLATOR -------------------------------------------------------------
 
 # comet is OPTIONAL but requires percolator
 proteomics:
@@ -97,13 +132,11 @@ proteomics:
   comet-exe: comet         # [path] full path to executable
   comet-params: /full/path/to/comet.params
   comet-spectometry:       # [path] full path to directory containing mass spectometry files
-  comet-ext:               # [extension] mass spectometry files extension
+  comet-ext:               # [extension] mass spectometry file extension
                            # WARNING:    provide only one type
                            # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
-  # SCAN RANGE -----------------------------------------------------------------
-  # | WARNING: first is required if last is given and vice-versa               |
-  # |          last must be higher than first                                  |
-  # ----------------------------------------------------------------------------
+  # WARNING: first is required if last is given and vice-versa
+  #          last must be higher than first
   first:                   # [int] specify the first/start scan to search
                            #       overriding entry in parameters file
   last:                    # [int] specify the last/end scan to search
