@@ -175,11 +175,12 @@ sys.stderr = sl
 
 config_pwd = pathlib.Path(args.annotaconfig).absolute()
 
-config = configparser.ConfigParser()  # call configparser
-config.optionxform = str  # set default: get varibles as str
-config.read(str(config_pwd))  # read configuration file
-config.sections()  # get sections of each program
-
+# Get params from yaml
+with open(config_pwd, "r") as stream:
+    try:
+        config = yaml.load(stream, Loader=yaml.SafeLoader)
+    except yaml.YAMLError as exc:
+        print(exc)
 
 # ---------------------- FUNCTIONS ---------------------------------------------
 # Function to close log and quit AnnotaPipeline if some expected file/parameter cant be found
@@ -229,19 +230,19 @@ def fasta_fetcher(input_fasta, id_list, fetcher_output):
 
 # ------------------------------------- RUNs -------------------------------------------------
 # Create command line to run augustus (protein prediction)
-def augustus_run(basename):
+def augustus_run(augustus_section, augustus_optional,  basename):
     # create AUGUSTUS directory
     logger = logging.getLogger('AUGUSTUS')
-    if augustus_main['augustus_path'].lower() == 'conda':
+    if str(augustus_section.get('augustus-path')).lower() == 'conda':
         # Runing with conda
         augustus_bin = "augustus"
         augustus_config = pathlib.Path(sys.prefix, 'config')
         augustus_script = "getAnnoFasta.pl"
     else:
         # Runing custom
-        augustus_bin = pathlib.Path(augustus_main['augustus_path']) / "bin" / "augustus"
-        augustus_config = pathlib.Path(augustus_main['augustus_path']) / "config"
-        augustus_script = pathlib.Path(augustus_main['augustus_path']) / "scripts" / "getAnnoFasta.pl"
+        augustus_bin = pathlib.Path(augustus_section.get('augustus-path')) / "bin" / "augustus"
+        augustus_config = pathlib.Path(augustus_section.get('augustus-path')) / "config"
+        augustus_script = pathlib.Path(augustus_section.get('augustus-path')) / "scripts" / "getAnnoFasta.pl"
 
     logger.info("AUGUSTUS prediction has started")
 
@@ -249,13 +250,24 @@ def augustus_run(basename):
     aug_config = f"--AUGUSTUS_CONFIG_PATH={str(augustus_config)}"
     aug_command = f"{str(augustus_bin)} {str(aug_config)}"
 
-    for variable in config['AUGUSTUS']:
-        if variable != "augustus_path":
+    # Get mandatory arguments
+    for param in augustus_section:
+        if param != "augustus-path":
             # Check if it's a flag
-            if str(interpro.get(variable)).lower() == "flag":
-                aug_command += f" -{str(variable)}"
+            if str(augustus_section.get(param)).lower() == "flag":
+                aug_command += f" -{str(param)}"
             else:
-                aug_command += f" --{str(variable)}={str(augustus_main.get(variable))}"
+                aug_command += f" --{str(param)}={str(augustus_section.get(param))}"
+
+    # Get optional arguments
+    for param in augustus_optional:
+        if str(augustus_optional.get(param)).lower() == "flag":
+            aug_command += f" -{str(param)}"
+        else:
+            # Prevent getting empty arguments
+            if augustus_optional.get(param) is not None:
+                aug_command += f" --{str(param)}={str(augustus_optional.get(param))}"
+
 
     aug_command += f" {str(seq_file)} > AUGUSTUS_{str(basename)}.gff"
 
@@ -354,12 +366,12 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
     # Standart command line for kallisto index
     # kallisto index -i transcripts.idx transcripts.fasta
     if paired_end == True:
-        if len(kallisto.get("l")) != 0:
+        if kallisto.get("l") is not None:
             l_flag = f"-l {kallisto.get('l')}"
             logger.info(f"KALLISTO will run with -l {kallisto.get('l')}")
         else:
             l_flag = ""
-        if len(kallisto.get("s")) != 0:
+        if kallisto.get("s") is not None:
             s_flag = f"-s {kallisto.get('s')}"
             logger.info(f"KALLISTO will run with -s {kallisto.get('s')}")
         else:
@@ -368,7 +380,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
         kallisto_command_quant = (
             f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
             f"{s_flag} {l_flag} "
-            f"-o {basename}_kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+            f"-o {basename}_kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rna-seq')}"
         )
         logger.info(f"KALLISTO quant has started")
         logger.debug(kallisto_command_quant)
@@ -379,7 +391,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
         kallisto_command_quant = (
             f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
             f"-l {kallisto.get('s')} -s {kallisto.get('l')} --single "
-            f"-o kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+            f"-o kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rna-seq')}"
         )
         logger.info(f"KALLISTO quant has started")
         logger.debug(kallisto_command_quant)
@@ -393,7 +405,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
     elif method == "mean":
         kallisto_parser_flag = "-tpmavg"
     else:
-        kallisto_parser_flag = f'-tpmval {kallisto.get("value")}'
+        kallisto_parser_flag = f'-tpmval {kallisto.get("threshold")}'
     # Run parser
     # inside 4_Transcript_Quantification_
     kallisto_parser_path =  str(pipeline_pwd / "kallisto_parser.py")
@@ -700,13 +712,6 @@ is_tool("rpsblast")
 # ------------------------------------------------------------------------------
 
 logger.info("IT'S DANGEROUS TO GO ALONE! TAKE THIS.")
-
-# Get params from yaml
-with open("AnnotaPipeline.yaml", "r") as stream:
-    try:
-        config = yaml.load(stream, Loader=yaml.SafeLoader)
-    except yaml.YAMLError as exc:
-        print(exc)
 
 logger = logging.getLogger('AnnotaPipeline')
 logger.info("---------------------------------------------------------------")
@@ -1053,7 +1058,7 @@ if kallisto_method != None and args.seq is not None:
 
 #------------------------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
-if len(comet.get('comet_bash')) != 0:
+if proteomics.get('comet-exe') is not None:
     logger.info("---------------------------------------------------------------")
     logger.info("------------ Peptide Identification has started ---------------")
     if kallisto_method == None or args.seq is None:
@@ -1068,18 +1073,18 @@ if len(comet.get('comet_bash')) != 0:
 
     # Check if overwrite parameters will be used
     if use_last_and_first == True:
-        first_last_param = f"-F{comet.get('first')} -L{comet.get('last')}"
+        first_last_param = f"-F{proteomics.get('first')} -L{proteomics.get('last')}"
     else:
         first_last_param = str()
     # Mass files location
-    mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
+    mass_path = f"{str(proteomics.get('comet-spectometry')).rstrip('/')}/"
 
     # Add percolator output in comet.params
     # change arguments for comet
-    modify_comet_params(comet.get('params'))
-    commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
+    modify_comet_params(proteomics.get('params'))
+    commet_command = f"{proteomics.get('comet-exe')} -P{proteomics.get('comet-params')} " \
                 f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
-                f"{first_last_param} {mass_path}*.{comet.get('mass_files_ext')}"
+                f"{first_last_param} {mass_path}*.{proteomics.get('comet-ext')}"
 
     logger.info("COMET execution has started")
     logger.info(commet_command)
@@ -1108,7 +1113,7 @@ if len(comet.get('comet_bash')) != 0:
         # --------- RUN Percolator inside Percolator RAW path -------------------
         os.chdir(percolator_path_raw)
         percolator_out_basename = re.sub(r"\.[0-9].*","",comet_output_file.stem)
-        percolator_command = f"{percolator.get('percolator_bash')} -r {percolator_out_basename}_peptide_output.tsv" \
+        percolator_command = f"{proteomics.get('percolator-exe')} -r {percolator_out_basename}_peptide_output.tsv" \
                              f" -m {percolator_out_basename}_percolator_output.tsv" \
                              f" -B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
         subprocess.getoutput(percolator_command)
@@ -1117,7 +1122,7 @@ if len(comet.get('comet_bash')) != 0:
         os.chdir(percolator_path_parsed)
         parser_percolator_command = f"{python_exe} {str(pipeline_pwd / 'percolator_parser.py')}" \
                             f" -p {percolator_path_raw}/{percolator_out_basename}_percolator_output.tsv" \
-                            f" -qv {percolator.get('qvalue')}" \
+                            f" -qv {proteomics.get('percolator-qvalue')}" \
                             f" -b {AnnotaBasename}_{percolator_out_basename}"
         try:
             subprocess.getoutput(parser_percolator_command)
@@ -1162,7 +1167,7 @@ summary_parser_command_line = f"{python_exe} {str(pipeline_pwd / 'summary_parser
 # Add optional parametes (if kallisto and/or comet were executed)
 if kallisto_method != None and args.seq is not None:
     summary_parser_command_line = summary_parser_command_line + f" -tr {str(kallisto_output_path / str(AnnotaBasename + '_Transcript_Quantification.tsv'))}"
-if len(comet.get('comet_bash')) != 0:
+if proteomics.get('comet-exe') is not None:
     summary_parser_command_line = summary_parser_command_line + f" -proteomics {str(comet_output_path / str(AnnotaBasename + '_Total_Proteomics_Quantification.tsv'))}"
 
 #This is the end of the line

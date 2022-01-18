@@ -37,8 +37,7 @@ databases:
 # AUGUSTUS ---------------------------------------------------------------------
 
 augustus:
-  augustus-exe: /full/path/to/augustus/bin/augustus
-  augustus-config: /full/path/to/augustus/config
+  augustus-path: /full/path/to/augustus/
   strand:             # [ both / forward / backward ]
   genemodel:          # [ partial / intronless / complete / atleastone / exactlyone ]
   species:            # based on species within /path/to/augustus/config/species
@@ -105,6 +104,7 @@ hmmer:
   E:      # e-value [1e-n] (n is an integer)
   domE:   # filter per-domain output based on evalue [1e-n] (n is an integer)
 
+
 # KALLISTO/RNA-seq -------------------------------------------------------------
 
 # kallisto is OPTIONAL
@@ -114,17 +114,16 @@ hmmer:
 #   do not fill if you don't want to use these flags with paired-end data
 kallisto:
   kallisto-exe:    # [path] /full/path/to/kallisto
-  rna-seq:         # FILE(s): path to rna-seq reads
+  rna-seq:  param1 param2       # FILE(s): path to rna-seq reads
                    #          2 files for paired-end data or 1 file for single-end data
                    # EXAMPLE: rna-seq: /path/to/R1.fastq /path/to/R2.fastq
   l:               # [float] estimated average fragment length
   s:               # [float] estimated standard deviation of fragment length
-  calculate-tpm:   # choose between threshold or value
-  threshold:       # [ median / mean ]
-                   # calculate TPM mean from Kallisto abundance file and use this value as cutoff
-  value:           # [float]  use specific tpm value from kallisto abundance file as cutoff
-                   # EXAMPLE:
-                   #   value: 297.83
+# TPM threshold to parse Kallisto output [ mean / median / value ] (choose only one)
+# EXAMPLE: threshold: mean   # calculated
+# EXAMPLE: threshold: median # calculated
+# EXAMPLE: threshold: 297.83 # chosen by user
+  threshold:       # [ mean / median / value ] - use this as cutoff for parsing
   bootstrap:       # [int] default is 0
 
 # COMET/PERCOLATOR -------------------------------------------------------------
@@ -133,7 +132,7 @@ kallisto:
 proteomics:
   comet-exe:               # [path] /full/path/to/comet
   comet-params:            # [path] full path to comet.params
-  comet-spectometry:       # [path] full path to directory containing mass spectometry files
+  comet-spectometry: param1 param2      # [path] full path to directory containing mass spectometry files
   comet-ext:               # [extension] mass spectometry file extension
                            # WARNING:    provide only one type
                            # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
