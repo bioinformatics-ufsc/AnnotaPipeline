@@ -113,10 +113,14 @@ hmmer:
 #   do not fill if you don't want to use these flags with paired-end data
 kallisto:
   kallisto-exe:   # [path] /full/path/to/kallisto
-  rna-seq:        # FILE(s): path to rna-seq reads
-                  #          2 files for paired-end data or 1 file for single-end data
-                  # EXAMPLE:
-                  #   rna-seq: /path/to/R1.fastq /path/to/R2.fastq
+  # FILE(s): path to rna-seq reads
+  #          2 files for paired-end data or 1 file for single-end data
+  # EXAMPLE:
+  #   rna-seq: >-
+  #     /path/to/R1.fastq
+  #     /path/to/R2.fastq
+  rna-seq: >-
+    
   l:              # [float] estimated average fragment length
   s:              # [float] estimated standard deviation of fragment length
 # tpm threshold to parse kallisto output [ mean / median / value ] (choose only one)
