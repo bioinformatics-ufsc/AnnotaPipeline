@@ -16,16 +16,8 @@ with open("AnnotaPipeline.yaml", "r") as stream:
     except yaml.YAMLError as exc:
         print(exc)
 
+print(config)
 
 # get element from list
 threads = config["pipeline"]["threads"]
-
-
-for section, list_section in config.items():
-    if str(section) == "databases":
-        if config['databases']['secondary-format'] not in ('eupathdb', 'nrdb', 'trembldb'):
-            print("jonas")
-        if config['databases']['secondary-format'] is None:
-            print("aaaa")
-    elif str(section) == "comet":
-        pass
+print(threads)

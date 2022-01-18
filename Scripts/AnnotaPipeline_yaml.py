@@ -218,7 +218,7 @@ def sequence_cleaner(fasta_file, min_length=0, por_n=100):
             output_file.write(f">{str(seq_record.id)}\n{str(sequence)}\n")
     output_file.close()
 
-# Function to catch specific sequences from fasta file
+# Fuction to catch specific sequences from fasta file
 def fasta_fetcher(input_fasta, id_list, fetcher_output):
     wanted = sorted(set(id_list))
     #records = (r for r in SeqIO.parse(input_fasta, "fasta") if r.id in wanted)
@@ -565,31 +565,51 @@ def comet_check_parameters():
 
 # Function to check if all parameters in config file are correct
 def check_parameters(sections):
+    # Variables to check databases
+    # swissprot database
+    sp_verify = True
+    # nr database
+    nr_verify = True
+    # trembl database
+    trembl_verify = True
     for section, list_section in sections.items():
-        if str(section) == "kallisto":
-            kallisto_check_parameters(list_section)  
-        elif str(section) == "proteomics":
-            comet_check_parameters(list_section)
-        elif str(section) == "databases":
-            params_empty = ([param for param in list_section if list_section.get(param) == None])
-            if params_empty:
-                logger.error("[DATABASE]: there is some secondary database missing. Please review config file!")
-                log_quit()
-            else:
-                # Check if format of secondary database is correct
-                if list_section['secondary-format'] not in ('eupathdb', 'nrdb', 'trembldb'):
-                    logger.error("[DATABASE]: Unrecognized type for 'secondary-format'. Please review config file!")
-                    log_quit()
-        elif str(section) == "augustus":
-            # Arguments for agutustus don't need to be checked if protein file were given
-            if args.protein is not None:
-                pass
-            else:
-                for key in list_section:  # get variable for each box
-                        if list_section.get(key) is None:
-                                # Crash pipeline if some required variable is empty
-                                logger.error(f"Variable [{key}] from section [{str(section)}] is null")
-                                log_quit()
+            print(section, ":", list_section)
+
+    for section in sections:  # get box of variables
+        # Check kallisto optional arguments
+        if str(section) == "KALLISTO":
+            kallisto_check_parameters()  
+        elif str(section) == "COMET":
+            comet_check_parameters()
+        elif str(section) == "PERCOLATOR":
+            # Percolator depends on COMET, thus, is checked with comet_check_parameters()
+            pass
+        else:  
+            for key in config[str(section)]:  # get variable for each box
+                # Arguments for agutustus don't need to be checked if protein file were given
+                if args.protein is not None and key is config['AUGUSTUS']:
+                    pass                       
+                else:
+                    if (len(config[str(section)].get(key))) < 1:
+                        # Check if any secondary database were given
+                        if str(section) == "EssentialParameters" and key == "specific_db_path":
+                            sp_verify = False
+                        elif str(section) == "EssentialParameters" and key == "nr_db_path":
+                            nr_verify = False
+                        elif str(section) == "EssentialParameters" and key == "trembl_db_path":
+                            trembl_verify = False
+                        # Any other parameter checked
+                        else:
+                            # Crash pipeline if some required variable is empty
+                            logger.error(f"Variable [{key}] from section [{str(section)}] is null")
+                            log_quit()
+    # Exit and report error if there is more than one database or if there is no one
+    if sp_verify == nr_verify == trembl_verify == False:
+        logger.error("[DATABASE]: there is no secondary database. Please review config file!")
+        log_quit()
+    if sum([sp_verify, nr_verify, trembl_verify]) == 2:
+        logger.error("[DATABASE]: there are two secondary databases. Select one of them in the config file.")
+        log_quit()
 # -------------------------------------------------------------------------------------------
 
 # Function to annotate coding sequences
@@ -711,7 +731,6 @@ if args.gff is not None:
 # Parameters from config file, each line is one script/software configuration
 python_exe = config['pipeline']['python']
 AnnotaPipeline = config['pipeline']
-databases = config['databases']
 AnnotaBasename = AnnotaPipeline['basename']
 keyword_list = AnnotaPipeline['keywords']
 augustus_main = config['augustus']
@@ -776,13 +795,15 @@ logger.info("--------------- Similarity Analysis has started ---------------")
 logger.info("BLAST execution and parsing has started")
 
 # Select secondary database from config file
-spdb_path = databases.get("secondary-db")
-if databases.get("specific_db_path") == 'eupathdb':
+if (len(AnnotaPipeline.get("specific_db_path"))) > 1:
+    spdb_path = AnnotaPipeline.get("specific_db_path")
     flag_spdb = "-spdb"
-elif databases.get("specific_db_path") == 'trembldb':
-    flag_spdb = "-trbl"
-else:
+elif (len(AnnotaPipeline.get("nr_db_path"))) > 1:
+    spdb_path = AnnotaPipeline.get("nr_db_path")
     flag_spdb = "-nr"
+elif (len(AnnotaPipeline.get("trembl_db_path"))) > 1:
+    spdb_path = AnnotaPipeline.get("trembl_db_path")
+    flag_spdb = "-trbl"
 
 subprocess.run([
     str(python_exe),
