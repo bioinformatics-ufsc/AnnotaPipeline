@@ -511,16 +511,16 @@ def kallisto_check_parameters():
                 kallisto_method = kallisto_check[1]                    
 
 # Part of check parameters function >> check specific entries for percolator (proteomics)
-def percolator_check_parameters():
-    if len(config['PERCOLATOR'].get('percolator_bash')) == 0:
+def percolator_check_parameters(proteomic_section):
+    if proteomic_section.get('percolator-exe') is None:
         logger.error("[PERCOLATOR]: path to software is empty, but COMET was provided")
         logger.warning("PERCOLATOR leave COMET fields empty or pass parameters for PERCOLATOR")
         log_quit()
-    if len(config['PERCOLATOR'].get('qvalue')) == 0:
+    if proteomic_section.get('percolator-qvalue') is None:
         logger.error("[PERCOLATOR]: qvalue cutoff is empty, check this parameter")
         log_quit()
     # check value for parser
-    if not (0 <= float(config['PERCOLATOR'].get('qvalue')) <= 1):
+    if not (0 <= float(proteomic_section.get('percolator-qvalue')) <= 1):
         logger.error("[PERCOLATOR] qvalue cutoff invalid. Must be float between [0-1]")
         log_quit()
 
@@ -542,11 +542,11 @@ def proteomics_check_parameters(proteomic_section):
                 logger.error(f"[COMET] Parameter [{argument}] from section [COMET] is null")
                 log_quit()
         # ------------ check extension mass files ------
-        if proteomic_section.get('mass_files_ext').split() < 1:
-            logger.error(f"[COMET] Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] is null")
+        if proteomic_section.get('comet-ext').split() < 1:
+            logger.error(f"[COMET] Parameter [{proteomic_section.get('mass_files_ext')}] from section [PROTEOMICS] is null")
             log_quit()
-        elif len(config['COMET'].get('mass_files_ext').split()) > 1:
-            logger.error(f"[COMET] Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] have more than one argument")
+        elif proteomic_section.get('comet-ext').split() > 1:
+            logger.error(f"[COMET] Parameter [{proteomic_section.get('mass_files_ext')}] from section [PROTEOMICS] have more than one argument")
             log_quit()
         # ------------ Specific conditions -----------------------
         # XOR conditional >> check if one value is True and another is False
@@ -559,9 +559,10 @@ def proteomics_check_parameters(proteomic_section):
             global use_last_and_first
             use_last_and_first = True
         else:
+            global use_last_and_first
             use_last_and_first = False
         # Only check percolator if comet parames are ok
-        percolator_check_parameters()
+        percolator_check_parameters(proteomic_section)
 
 # Function to check if all parameters in config file are correct
 def check_parameters(sections):
