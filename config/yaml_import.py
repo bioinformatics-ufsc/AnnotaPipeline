@@ -16,8 +16,10 @@ with open("AnnotaPipeline.yaml", "r") as stream:
     except yaml.YAMLError as exc:
         print(exc)
 
-print(config)
 
 # get element from list
 threads = config["pipeline"]["threads"]
 print(threads)
+
+proteomics = config["proteomics"]
+print(proteomics.get("comet-spectometry"))

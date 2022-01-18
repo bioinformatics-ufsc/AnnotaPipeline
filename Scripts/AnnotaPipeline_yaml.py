@@ -526,23 +526,23 @@ def percolator_check_parameters():
 
 # Part of check parameters function >> check specific entries for comet (proteomics)
 def proteomics_check_parameters(proteomic_section):
-    if proteomic_section.get("comet_bash") == None:
+    if proteomic_section.get("comet-exe") == None:
         logger.info("Arguments for COMET are empty. This step will be skipped.")
     else:
         # ------------ check F and L -------------------
         last_check = False
         first_check = False
-        if len(config['COMET'].get('first')) !=0:
+        if proteomic_section.get('first') is not None:
             first_check = True
-        if len(config['COMET'].get('last')) !=0:
+        if proteomic_section.get('last') is not None:
             last_check = True
         # ----------------------------------------------
-        for argument in ("params", "mass_files"):
-            if len(config['COMET'].get(argument)) == 0:
+        for argument in ("comet-params", "comet-spectometry"):
+            if proteomic_section.get(argument) == 0:
                 logger.error(f"[COMET] Parameter [{argument}] from section [COMET] is null")
                 log_quit()
         # ------------ check extension mass files ------
-        if len(config['COMET'].get('mass_files_ext').split()) < 1:
+        if proteomic_section.get('mass_files_ext').split() < 1:
             logger.error(f"[COMET] Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] is null")
             log_quit()
         elif len(config['COMET'].get('mass_files_ext').split()) > 1:
