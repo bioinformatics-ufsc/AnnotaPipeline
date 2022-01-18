@@ -706,9 +706,7 @@ def modify_comet_params(comet_params):
 
 # ------------------------------------------------------------------------------
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
-is_tool("blastp")
 is_tool("perl")
-is_tool("rpsblast")
 # ------------------------------------------------------------------------------
 
 logger.info("IT'S DANGEROUS TO GO ALONE! TAKE THIS.")
