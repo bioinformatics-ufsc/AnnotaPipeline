@@ -36,15 +36,16 @@ databases:
 
 # AUGUSTUS ---------------------------------------------------------------------
 augustus:
-  augustus-path: conda # If you are using conda environment pass 'conda' and we will find augustus path
-  strand:              # [ both / forward / backward ]
-  genemodel:           # [ partial / intronless / complete / atleastone / exactlyone ]
-  species:             # based on species within /path/to/augustus/config/species
-  protein:             # [ on / off ]
-  introns:             # [ on / off ]
-  start:               # [ on / off ]
-  stop:                # [ on / off ]
-  cds:                 # [ on / off ]
+  augustus-path: conda  # if you are using our conda environment, set "conda"
+                        # and we will find augustus path
+  strand:               # [ both / forward / backward ]
+  genemodel:            # [ partial / intronless / complete / atleastone / exactlyone ]
+  species:              # based on species within /path/to/augustus/config/species
+  protein:              # [ on / off ]
+  introns:              # [ on / off ]
+  start:                # [ on / off ]
+  stop:                 # [ on / off ]
+  cds:                  # [ on / off ]
 
 # following options have *not* been tested in AnnotaPipeline (leave empty to deconsider)
 #   if you pass a flag that by default doesn't have a value please inform "value: flag"
@@ -96,7 +97,7 @@ rpsblast:
 #   goterms: flag
 interproscan:
   interproscan-exe: /full/path/to/interproscan.sh
-  ms:   # OPTIONAL: minimum nucleotide size
+  ms:     # OPTIONAL: minimum nucleotide size
 
 hmmer:
   hmmscan-exe: /full/path/to/hmmscan
@@ -111,18 +112,22 @@ hmmer:
 #     if one file was given in rna-seq, provide a value for these parameters
 #   do not fill if you don't want to use these flags with paired-end data
 kallisto:
-  kallisto-exe:    # [path] /full/path/to/kallisto
-  rna-seq:  param1 param2       # FILE(s): path to rna-seq reads
-                   #          2 files for paired-end data or 1 file for single-end data
-                   # EXAMPLE: rna-seq: /path/to/R1.fastq /path/to/R2.fastq
-  l:               # [float] estimated average fragment length
-  s:               # [float] estimated standard deviation of fragment length
-# TPM threshold to parse Kallisto output [ mean / median / value ] (choose only one)
-# EXAMPLE: threshold: mean   # calculated
-# EXAMPLE: threshold: median # calculated
-# EXAMPLE: threshold: 297.83 # chosen by user
-  threshold:       # [ mean / median / value ] - use this as cutoff for parsing
-  bootstrap:       # [int] default is 0
+  kallisto-exe:   # [path] /full/path/to/kallisto
+  rna-seq:        # FILE(s): path to rna-seq reads
+                  #          2 files for paired-end data or 1 file for single-end data
+                  # EXAMPLE:
+                  #   rna-seq: /path/to/R1.fastq /path/to/R2.fastq
+  l:              # [float] estimated average fragment length
+  s:              # [float] estimated standard deviation of fragment length
+# tpm threshold to parse kallisto output [ mean / median / value ] (choose only one)
+# EXAMPLE (calculated):
+#   threshold: mean
+# EXAMPLE (calculated):
+#   threshold: median
+# EXAMPLE (user input):
+#   threshold: 297.83
+  threshold:      # [ mean / median / value ] we use this as cutoff for parsing
+  bootstrap: 0    # [int] default is 0
 
 # COMET/PERCOLATOR -------------------------------------------------------------
 
