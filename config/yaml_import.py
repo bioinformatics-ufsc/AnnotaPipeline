@@ -18,8 +18,7 @@ with open("AnnotaPipeline.yaml", "r") as stream:
 
 
 # get element from list
-threads = config["pipeline"]["threads"]
-print(threads)
+#print(threads)
 
-proteomics = config["proteomics"]
-print(proteomics.get("comet-spectometry"))
+kallisto_section = config["kallisto"]
+print(kallisto_section.get('rna-seq'))

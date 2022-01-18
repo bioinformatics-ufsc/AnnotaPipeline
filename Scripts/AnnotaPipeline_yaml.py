@@ -595,12 +595,15 @@ def check_parameters(sections):
                 if list_section['secondary-format'] not in ('eupathdb', 'nrdb', 'trembldb'):
                     logger.error("[DATABASE]: Unrecognized type for 'secondary-format'. Please review config file!")
                     log_quit()
-        elif str(section) in "augustus":
+        elif str(section) == "augustus":
             # Arguments for augustus don't need to be checked if protein file were given
             if args.protein is not None:
                 pass
             else:
                 for key in list_section:  # get variable for each box
+                    # MS is optional parameter for INTERPROSCAN
+                    if key == "ms":
+                        pass
                     if list_section.get(key) is None:
                         # Crash pipeline if some required variable is empty
                         logger.error(f"Variable [{key}] from section [{str(section)}] is null")
