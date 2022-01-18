@@ -127,23 +127,23 @@ kallisto:
 # EXAMPLE (user input):
 #   threshold: 297.83
   threshold:      # [ mean / median / value ] we use this as cutoff for parsing
-  bootstrap:      # [int] default is 0
+  bootstrap: 0    # [int] default is 0
 
 # COMET/PERCOLATOR -------------------------------------------------------------
 
 # comet is OPTIONAL but requires percolator
 proteomics:
-  comet-exe:           # [path] /full/path/to/comet
-  comet-params:        # [path] full path to comet.params
-  comet-spectometry:   # [path] full path to directory containing mass spectometry files
-  comet-ext:           # [extension] mass spectometry file extension
-                       # WARNING:    provide only one type
-                       # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
+  comet-exe:               # [path] /full/path/to/comet
+  comet-params:            # [path] full path to comet.params
+  comet-spectometry:       # [path] full path to directory containing mass spectometry files
+  comet-ext:               # [extension] mass spectometry file extension
+                           # WARNING:    provide only one type
+                           # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
   # WARNING: first is required if last is given and vice-versa
   #          last must be higher than first
-  first:               # [int] specify the first/start scan to search
-                       #       overriding entry in parameters file
-  last:                # [int] specify the last/end scan to search
-                       #       overriding entry in parameters file
-  percolator-exe:      # [path] /full/path/to/percolator
-  percolator-qvalue:   # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)
+  first:                   # [int] specify the first/start scan to search
+                           #       overriding entry in parameters file
+  last:                    # [int] specify the last/end scan to search
+                           #       overriding entry in parameters file
+  percolator-exe:          # [path] /full/path/to/percolator
+  percolator-qvalue: 0.05  # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)
