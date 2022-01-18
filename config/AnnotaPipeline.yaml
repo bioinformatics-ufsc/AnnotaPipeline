@@ -29,10 +29,10 @@ pipeline:
 
 databases:
   swissprot-db: /full/path/to/swissprot.db
-  secondary-db:       # [path] secondary database [accepted any of eupathdb], nrdb or trembl
+  secondary-db:       # [path] full path to secondary database [accepted any of eupathdb], nrdb or trembl
   secondary-format:   # file formatted as [ eupathdb / nrdb / trembldb ]
-  cdd-db:             # [path] cdd database
-  pfam:               # [path] pfam hmm profile
+  cdd-db:             # [path] full path to cdd database
+  pfam:               # [path] full path to pfam hmm profile
 
 # AUGUSTUS ---------------------------------------------------------------------
 
@@ -53,9 +53,9 @@ augustus:
 #   EXAMPLE:
 #     goterms: flag
 augustus-optional:
-  hintsfile:          # [path] /full/path/to/hintsfile.gff
+  hintsfile:          # [path] full path to hintsfile.gff
                       # OPTIONAL: prediction considers hints (extrinsic information) if turned on
-  extrinsicCfgFile:   # [path] /full/path/to/cfgfile
+  extrinsicCfgFile:   # [path] full path to cfgfile
                       # OPTIONAL: file contains the list of used sources for the hints and their boni and mali
   UTR:                # [ on / off ]
                       # OPTIONAL: currently *only* works for human, galdieria, toxoplasma and caenorhabditis
@@ -129,8 +129,8 @@ kallisto:
 
 # comet is OPTIONAL but requires percolator
 proteomics:
-  comet-exe: comet         # [path] full path to executable
-  comet-params: /full/path/to/comet.params
+  comet-exe:               # [path] /full/path/to/comet
+  comet-params:            # [path] full path to comet.params
   comet-spectometry:       # [path] full path to directory containing mass spectometry files
   comet-ext:               # [extension] mass spectometry file extension
                            # WARNING:    provide only one type
@@ -141,5 +141,5 @@ proteomics:
                            #       overriding entry in parameters file
   last:                    # [int] specify the last/end scan to search
                            #       overriding entry in parameters file
-  percolator-exe: percolator   # [path] full path to executable
+  percolator-exe:          # [path] /full/path/to/percolator
   percolator-qvalue: 0.05  # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)
