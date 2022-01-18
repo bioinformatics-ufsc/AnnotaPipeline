@@ -525,8 +525,8 @@ def percolator_check_parameters():
         log_quit()
 
 # Part of check parameters function >> check specific entries for comet (proteomics)
-def comet_check_parameters():
-    if len(config['COMET'].get("comet_bash")) == 0:
+def proteomics_check_parameters(proteomic_section):
+    if proteomic_section.get("comet_bash") == None:
         logger.info("Arguments for COMET are empty. This step will be skipped.")
     else:
         # ------------ check F and L -------------------
@@ -569,7 +569,7 @@ def check_parameters(sections):
         if str(section) == "kallisto":
             kallisto_check_parameters(list_section)  
         elif str(section) == "proteomics":
-            comet_check_parameters(list_section)
+            proteomics_check_parameters(list_section)
         elif str(section) == "databases":
             params_empty = ([param for param in list_section if list_section.get(param) == None])
             if params_empty:

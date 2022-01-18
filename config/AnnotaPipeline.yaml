@@ -20,8 +20,8 @@ pipeline:
   python: /usr/bin/python3  # [path] full path to python interpreter (>=3.6)
   perl: /usr/bin/perl       # [path] full path to perl interpreter (required for augustus)
   threads: 8                # [int] number of threads to run all programs (default: 8)
-  organism:                 # EXAMPLE: Genus species
-  basename:                 # EXAMPLE: Gspecies
+  organism:                 # EXAMPLE: Homo sapiens
+  basename:                 # EXAMPLE: Hsapiens
   keywords: >-              # specific keywords to classify each hsp found in blast as "hypothetical"
     fragment, hypothetical, partial, uncharacterized, unknown, unspecified
 
@@ -29,29 +29,10 @@ pipeline:
 
 databases:
   swissprot-db: /full/path/to/swissprot.db
-  secondary-db:       # [path] secondary database [accepted any of eupathdb], nrdb or trembldb
+  secondary-db:       # [path] secondary database [accepted any of eupathdb], nrdb or trembl
   secondary-format:   # file formatted as [ eupathdb / nrdb / trembldb ]
-  cdd-db:             # cdd database
+  cdd-db:             # [path] cdd database
   pfam:               # [path] pfam hmm profile
-
-# INTERPROSCAN/HMMER -----------------------------------------------------------
-
-# interproscan runs default parameters (these flags are not listed):
-#   -f GFF3
-#   -t p
-#   -goterms
-#   -iprlookup
-# if you pass a flag that by default doesn't have a value please inform "value: flag"
-# EXAMPLE:
-#   goterms: flag
-interproscan:
-  interproscan-exe: /full/path/to/interproscan.sh
-  ms:   # OPTIONAL: minimum nucleotide size
-
-hmmer:
-  hmmscan: /full/path/to/hmmscan
-  E:      # e-value [1e-n] (n is an integer)
-  domE:   # filter per-domain output based on evalue [1e-n] (n is an integer)
 
 # AUGUSTUS ---------------------------------------------------------------------
 
@@ -89,20 +70,39 @@ seq-cleaner:
 
 # blast will run *exclusively* with these parameters (any others will be ignored)
 local-aligner:
-  blast: /full/path/to/blast
-  evalue: 1e-5  # [float] e-value (default: 0.00001)
+  blast-exe: /full/path/to/blast
+  evalue:       # [float] e-value (default: 0.00001)
   identity:     # [int] identity threshold to filter blast results
   positivity:   # [int] positivity threshold to filter blast results
-  coverage: 30  # [int] query coverage threshold to filter blast results
+  coverage:     # [int] query coverage threshold to filter blast results
                 #       use a higher value for more restrict results (default: 30)
-  hsp-max: 10   # [int] exact number of alignments (recommended: 10)
+  hsp-max:      # [int] exact number of alignments (recommended: 10)
 
 # RPSBLAST runs by default with:
 #   [-outfmt "6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle"]
 #   these flags are not listed
-rpsblast:
-  evalue:    # [float] e-value
-  hsp-max:   # maximum number of high scoring pairs
+rpsblast-exe: /full/path/to/rpsblast
+  evalue:    # [float] e-value (default: 1e-5)
+  hsp-max:   # [int] maximum number of high scoring pairs
+
+# INTERPROSCAN/HMMER -----------------------------------------------------------
+
+# interproscan runs default parameters (these flags are not listed):
+#   -f GFF3
+#   -t p
+#   -goterms
+#   -iprlookup
+# if you pass a flag that by default doesn't have a value please inform "value: flag"
+# EXAMPLE:
+#   goterms: flag
+interproscan:
+  interproscan-exe: /full/path/to/interproscan.sh
+  ms:   # OPTIONAL: minimum nucleotide size
+
+hmmer:
+  hmmscan-exe: /full/path/to/hmmscan
+  E:      # e-value [1e-n] (n is an integer)
+  domE:   # filter per-domain output based on evalue [1e-n] (n is an integer)
 
 # KALLISTO/RNA-seq -------------------------------------------------------------
 
@@ -129,8 +129,6 @@ kallisto:
 
 # comet is OPTIONAL but requires percolator
 proteomics:
-  percolator: percolator   # [path] full path to executable
-  percolator-qvalue: 0.05  # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)
   comet-exe: comet         # [path] full path to executable
   comet-params: /full/path/to/comet.params
   comet-spectometry:       # [path] full path to directory containing mass spectometry files
@@ -143,3 +141,5 @@ proteomics:
                            #       overriding entry in parameters file
   last:                    # [int] specify the last/end scan to search
                            #       overriding entry in parameters file
+  percolator-exe: percolator   # [path] full path to executable
+  percolator-qvalue: 0.05  # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)
