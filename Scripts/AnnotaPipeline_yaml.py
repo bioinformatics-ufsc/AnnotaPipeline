@@ -339,7 +339,8 @@ def interpro_run(type, basename, blast_path, augustus_path, augustus_file, inter
         if str(interpro_section.get(variable)).lower() == "flag":
             interpro_command_line += f" -{str(variable)}"
         else:
-            interpro_command_line += f" -{str(variable)} {str(interpro_section.get(variable))}"
+            if interpro_section.get(variable) is not None:
+                interpro_command_line += f" -{str(variable)} {str(interpro_section.get(variable))}"
 
     logger.debug(str(interpro_command_line))
 
