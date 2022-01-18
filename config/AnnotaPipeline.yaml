@@ -4,6 +4,7 @@
 
 # IMPORTANT NOTES --------------------------------------------------------------
 
+# Replace variables of each program according to your analysis
 # Possible values are included between brackets and separated by '/':
 #   EXAMPLE: [ option-a / option-b / option-c ]
 
@@ -13,15 +14,18 @@
 # A AVENTURA VAI COMEÇAR -------------------------------------------------------
 
 pipeline:
-  threads: 8    # [int] number of threads to run all programs (default: 8)
-  organism:     # EXAMPLE: Genus species
-  basename:     # EXAMPLE: Gspecies
-  keywords: >-  # specific keywords to classify each hsp found in blast/diamond as "annotated" or "hypothetical"
+  python: /usr/bin/python3    # [path] full path to python interpreter (>=3.6) 
+  perl: /usr/bin/perl         # [path] full path to perl interpreter (required for augustus)
+  threads: 8                  # [int] number of threads to run all programs (default: 8)
+  organism:                   # EXAMPLE: Genus species
+  basename:                   # EXAMPLE: Gspecies
+  keywords: >-                # specific keywords to classify each hsp found in blast/diamond as "annotated" or "hypothetical"
     fragment, hypothetical, partial, uncharacterized, unknown, unspecified
 
 databases:
   swissprot-db: /full/path/to/swissprot.db
-  secondary-db:   # [path] secondary database [accepted any of eupathdb], nrdb or trembldb
+  secondary-db:       # [path] secondary database [accepted any of eupathdb], nrdb or trembldb
+  secondary-format:   # file formatted as [ eupathdb / nrdb / trembldb ]
   cdd-db:
   pfam:
 
@@ -37,22 +41,28 @@ hmmer:
 augustus:
   augustus-exe: /full/path/to/augustus/bin/augustus
   augustus-config: /full/path/to/augustus/config
-  strand:      # [ both / forward / backward ]
-  genemodel:   # [ partial / intronless / complete / atleastone / exactlyone ]
-  species:     # based on species within /path/to/augustus/config/species
-  protein:     # [ on / off ]
-  introns:     # [ on / off ]
-  start:       # [ on / off ]
-  stop:        # [ on / off ]
-  cds:         # [ on / off ]
-  # OPTIONAL here
+  strand:             # [ both / forward / backward ]
+  genemodel:          # [ partial / intronless / complete / atleastone / exactlyone ]
+  species:            # based on species within /path/to/augustus/config/species
+  protein:            # [ on / off ]
+  introns:            # [ on / off ]
+  start:              # [ on / off ]
+  stop:               # [ on / off ]
+  cds:                # [ on / off ]
+  # following options have *not* been tested in AnnotaPipeline (leave empty to deconsider)
+  hintsfile:          # [path] /full/path/to/hintsfile.gff
+                      # OPTIONAL: prediction considers hints (extrinsic information) if turned on
+  extrinsicCfgFile:   # [path] /full/path/to/cfgfile
+                      # OPTIONAL: file contains the list of used sources for the hints and their boni and mali
+  UTR:                # [ on / off ]
+                      # OPTIONAL: currently *only* works for human, galdieria, toxoplasma and caenorhabditis
 
 seq-cleaner:
   minsize-seq:      # [int] minimal size for input sequences
   clean-percent:    # [int] minimal % of unknown nucleotides (N)
 
 local-aligner:
-  software:     # [ blast / diamond ]
+  blast: /full/path/to/blast
   evalue: 1e-5  # [float] e-value (default: 0.00001)
   identity:     # [int] identity threshold to filter blast results
   positivity:   # [int] positivity threshold to filter blast results
@@ -80,4 +90,21 @@ kallisto:
                 #         EXAMPLE: value = 297.83
   bootstrap: 0  # [int] default is 0
 
-# comet from here
+# comet is OPTIONAL but requires percolator
+proteomics:
+  percolator: percolator   # [path] full path to executable
+  percolator-qvalue: 0.05  # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)
+  comet-exe: comet         # [path] full path to executable
+  comet-params: /full/path/to/comet.params
+  comet-spectometry:       # [path] full path to directory containing mass spectometry files
+  comet-ext:               # [extension] mass spectometry files extension
+                           # WARNING:    provide only one type
+                           # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
+  # SCAN RANGE -----------------------------------------------------------------
+  # | WARNING: first is required if last is given and vice-versa               |
+  # |          last must be higher than first                                  |
+  # ----------------------------------------------------------------------------
+  first:                   # [int] specify the first/start scan to search
+                           #       overriding entry in parameters file
+  last:                    # [int] specify the last/end scan to search
+                           #       overriding entry in parameters file
