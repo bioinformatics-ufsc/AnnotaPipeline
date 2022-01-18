@@ -81,7 +81,8 @@ local-aligner:
 # RPSBLAST runs by default with:
 #   [-outfmt "6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle"]
 #   these flags are not listed
-rpsblast-exe: /full/path/to/rpsblast
+rpsblast:
+  rpsblast-exe: /full/path/to/rpsblast
   evalue:    # [float] e-value (default: 1e-5)
   hsp-max:   # [int] maximum number of high scoring pairs
 
