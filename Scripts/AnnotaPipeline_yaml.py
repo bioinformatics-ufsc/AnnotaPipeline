@@ -580,16 +580,26 @@ def check_parameters(sections):
                 if list_section['secondary-format'] not in ('eupathdb', 'nrdb', 'trembldb'):
                     logger.error("[DATABASE]: Unrecognized type for 'secondary-format'. Please review config file!")
                     log_quit()
-        elif str(section) == "augustus":
-            # Arguments for agutustus don't need to be checked if protein file were given
+        elif str(section) in "augustus":
+            # Arguments for augustus don't need to be checked if protein file were given
             if args.protein is not None:
                 pass
             else:
                 for key in list_section:  # get variable for each box
-                        if list_section.get(key) is None:
-                                # Crash pipeline if some required variable is empty
-                                logger.error(f"Variable [{key}] from section [{str(section)}] is null")
-                                log_quit()
+                    if list_section.get(key) is None:
+                        # Crash pipeline if some required variable is empty
+                        logger.error(f"Variable [{key}] from section [{str(section)}] is null")
+                        log_quit() 
+        # augustus optionals are optionals
+        elif str(section) in "augustus-optional":
+            pass
+        else:
+            # check if variable in list each section
+            for key in list_section:  # get variable for each box
+                if list_section.get(key) is None:
+                    # Crash pipeline if some required variable is empty
+                    logger.error(f"Variable [{key}] from section [{str(section)}] is null")
+                    log_quit()
 # -------------------------------------------------------------------------------------------
 
 # Function to annotate coding sequences
