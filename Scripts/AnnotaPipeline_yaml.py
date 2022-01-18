@@ -734,6 +734,7 @@ databases = config['databases']
 AnnotaBasename = AnnotaPipeline['basename']
 keyword_list = f"'{AnnotaPipeline['keywords']}'"   # join words with '
 augustus_main = config['augustus']
+augustus_optional = config['augustus-optional']
 seq_cleaner = config['seq-cleaner']
 interpro = config['interproscan']
 hmmscan = config['hmmer']
@@ -761,9 +762,9 @@ os.chdir(augustus_folder)
 logger.info("---------------------------------------------------------------")
 logger.info("----------------- Gene Prediction has started -----------------")
 if args.protein is None:
-    augustus_run(AnnotaBasename)
+    augustus_run(augustus_main, augustus_optional, AnnotaBasename)
 else:
-    # Copy protein file to AUGUSTUS path and padronize variable to run Annotapipeline after augustus
+    # Copy protein file to AUGUSTUS path and patronized variable to run Annotapipeline after augustus
     shutil.copy2(prot_path, augustus_folder)
     aug_parsing = args.protein
 
