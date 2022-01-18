@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 requirements = [
                 'biopython>=1.73',
                 'pandas>=0.24.1',
+                'pyyaml>=6.0'
                 #'shutil',
                 #'argparse',
                 #'configparser',

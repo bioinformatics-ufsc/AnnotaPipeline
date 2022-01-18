@@ -562,7 +562,6 @@ def proteomics_check_parameters(proteomic_section):
             global use_last_and_first
             use_last_and_first = True
         else:
-            global use_last_and_first
             use_last_and_first = False
         # -------------------------------------------------
         # ------ Check parameters for percolator ----------
