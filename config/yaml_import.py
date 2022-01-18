@@ -1,5 +1,9 @@
 #!/usr/bin/python3
 
+##############################################
+###   LOAD CONFIGURATION FROM .yaml FILE   ###
+##############################################
+
 # A AVENTURA VAI COMEÇAR -------------------------------------------------------
 
 import yaml
@@ -8,12 +12,12 @@ import yaml
 
 with open("AnnotaPipeline.yaml", "r") as stream:
     try:
-        yaml_dict = yaml.load(stream, Loader=yaml.SafeLoader)
+        config = yaml.load(stream, Loader=yaml.SafeLoader)
     except yaml.YAMLError as exc:
         print(exc)
 
-print(yaml_dict)
+print(config)
 
 # get element from list
-threads = yaml_dict["pipeline"]["threads"]
+threads = config["pipeline"]["threads"]
 print(threads)
