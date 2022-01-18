@@ -63,8 +63,8 @@ augustus-optional:
 # SEQUENCE CLEANER -------------------------------------------------------------
 
 seq-cleaner:
-  minsize-seq:      # [int] minimal size for input sequences
-  clean-percent:    # [int] minimal percentage of unknown nucleotides (N)
+  minsize-seq:     # [int] minimal size for input sequences
+  clean-percent:   # [int] minimal percentage of unknown nucleotides (N)
 
 # BLAST ------------------------------------------------------------------------
 
@@ -112,18 +112,19 @@ hmmer:
 #     if one file was given in rna-seq, provide a value for these parameters
 #   do not fill if you don't want to use these flags with paired-end data
 kallisto:
-  kallisto-exe:   # [path] /full/path/to/kallisto
-  rna-seq:        # FILE(s): path to rna-seq reads
-                  #          2 files for paired-end data or 1 file for single-end data
-                  # EXAMPLE: rna-seq: /path/to/R1.fastq /path/to/R2.fastq
-  l:              # [float] estimated average fragment length
-  s:              # [float] estimated standard deviation of fragment length
-  threshold:      # [ median / mean ]
-                  # calculate TPM mean from Kallisto abundance file and use this value as cutoff
-  value:          # [float]  use specific tpm value from kallisto abundance file as cutoff
-                  # EXAMPLE:
-                  #   value: 297.83
-  bootstrap:      # [int] default is 0
+  kallisto-exe:    # [path] /full/path/to/kallisto
+  rna-seq:         # FILE(s): path to rna-seq reads
+                   #          2 files for paired-end data or 1 file for single-end data
+                   # EXAMPLE: rna-seq: /path/to/R1.fastq /path/to/R2.fastq
+  l:               # [float] estimated average fragment length
+  s:               # [float] estimated standard deviation of fragment length
+  calculate-tpm:   # choose between threshold or value
+  threshold:       # [ median / mean ]
+                   # calculate TPM mean from Kallisto abundance file and use this value as cutoff
+  value:           # [float]  use specific tpm value from kallisto abundance file as cutoff
+                   # EXAMPLE:
+                   #   value: 297.83
+  bootstrap:       # [int] default is 0
 
 # COMET/PERCOLATOR -------------------------------------------------------------
 
