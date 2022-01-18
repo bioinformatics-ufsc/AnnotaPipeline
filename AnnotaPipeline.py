@@ -244,7 +244,7 @@ def augustus_run(basename):
     for variable in config['AUGUSTUS']:
         if variable != "augustus_path":
             # Check if it's a flag
-            if str(interpro.get(variable)).lower() == "flag":
+            if str(augustus_main.get(variable)).lower() == "flag":
                 aug_command += f" -{str(variable)}"
             else:
                 aug_command += f" --{str(variable)}={str(augustus_main.get(variable))}"
