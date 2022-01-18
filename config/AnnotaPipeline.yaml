@@ -120,16 +120,16 @@ kallisto:
   #     /path/to/R1.fastq
   #     /path/to/R2.fastq
   rna-seq: >-
-    
+
   l:              # [float] estimated average fragment length
   s:              # [float] estimated standard deviation of fragment length
-# tpm threshold to parse kallisto output [ mean / median / value ] (choose only one)
-# EXAMPLE (calculated):
-#   threshold: mean
-# EXAMPLE (calculated):
-#   threshold: median
-# EXAMPLE (user input):
-#   threshold: 297.83
+  # tpm threshold to parse kallisto output [ mean / median / value ] (choose only one)
+  # EXAMPLE (calculated):
+  #   threshold: mean
+  # EXAMPLE (calculated):
+  #   threshold: median
+  # EXAMPLE (user input):
+  #   threshold: 297.83
   threshold:      # [ mean / median / value ] we use this as cutoff for parsing
   bootstrap: 0    # [int] default is 0
 
