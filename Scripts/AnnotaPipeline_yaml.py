@@ -441,20 +441,20 @@ def gfftofasta(python_path):
 # ------------------------------------------ -------------------------------------------------
 # ------------------------- Check Parameters -------------------------------------------------
 # Part of check parameters function >> check specific entries for kallisto (transcriptomics)
-def kallisto_check_parameters():
+def kallisto_check_parameters(kallisto_section):
     # kallisto method indicate wich method to parse (mean, median, value) 
     # kallisto paired_end indicate rnaseq type (important to run kallisto)
     global kallisto_method, kallisto_paired_end
     # This variable will store method to parse kallisto output
     kallisto_method = None
     # if kallisto path were given, check other arguments, if not pass.
-    if len(config[str('KALLISTO')].get("kallisto_path")) == 0:
+    if kallisto_section.get("kallisto-exe") is None:
         logger.info("Arguments for KALLISTO are empty. This step will be skipped.")
     else:
         kallisto_check = []
-        for argument in ("rnaseq-data", "median", "mean", "value"):
-            if argument == "rnaseq-data":
-                if len(config[str('KALLISTO')].get("rnaseq-data").split()) > 2:
+        for argument in ("rna-seq", "threshold"):
+            if argument == "rna-seq":
+                if kallisto_section.get("rna-seq").split() > 2:
                     logger.error(
                         "[KALLISTO]: there are more arguments than required for rnaseq-data (KALLISTO). " \
                         "Pass one if your data is from single-end, " \
@@ -462,17 +462,17 @@ def kallisto_check_parameters():
                     )
                     log_quit()
                 ###### This box check how many files were given in rnaseq-data #####
-                elif len(config['KALLISTO'].get("rnaseq-data").split()) == 2:
+                elif kallisto_section.get("rna-seq").split() == 2:
                     kallisto_paired_end = True
                     logger.info(f"KALLISTO will run with paired end data")
                     kallisto_check.append(argument)
-                elif len(config['KALLISTO'].get("rnaseq-data").split()) == 1:
+                elif kallisto_section.get("rna-seq").split() == 1:
                     kallisto_paired_end = False
                     # Check required arguments for single end data
-                    if len(config['KALLISTO'].get('l')) == 0:
+                    if kallisto_section.get('l') is None:
                         logger.error("[KALLISTO]: mandatory argument for single-end data 'l' is empty")
                         log_quit()
-                    elif len(config['KALLISTO'].get('s')) == 0:
+                    elif kallisto_section.get('s') is None:
                         logger.error("[KALLISTO]: mandatory argument for single-end data 's' is empty")
                         log_quit()
                     logger.info(f"KALLISTO will run with single-end data")
@@ -486,43 +486,34 @@ def kallisto_check_parameters():
                     log_quit()
                 ####################################################################
             # Check if argument is Empty
-            elif len(config[str('KALLISTO')].get(argument)) == 0:
-                pass
-            else:
-                # If it's not empty, save argument
-                kallisto_check.append(argument)
+            elif argument == "threshold":
+                if kallisto_section.get("threshold") is None:
+                    logger.error("[KALLISTO]: mandatory argument 'threshold' is empty")
+                    log_quit()
+                else:
+                    if kallisto_section.get("threshold") == 'mean':
+                        kallisto_method = "mean"
+                    elif kallisto_section.get("threshold") == 'median':
+                        kallisto_method = "median"
+                    elif type(kallisto_section.get("threshold")) in (int,float):
+                        kallisto_method = "value"
+                    else:
+                        logger.error("[KALLISTO]: Unrecognized type for argument 'threshold'")
+                        log_quit()
         # Check kallisto arguments
         # If all kallisto arguments are empty, then don't run this guy
         if len(kallisto_check) == 0:
             logger.info("Arguments for KALLISTO are empty. This step will be skipped.")
             kallisto_method = None
-        # Rna-seq data is required for calisto
-        if 'rnaseq-data' in kallisto_check:
+        # Rna-seq data is required for kallisto
+        if 'rna-seq' in kallisto_check:
             # if there is rna-seq data, check if method is correctly given
-            if len(kallisto_check) > 2:
-                logger.error("[KALLISTO]: there is more than one method selected to parse KALLISTO ouput. Please, review .config file.")
-                log_quit()
-            elif len(config[str('KALLISTO')].get("bootstrap")) == 0:
+            if kallisto_section.get("bootstrap") is None:
                 logger.error("[KALLISTO]: bootstrap is empty, default value is 0. At least pass this value")
                 log_quit()
             else:
-                logger.info(f"KALLISTO will run with method: {kallisto_check[1]}")
-                # Pass method, to use further
-                kallisto_method = kallisto_check[1]                    
+                logger.info(f"KALLISTO will run with method: {kallisto_method}")
 
-# Part of check parameters function >> check specific entries for percolator (proteomics)
-def percolator_check_parameters(proteomic_section):
-    if proteomic_section.get('percolator-exe') is None:
-        logger.error("[PERCOLATOR]: path to software is empty, but COMET was provided")
-        logger.warning("PERCOLATOR leave COMET fields empty or pass parameters for PERCOLATOR")
-        log_quit()
-    if proteomic_section.get('percolator-qvalue') is None:
-        logger.error("[PERCOLATOR]: qvalue cutoff is empty, check this parameter")
-        log_quit()
-    # check value for parser
-    if not (0 <= float(proteomic_section.get('percolator-qvalue')) <= 1):
-        logger.error("[PERCOLATOR] qvalue cutoff invalid. Must be float between [0-1]")
-        log_quit()
 
 # Part of check parameters function >> check specific entries for comet (proteomics)
 def proteomics_check_parameters(proteomic_section):
@@ -561,8 +552,20 @@ def proteomics_check_parameters(proteomic_section):
         else:
             global use_last_and_first
             use_last_and_first = False
+        # -------------------------------------------------
+        # ------ Check parameters for percolator ----------
         # Only check percolator if comet parames are ok
-        percolator_check_parameters(proteomic_section)
+        if proteomic_section.get('percolator-exe') is None:
+            logger.error("[PERCOLATOR]: path to software is empty, but COMET was provided")
+            logger.warning("PERCOLATOR leave COMET fields empty or pass parameters for PERCOLATOR")
+            log_quit()
+        if proteomic_section.get('percolator-qvalue') is None:
+            logger.error("[PERCOLATOR]: qvalue cutoff is empty, check this parameter")
+            log_quit()
+        # check value for parser
+        if not (0 <= float(proteomic_section.get('percolator-qvalue')) <= 1):
+            logger.error("[PERCOLATOR] qvalue cutoff invalid. Must be float between [0-1]")
+            log_quit()
 
 # Function to check if all parameters in config file are correct
 def check_parameters(sections):
@@ -724,7 +727,7 @@ python_exe = config['pipeline']['python']
 AnnotaPipeline = config['pipeline']
 databases = config['databases']
 AnnotaBasename = AnnotaPipeline['basename']
-keyword_list = AnnotaPipeline['keywords']
+keyword_list = f"'{AnnotaPipeline['keywords']}'"   # join words with '
 augustus_main = config['augustus']
 seq_cleaner = config['seq-cleaner']
 interpro = config['interproscan']
@@ -817,7 +820,7 @@ subprocess.run([
     "-t",
     str(AnnotaPipeline.get('threads')), 
     "-hsps", 
-    str(blast.get('max_hsps')), 
+    str(blast.get('hsp-max')), 
     "-evalue", 
     str(blast.get('evalue'))
     ]
@@ -841,10 +844,10 @@ os.chdir(interpro_folder)
 logger.info("---------------------------------------------------------------")
 logger.info("------------- Functional Annotation has started ---------------")
 # Running interproscan with hypothetical proteins
-interpro_run("hypothetical", AnnotaBasename, blast_folder, augustus_folder, aug_parsing, interpro, AnnotaPipeline.get('interpro_exe'))
+interpro_run("hypothetical", AnnotaBasename, blast_folder, augustus_folder, aug_parsing, interpro, interpro.get('interproscan-exe'))
 
 # Running interproscan with annotated proteins 
-interpro_run("annotated", AnnotaBasename, blast_folder, augustus_folder, aug_parsing, interpro, AnnotaPipeline.get('interpro_exe'))
+interpro_run("annotated", AnnotaBasename, blast_folder, augustus_folder, aug_parsing, interpro, interpro.get('interproscan-exe'))
 
 # HMMER ------------------------------------------------------------------------
 logger = logging.getLogger('HMMSCAN')
@@ -852,26 +855,27 @@ logger.info("Running HMMSCAN with Hypothetical Proteins")
 
 # General
 hmmscan_command_line = (
-    f"{str(AnnotaPipeline.get('hmm_exe'))} "
+    f"{str(hmmer.get('hmmscan-exe'))} "
     f"--cpu {str(AnnotaPipeline.get('threads'))} "
     f"--tblout {str(AnnotaBasename)}_hmmscan_output.txt "
     f"--noali"
 )
 
 # Optionals
-for variable in hmmscan:
-    if str(hmmscan.get(variable)).lower() == "flag":
-        hmmscan_command_line += f" --{str(variable)}"
+for param in hmmscan:
+    if str(hmmscan.get(param)).lower() == "flag":
+        hmmscan_command_line += f" --{str(param)}"
     else:
         # These specific arguments are passed through '-'
-        if any(arg == str(variable) for arg in ("E", "Z", "T")):
-            hmmscan_command_line += f" -{str(variable)} {str(hmmscan.get(variable))}"
+        if any(arg == str(param) for arg in ("E", "Z", "T")):
+            hmmscan_command_line += f" -{str(param)} {str(hmmscan.get(param))}"
         # Everyone else are passed through '--'
         else:
-            hmmscan_command_line += f" --{str(variable)} {str(hmmscan.get(variable))}"
+            hmmscan_command_line += f" --{str(param)} {str(hmmscan.get(param))}"
 
+# Add Database
 hmmscan_command_line += (
-    f" {str(AnnotaPipeline.get('pfam'))} "
+    f" {str(databases.get('pfam'))} "
     f"Hypothetical_Products.fasta "
     f"> /dev/null 2> hmmscan.err"
 )
@@ -891,19 +895,19 @@ logger.info("Running RPSBLAST with Hypothetical Proteins")
 
 # General
 rpsblast_command_line = (
-    f"rpsblast -query Hypothetical_Products.fasta "
+    f"{str(rpsblast.get('rpsblast-exe'))} -query Hypothetical_Products.fasta "
     f"-out {str(AnnotaBasename)}_rpsblast_output.outfmt6 "
-    f"-db {str(AnnotaPipeline.get('cdd'))} "
+    f"-db {str(databases.get('cdd-db'))} "
     f"-outfmt \"6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle\" "
     f"-num_threads {str(AnnotaPipeline.get('threads'))}"
 )
 
 # Optionals
-for variable in rpsblast:
-    if str(rpsblast.get(variable)).lower() == "flag":
-        rpsblast_command_line += f" -{str(variable)}"
+for param in rpsblast:
+    if str(rpsblast.get(param)).lower() == "flag":
+        rpsblast_command_line += f" -{str(param)}"
     else:
-        rpsblast_command_line += f" -{str(variable)} {str(rpsblast.get(variable))}"
+        rpsblast_command_line += f" -{str(param)} {str(rpsblast.get(param))}"
 
 logger.debug(str(rpsblast_command_line))
 
@@ -1038,7 +1042,7 @@ if kallisto_method != None and args.seq is not None:
 
     # Annotated_Products.cdsexon 
     kallisto_run(str(python_exe),
-        kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
+        kallisto.get("kallisto-exe"), kallisto_paired_end, kallisto_method,
         AnnotaBasename, f"{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_transcripts.fasta'}"
         )
 
