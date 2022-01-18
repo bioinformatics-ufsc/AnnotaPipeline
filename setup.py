@@ -46,11 +46,10 @@ setup(
                 'Scripts/percolator_parser.py',
                 'Scripts/summary_parser.py'
              ],
-    license = "Apache", 
     include_package_data=True,
     python_requires=">=3.6.9",
-    url='https://github.com/GuiMaia/AnnotaPipeline/tree/v1.0.git',
-    download_url='https://github.com/GuiMaia/AnnotaPipeline/archive/refs/heads/v1.0.zip',
+    url='https://github.com/GuiMaia/AnnotaPipeline.git',
+    download_url='https://github.com/GuiMaia/AnnotaPipeline/archive/refs/heads/conda_env.zip',
 # USA esse cara pra fz o classifier
 # https://pypi.org/pypi?%3Aaction=list_classifiers
     classifiers=[
