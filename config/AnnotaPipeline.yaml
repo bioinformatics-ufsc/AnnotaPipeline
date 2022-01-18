@@ -112,7 +112,7 @@ hmmer:
 #     if one file was given in rna-seq, provide a value for these parameters
 #   do not fill if you don't want to use these flags with paired-end data
 kallisto:
-  kallisto-exe: /full/path/to/kallisto
+  kallisto-exe:   # [path] /full/path/to/kallisto
   rna-seq:        # FILE(s): path to rna-seq reads
                   #          2 files for paired-end data or 1 file for single-end data
                   # EXAMPLE: rna-seq: /path/to/R1.fastq /path/to/R2.fastq
@@ -129,7 +129,7 @@ kallisto:
 
 # comet is OPTIONAL but requires percolator
 proteomics:
-  comet-exe: /full/path/to/comet
+  comet-exe:               # [path] /full/path/to/comet
   comet-params:            # [path] full path to comet.params
   comet-spectometry:       # [path] full path to directory containing mass spectometry files
   comet-ext:               # [extension] mass spectometry file extension
@@ -141,5 +141,5 @@ proteomics:
                            #       overriding entry in parameters file
   last:                    # [int] specify the last/end scan to search
                            #       overriding entry in parameters file
-  percolator-exe: /full/path/to/percolator
+  percolator-exe:          # [path] /full/path/to/percolator
   percolator-qvalue: 0.05  # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)
