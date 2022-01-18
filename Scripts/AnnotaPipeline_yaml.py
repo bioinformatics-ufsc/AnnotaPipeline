@@ -774,7 +774,7 @@ logger = logging.getLogger('AnnotaPipeline')
 logger.info("Sequence Cleaner has started")
 
 # Clean only with min_size
-sequence_cleaner(str(aug_parsing), int(seq_cleaner.get('minsize_seq')))
+sequence_cleaner(str(aug_parsing), int(seq_cleaner.get('minsize-seq')),  int(seq_cleaner.get('clean-percent')))
 
 # Check if expected file exists
 check_file(f"Clear_{aug_parsing}")
@@ -1082,7 +1082,7 @@ if proteomics.get('comet-exe') is not None:
 
     # Add percolator output in comet.params
     # change arguments for comet
-    modify_comet_params(proteomics.get('params'))
+    modify_comet_params(proteomics.get('comet-params'))
     commet_command = f"{proteomics.get('comet-exe')} -P{proteomics.get('comet-params')} " \
                 f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
                 f"{first_last_param} {mass_path}*.{proteomics.get('comet-ext')}"
