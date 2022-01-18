@@ -25,6 +25,8 @@ pipeline:
   keywords: >-              # specific keywords to classify each hsp found in blast as "hypothetical"
     fragment, hypothetical, partial, uncharacterized, unknown, unspecified
 
+# DATABASES --------------------------------------------------------------------
+
 databases:
   swissprot-db: /full/path/to/swissprot.db
   secondary-db:       # [path] secondary database [accepted any of eupathdb], nrdb or trembldb
