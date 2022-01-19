@@ -19,32 +19,33 @@
 pipeline:
   python: /usr/bin/python3  # [path] full path to python interpreter (>=3.6)
   perl: /usr/bin/perl       # [path] full path to perl interpreter (required for augustus)
-  threads: 8                # [int] number of threads to run all programs (default: 8)
-  organism:                 # EXAMPLE: Homo sapiens
-  basename:                 # EXAMPLE: Hsapiens
-  keywords: >-              # specific keywords to classify each hsp found in blast as "hypothetical"
-    fragment, hypothetical, partial, uncharacterized, unknown, unspecified
+  threads: 12               # [int] number of threads to run all programs (default: 8)
+  organism: Trypanosoma rangeli SC58
+  basename: TrangeliSC58
+  keywords: >-
+    fragment, fragemnt, hypothetical, partial, uncharacterized, unknown, unspecified
+
 # DATABASES --------------------------------------------------------------------
 
 databases:
-  swissprot-db: /full/path/to/swissprot.db
-  secondary-db:       # [path] full path to secondary database [accepted any of eupathdb], nrdb or trembl
-  secondary-format:   # file formatted as [ eupathdb / nrdb / trembldb ]
-  cdd-db:             # [path] full path to cdd database
-  pfam:               # [path] full path to pfam hmm profile
+  swissprot-db: /bases_externas/SwissProt_11_2019/uniprot_sprot.fasta
+  secondary-db: /bases_externas/TriTrypDB_v46_11_2019/TriTrypDB_v46_11_2019_Prot.fasta
+  secondary-format: eupathdb
+  cdd-db: /bases_externas/interproscan-5.52-86.0/data/cdd/3.18/db/Cdd_NCBI
+  pfam: /bases_externas/interproscan-5.52-86.0/data/pfam/33.1/pfam_a.hmm
 
 # AUGUSTUS ---------------------------------------------------------------------
 augustus:
-  augustus-path: conda  # if you are using our conda environment, set "conda"
-                        # and we will find augustus path
-  strand:               # [ both / forward / backward ]
-  genemodel:            # [ partial / intronless / complete / atleastone / exactlyone ]
-  species:              # based on species within /path/to/augustus/config/species
-  protein:              # [ on / off ]
-  introns:              # [ on / off ]
-  start:                # [ on / off ]
-  stop:                 # [ on / off ]
-  cds:                  # [ on / off ]
+  augustus-path: conda          # if you are using our conda environment, set "conda"
+                                # and we will find augustus path
+  strand: both                  # [ both / forward / backward ]
+  genemodel: intronless         # [ partial / intronless / complete / atleastone / exactlyone ]
+  species: trypanosoma_rangeli  # based on species within /path/to/augustus/config/species
+  protein: on                   # [ on / off ]
+  introns: on                   # [ on / off ]
+  start: on                     # [ on / off ]
+  stop: on                      # [ on / off ]
+  cds: on                       # [ on / off ]
 
 # following options have *not* been tested in AnnotaPipeline (leave empty to deconsider)
 #   if you pass a flag that by default doesn't have a value please inform "value: flag"
@@ -61,28 +62,28 @@ augustus-optional:
 # SEQUENCE CLEANER -------------------------------------------------------------
 
 seq-cleaner:
-  minsize-seq:     # [int] minimal size for input sequences
-  clean-percent:   # [int] minimal percentage of unknown nucleotides (N)
+  minsize-seq: 0     # [int] minimal size for input sequences
+  clean-percent: 10  # [int] minimal percentage of unknown nucleotides (N)
 
 # BLAST ------------------------------------------------------------------------
 
 # blast will run *exclusively* with these parameters (any others will be ignored)
 local-aligner:
-  blast-exe: /full/path/to/blast
-  evalue:       # [float] e-value (default: 0.00001)
-  identity:     # [int] identity threshold to filter blast results
-  positivity:   # [int] positivity threshold to filter blast results
-  coverage:     # [int] query coverage threshold to filter blast results
-                #       use a higher value for more restrict results (default: 30)
-  hsp-max:      # [int] exact number of alignments (recommended: 10)
+  blast-exe: blast
+  evalue: 1e-5    # [float] e-value (default: 0.00001)
+  identity: 40    # [int] identity threshold to filter blast results
+  positivity: 60  # [int] positivity threshold to filter blast results
+  coverage: 30    # [int] query coverage threshold to filter blast results
+                  #       use a higher value for more restrict results (default: 30)
+  hsp-max: 10     # [int] exact number of alignments (recommended: 10)
 
 # RPSBLAST runs by default with:
 #   [-outfmt "6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle"]
 #   these flags are not listed
 rpsblast:
-  rpsblast-exe: /full/path/to/rpsblast
-  evalue:    # [float] e-value (default: 1e-5)
-  hsp-max:   # [int] maximum number of high scoring pairs
+  rpsblast-exe: rpsblast
+  evalue: 1e-5  # [float] e-value (default: 1e-5)
+  hsp-max: 10   # [int] maximum number of high scoring pairs
 
 # INTERPROSCAN/HMMER -----------------------------------------------------------
 
@@ -95,13 +96,13 @@ rpsblast:
 # EXAMPLE:
 #   goterms: flag
 interproscan:
-  interproscan-exe: /full/path/to/interproscan.sh
+  interproscan-exe: interproscan.sh
   ms:     # OPTIONAL: minimum nucleotide size
 
 hmmer:
-  hmmscan-exe: /full/path/to/hmmscan
-  E:      # e-value [1e-n] (n is an integer)
-  domE:   # filter per-domain output based on evalue [1e-n] (n is an integer)
+  hmmscan-exe: hmmscan
+  E: 1e-5     # e-value [1e-n] (n is an integer)
+  domE: 1e-5  # filter per-domain output based on evalue [1e-n] (n is an integer)
 
 # KALLISTO/RNA-seq -------------------------------------------------------------
 
@@ -111,7 +112,7 @@ hmmer:
 #     if one file was given in rna-seq, provide a value for these parameters
 #   do not fill if you don't want to use these flags with paired-end data
 kallisto:
-  kallisto-exe:   # [path] /full/path/to/kallisto
+  kallisto-exe: kallisto
   # FILE(s): path to rna-seq reads
   #          2 files for paired-end data or 1 file for single-end data
   # EXAMPLE:
@@ -119,6 +120,19 @@ kallisto:
   #     /path/to/R1.fastq
   #     /path/to/R2.fastq
   rna-seq: >-
+    
+  l:               # [float] estimated average fragment length
+  s:               # [float] estimated standard deviation of fragment length
+# tpm threshold to parse kallisto output [ mean / median / value ] (choose only one)
+# EXAMPLE (calculated):
+#   threshold: mean
+# EXAMPLE (calculated):
+#   threshold: median
+# EXAMPLE (user input):
+#   threshold: 297.83
+  threshold: mean  # [ mean / median / value ] we use this as cutoff for parsing
+  bootstrap: 1000  # [int] default is 0
+=======
     
   l:              # [float] estimated average fragment length
   s:              # [float] estimated standard deviation of fragment length
@@ -136,17 +150,17 @@ kallisto:
 
 # comet is OPTIONAL but requires percolator
 proteomics:
-  comet-exe:               # [path] /full/path/to/comet
-  comet-params:            # [path] full path to comet.params
-  comet-spectometry:       # [path] full path to directory containing mass spectometry files
-  comet-ext:               # [extension] mass spectometry file extension
-                           # WARNING:    provide only one type
-                           # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
+  comet-exe: comet            # [path] /full/path/to/comet
+  comet-params: /home/vilmar/teste_env/GENOME/comet.params.new
+  comet-spectometry: /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Proteome/
+  comet-ext: mzXML            # [extension] mass spectometry file extension
+                              # WARNING:    provide only one type
+                              # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
   # WARNING: first is required if last is given and vice-versa
   #          last must be higher than first
-  first:                   # [int] specify the first/start scan to search
-                           #       overriding entry in parameters file
-  last:                    # [int] specify the last/end scan to search
-                           #       overriding entry in parameters file
-  percolator-exe:          # [path] /full/path/to/percolator
-  percolator-qvalue: 0.05  # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)
+  first: 200                  # [int] specify the first/start scan to search
+                              #       overriding entry in parameters file
+  last: 2000                  # [int] specify the last/end scan to search
+                              #       overriding entry in parameters file
+  percolator-exe: percolator  # [path] /full/path/to/percolator
+  percolator-qvalue: 0.5     # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)
