@@ -456,7 +456,7 @@ def kallisto_check_parameters(kallisto_section):
         kallisto_check = []
         for argument in ("rna-seq", "threshold"):
             if argument == "rna-seq":
-                if kallisto_section.get("rna-seq").split() > 2:
+                if len(kallisto_section.get("rna-seq").split()) > 2:
                     logger.error(
                         "[KALLISTO]: there are more arguments than required for rnaseq-data (KALLISTO). " \
                         "Pass one if your data is from single-end, " \
@@ -464,11 +464,11 @@ def kallisto_check_parameters(kallisto_section):
                     )
                     log_quit()
                 ###### This box check how many files were given in rnaseq-data #####
-                elif kallisto_section.get("rna-seq").split() == 2:
+                elif len(kallisto_section.get("rna-seq").split()) == 2:
                     kallisto_paired_end = True
                     logger.info(f"KALLISTO will run with paired end data")
                     kallisto_check.append(argument)
-                elif kallisto_section.get("rna-seq").split() == 1:
+                elif len(kallisto_section.get("rna-seq").split()) == 1:
                     kallisto_paired_end = False
                     # Check required arguments for single end data
                     if kallisto_section.get('l') is None:
@@ -535,10 +535,10 @@ def proteomics_check_parameters(proteomic_section):
                 logger.error(f"[COMET] Parameter [{argument}] from section [COMET] is null")
                 log_quit()
         # ------------ check extension mass files ------
-        if proteomic_section.get('comet-ext').split() < 1:
+        if len(proteomic_section.get('comet-ext').split()) < 1:
             logger.error(f"[COMET] Parameter [{proteomic_section.get('mass_files_ext')}] from section [PROTEOMICS] is null")
             log_quit()
-        elif proteomic_section.get('comet-ext').split() > 1:
+        elif len(proteomic_section.get('comet-ext').split()) > 1:
             logger.error(f"[COMET] Parameter [{proteomic_section.get('mass_files_ext')}] from section [PROTEOMICS] have more than one argument")
             log_quit()
         # ------------ Specific conditions -----------------------
@@ -1184,3 +1184,4 @@ except Exception:
 logger.info("That's all folks")
 # close logger
 logging.shutdown()
+
