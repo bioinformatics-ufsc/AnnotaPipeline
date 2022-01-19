@@ -20,5 +20,9 @@ with open("AnnotaPipeline.yaml", "r") as stream:
 # get element from list
 #print(threads)
 
-kallisto_section = config["kallisto"]
-print(kallisto_section.get('rna-seq'))
+kallisto = config["kallisto"]
+rnaseq = kallisto.get("rna-seq")
+if kallisto.get("rna-seq").split() == 2:
+    print("jonas")
+else:
+    print(kallisto.get("rna-seq").split())
