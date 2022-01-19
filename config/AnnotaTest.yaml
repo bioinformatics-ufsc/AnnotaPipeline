@@ -70,7 +70,7 @@ seq-cleaner:
 # blast will run *exclusively* with these parameters (any others will be ignored)
 local-aligner:
   blast-exe: blast
-  evalue: 1e-5    # [float] e-value (default: 0.00001)
+  evalue: 0.00001    # [float] e-value (default: 0.00001)
   identity: 40    # [int] identity threshold to filter blast results
   positivity: 60  # [int] positivity threshold to filter blast results
   coverage: 30    # [int] query coverage threshold to filter blast results
@@ -82,7 +82,7 @@ local-aligner:
 #   these flags are not listed
 rpsblast:
   rpsblast-exe: rpsblast
-  evalue: 1e-5  # [float] e-value (default: 1e-5)
+  evalue: 0.00001  # [float] e-value (default: 1e-5)
   hsp-max: 10   # [int] maximum number of high scoring pairs
 
 # INTERPROSCAN/HMMER -----------------------------------------------------------
@@ -120,7 +120,8 @@ kallisto:
   #     /path/to/R1.fastq
   #     /path/to/R2.fastq
   rna-seq: >-
-    
+    /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR1_05aug2021.fastq
+    /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR2_05aug2021.fastq              
   l:               # [float] estimated average fragment length
   s:               # [float] estimated standard deviation of fragment length
 # tpm threshold to parse kallisto output [ mean / median / value ] (choose only one)
@@ -132,19 +133,6 @@ kallisto:
 #   threshold: 297.83
   threshold: mean  # [ mean / median / value ] we use this as cutoff for parsing
   bootstrap: 1000  # [int] default is 0
-=======
-    
-  l:              # [float] estimated average fragment length
-  s:              # [float] estimated standard deviation of fragment length
-  # tpm threshold to parse kallisto output [ mean / median / value ] (choose only one)
-  # EXAMPLE (calculated):
-  #   threshold: mean
-  # EXAMPLE (calculated):
-  #   threshold: median
-  # EXAMPLE (user input):
-  #   threshold: 297.83
-  threshold:      # [ mean / median / value ] we use this as cutoff for parsing
-  bootstrap: 0    # [int] default is 0
 
 # COMET/PERCOLATOR -------------------------------------------------------------
 

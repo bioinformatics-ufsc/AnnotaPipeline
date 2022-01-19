@@ -812,7 +812,7 @@ subprocess.run([
     "-s",
     str(augustus_folder / str("Clear_" + aug_parsing)),
     "-sp",
-    str(AnnotaPipeline.get('swissprot-db')),
+    str(databases.get('swissprot-db')),
     "-basename",
     str(AnnotaBasename),
     str(flag_spdb),  # Flag for databse
