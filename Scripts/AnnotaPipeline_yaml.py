@@ -578,7 +578,7 @@ def check_parameters(sections):
         elif str(section) == "databases":
             params_empty = ([param for param in list_section if list_section.get(param) == None])
             if params_empty:
-                logger.error("[DATABASE]: there is some secondary database missing. Please review config file!")
+                logger.error("[DATABASE]: there is some database param missing. Please review config file!")
                 log_quit()
             else:
                 # Check if format of secondary database is correct
@@ -799,9 +799,9 @@ logger.info("BLAST execution and parsing has started")
 
 # Select secondary database from config file
 spdb_path = databases.get("secondary-db")
-if databases.get("specific_db_path") == 'eupathdb':
+if str(databases.get("secondary-format")).lower() == 'eupathdb':
     flag_spdb = "-spdb"
-elif databases.get("specific_db_path") == 'trembldb':
+elif str(databases.get("secondary-format")).lower() == 'trembldb':
     flag_spdb = "-trbl"
 else:
     flag_spdb = "-nr"
@@ -812,7 +812,7 @@ subprocess.run([
     "-s",
     str(augustus_folder / str("Clear_" + aug_parsing)),
     "-sp",
-    str(AnnotaPipeline.get('swissprot_path_db')),
+    str(AnnotaPipeline.get('swissprot-db')),
     "-basename",
     str(AnnotaBasename),
     str(flag_spdb),  # Flag for databse
