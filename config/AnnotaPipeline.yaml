@@ -120,9 +120,7 @@ kallisto:
   #     /path/to/R1.fastq
   #     /path/to/R2.fastq
   rna-seq: >-
-<<<<<<< HEAD
-    /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR1_05aug2021.fastq
-    /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR2_05aug2021.fastq              
+    
   l:               # [float] estimated average fragment length
   s:               # [float] estimated standard deviation of fragment length
 # tpm threshold to parse kallisto output [ mean / median / value ] (choose only one)
@@ -147,7 +145,6 @@ kallisto:
   #   threshold: 297.83
   threshold:      # [ mean / median / value ] we use this as cutoff for parsing
   bootstrap: 0    # [int] default is 0
->>>>>>> 64405932d972bbf2bb2bf81cb41839ef5ac49035
 
 # COMET/PERCOLATOR -------------------------------------------------------------
 
