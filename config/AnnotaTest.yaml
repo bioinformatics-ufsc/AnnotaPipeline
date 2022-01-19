@@ -19,7 +19,7 @@
 pipeline:
   python: /usr/bin/python3  # [path] full path to python interpreter (>=3.6)
   perl: /usr/bin/perl       # [path] full path to perl interpreter (required for augustus)
-  threads: 12               # [int] number of threads to run all programs (default: 8)
+  threads: 8               # [int] number of threads to run all programs (default: 8)
   organism: Trypanosoma rangeli SC58
   basename: TrangeliSC58
   keywords: >-

@@ -171,6 +171,17 @@ stderr_logger = logging.getLogger('AnnotaPipeline')
 sl = StreamToLogger(stderr_logger, logging.ERROR)
 sys.stderr = sl
 
+# --- PARSE ARGUMENTS FROM .config FILE ----------------------------------------
+
+config_pwd = pathlib.Path(args.annotaconfig).absolute()
+
+# Get params from yaml
+with open(config_pwd, "r") as stream:
+    try:
+        config = yaml.load(stream, Loader=yaml.SafeLoader)
+    except yaml.YAMLError as exc:
+        print(exc)
+
 # ---------------------- FUNCTIONS ---------------------------------------------
 # Function to close log and quit AnnotaPipeline if some expected file/parameter cant be found
 def log_quit():
@@ -578,7 +589,7 @@ def check_parameters(sections):
         elif str(section) == "databases":
             params_empty = ([param for param in list_section if list_section.get(param) == None])
             if params_empty:
-                logger.error("[DATABASE]: there is some database param missing. Please review config file!")
+                logger.error("[DATABASE]: there is some secondary database missing. Please review config file!")
                 log_quit()
             else:
                 # Check if format of secondary database is correct
@@ -695,18 +706,6 @@ def modify_comet_params(comet_params):
             logger.debug(warn)
     with open(f"{comet_params}", "w") as comet_params_write:
         comet_params_write.write(new_comet_params_read) 
-
-# --- PARSE ARGUMENTS FROM .config FILE ----------------------------------------
-
-config_pwd = pathlib.Path(args.annotaconfig).absolute()
-
-# Get params from yaml
-with open(config_pwd, "r") as stream:
-    try:
-        config = yaml.load(stream, Loader=yaml.SafeLoader)
-    except yaml.YAMLError as exc:
-        logger.error(exc)
-        log_quit()
 
 # ------------------------------------------------------------------------------
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
