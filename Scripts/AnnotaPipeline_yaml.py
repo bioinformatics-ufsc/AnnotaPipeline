@@ -832,7 +832,6 @@ subprocess.run([
     str(blast.get('evalue'))
 # "-blastp",
 # str(blast.get('blast-exe'))
-
     ]
 )
 
