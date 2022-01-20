@@ -733,7 +733,7 @@ python_exe = config['pipeline']['python']
 AnnotaPipeline = config['pipeline']
 databases = config['databases']
 AnnotaBasename = AnnotaPipeline['basename']
-keyword_list = f"'{AnnotaPipeline['keywords']}'"   # join words with '
+keyword_list = AnnotaPipeline['keywords']       # join words with '
 augustus_main = config['augustus']
 augustus_optional = config['augustus-optional']
 seq_cleaner = config['seq-cleaner']
@@ -823,7 +823,7 @@ subprocess.run([
     "-cov",
     str(blast.get('coverage')),
     "-kw",
-    str(",".join(keyword_list)),
+    str(f'\'{",".join(keyword_list)}\''),
     "-t",
     str(AnnotaPipeline.get('threads')), 
     "-hsps", 
