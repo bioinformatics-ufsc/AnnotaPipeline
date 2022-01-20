@@ -827,7 +827,7 @@ subprocess.run([
     "-t",
     str(AnnotaPipeline.get('threads')), 
     "-hsps", 
-    str(blast.get('hsp-max')), 
+    str(blast.get('max-hsp')), 
     "-evalue", 
     str(blast.get('evalue'))
 # "-blastp",
