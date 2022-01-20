@@ -144,7 +144,7 @@ kallisto:
 # comet is OPTIONAL but requires percolator
 proteomics:
   comet-exe: comet            # [path] /full/path/to/comet
-  comet-params: /home/vilmar/teste_env/GENOME/comet.params.new
+  comet-params: /home/vilmar/teste_env/GENOME/comet.params
   comet-spectometry: /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Proteome/
   comet-ext: mzXML            # [extension] mass spectometry file extension
                               # WARNING:    provide only one type
