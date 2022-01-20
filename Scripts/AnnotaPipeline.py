@@ -1088,7 +1088,7 @@ if len(comet.get('comet_bash')) != 0:
     # ----------------------------------------------------------------
     # Get all output files from mass_path >> default output path
     file_names = pathlib.Path(mass_path).glob('*.pin')
-    if not file_names:
+    if not list(file_names):
         logger.error("COMET - Fail trying to run COMET, check version of comet.params")
         log_quit()
     # ----------- Create Percolator Output path ----------------------
