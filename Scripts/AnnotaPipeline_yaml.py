@@ -467,7 +467,7 @@ def kallisto_check_parameters(kallisto_section):
         kallisto_check = []
         for argument in ("rna-seq", "threshold"):
             if argument == "rna-seq":
-                if len(kallisto_section.get("rna-seq").split()) > 2:
+                if len(kallisto_section.get("rna-seq")) > 2:
                     logger.error(
                         "[KALLISTO]: there are more arguments than required for rnaseq-data (KALLISTO). " \
                         "Pass one if your data is from single-end, " \
@@ -475,11 +475,11 @@ def kallisto_check_parameters(kallisto_section):
                     )
                     log_quit()
                 ###### This box check how many files were given in rnaseq-data #####
-                elif len(kallisto_section.get("rna-seq").split()) == 2:
+                elif len(kallisto_section.get("rna-seq")) == 2:
                     kallisto_paired_end = True
                     logger.info(f"KALLISTO will run with paired end data")
                     kallisto_check.append(argument)
-                elif len(kallisto_section.get("rna-seq").split()) == 1:
+                elif len(kallisto_section.get("rna-seq")) == 1:
                     kallisto_paired_end = False
                     # Check required arguments for single end data
                     if kallisto_section.get('l') is None:
