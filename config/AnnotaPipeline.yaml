@@ -22,8 +22,13 @@ pipeline:
   threads: 8                # [int] number of threads to run all programs (default: 8)
   organism:                 # EXAMPLE: Homo sapiens
   basename:                 # EXAMPLE: Hsapiens
-  keywords: >-              # specific keywords to classify each hsp found in blast as "hypothetical"
-    fragment, hypothetical, partial, uncharacterized, unknown, unspecified
+  keywords:                 # specific keywords to classify each hsp found in blast as "hypothetical"
+    - fragment
+    - hypothetical
+    - partial
+    - uncharacterized
+    - unknown
+    - unspecified
 # DATABASES --------------------------------------------------------------------
 
 databases:
@@ -115,11 +120,11 @@ kallisto:
   # FILE(s): path to rna-seq reads
   #          2 files for paired-end data or 1 file for single-end data
   # EXAMPLE:
-  #   rna-seq: >-
-  #     /path/to/R1.fastq
-  #     /path/to/R2.fastq
-  rna-seq: >-
-    null
+  #   rna-seq:
+  #     - /path/to/R1.fastq
+  #     - /path/to/R2.fastq
+  rna-seq:
+    - 
   l:              # [float] estimated average fragment length
   s:              # [float] estimated standard deviation of fragment length
   # tpm threshold to parse kallisto output [ mean / median / value ] (choose only one)

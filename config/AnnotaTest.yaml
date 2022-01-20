@@ -22,8 +22,13 @@ pipeline:
   threads: 8               # [int] number of threads to run all programs (default: 8)
   organism: Trypanosoma rangeli SC58
   basename: TrangeliSC58
-  keywords: >-
-    fragment, fragemnt, hypothetical, partial, uncharacterized, unknown, unspecified
+  keywords:
+    - fragment
+    - hypothetical
+    - partial
+    - uncharacterized
+    - unknown
+    - unspecified
 
 # DATABASES --------------------------------------------------------------------
 
@@ -119,9 +124,9 @@ kallisto:
   #   rna-seq: >-
   #     /path/to/R1.fastq
   #     /path/to/R2.fastq
-  rna-seq: >-
-    /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR1_05aug2021.fastq
-    /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR2_05aug2021.fastq              
+  rna-seq:
+    - /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR1_05aug2021.fastq
+    - /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR2_05aug2021.fastq              
   l:               # [float] estimated average fragment length
   s:               # [float] estimated standard deviation of fragment length
 # tpm threshold to parse kallisto output [ mean / median / value ] (choose only one)
