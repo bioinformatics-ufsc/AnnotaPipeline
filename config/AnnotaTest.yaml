@@ -74,7 +74,7 @@ seq-cleaner:
 
 # blast will run *exclusively* with these parameters (any others will be ignored)
 local-aligner:
-  blast-exe: blast
+  blast-exe: blastp
   evalue: 0.00001    # [float] e-value (default: 0.00001)
   identity: 40    # [int] identity threshold to filter blast results
   positivity: 60  # [int] positivity threshold to filter blast results
