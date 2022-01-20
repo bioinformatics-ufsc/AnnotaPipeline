@@ -823,7 +823,7 @@ subprocess.run([
     "-cov",
     str(blast.get('coverage')),
     "-kw",
-    str(keyword_list),
+    str(",".join(keyword_list)),
     "-t",
     str(AnnotaPipeline.get('threads')), 
     "-hsps", 
