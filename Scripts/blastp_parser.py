@@ -56,6 +56,15 @@ requiredNamed.add_argument(
     help='basename',
     required=True
 )
+
+requiredNamed.add_argument(
+    '-blastp', dest='blastp',
+    metavar='/opt/blast/blastp',
+    help='full path to blastp [if it`s in bin pass just "blastp"]',
+    required=True
+)
+
+
 #   type (default): string
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument(
@@ -202,13 +211,14 @@ def blast(arq1, arq2, db, hsps, evalue):
     fmt = str("\"6 qseqid sseqid sacc bitscore"
               + " evalue ppos pident qcovs stitle\"")
 
-    command = f"blastp -query {arq1} -out {arq2}" \
+    command = f"{args.blastp} -query {arq1} -out {arq2}" \
                     f" -db {datab} -evalue {evalue}" \
                     f" -outfmt {fmt}" \
                     f" -max_hsps {hsps}" \
                     f" -num_threads {str(args.threads)}"
     logger.info(command)
     subprocess.getoutput(command)
+
 
 
 def temporary_query(arq):
@@ -218,13 +228,6 @@ def temporary_query(arq):
     del temp[0]
     temp.insert(0, "QueryTemp")
     arq.append("\t".join(temp))
-
-
-def is_tool(name):
-    if which(name) is None:
-        logging.error(f"Program: {str(name)} must be avaliable in $PATH")
-        logging.shutdown()
-        sys.exit(1)
 
 
 '''---Keywords-------------------------------------------------------------'''
@@ -581,9 +584,6 @@ def swiss_run():
     blast(args.seq, swiss_out, args.spdb, args.hsps, args.evalue)
     logger.info("Running parser SwissProt")
 
-
-# Check BLAST, run Swissprot and parser it's results
-is_tool("blastp")
 
 # Run BLAST against swissprotDB
 swiss_out = f"{str(args.basename)}_BLASTp_AAvsSwissProt.outfmt6"
