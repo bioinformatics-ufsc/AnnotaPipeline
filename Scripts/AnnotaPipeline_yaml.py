@@ -830,6 +830,9 @@ subprocess.run([
     str(blast.get('hsp-max')), 
     "-evalue", 
     str(blast.get('evalue'))
+# "-blastp",
+# str(blast.get('blast-exe'))
+
     ]
 )
 
