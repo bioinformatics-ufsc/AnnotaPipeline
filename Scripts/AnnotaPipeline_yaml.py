@@ -919,7 +919,7 @@ rpsblast_command_line = (
 for param in rpsblast:
     if str(rpsblast.get(param)).lower() == "flag":
         rpsblast_command_line += f" -{str(param)}"
-    else:
+    elif param != "rpsblast-exe":
         rpsblast_command_line += f" -{str(param)} {str(rpsblast.get(param))}"
 
 logger.debug(str(rpsblast_command_line))
