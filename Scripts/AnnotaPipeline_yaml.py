@@ -14,7 +14,6 @@ from Bio import SeqIO
 from shutil import which
 import pandas as pd
 import argparse
-import configparser
 import logging
 import os
 import pathlib
