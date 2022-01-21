@@ -327,8 +327,7 @@ def interpro_run(type, basename, blast_path, augustus_path, augustus_file, inter
     for variable in interpro_section:
         if str(interpro_section.get(variable)).lower() == "flag":
             interpro_command_line += f" -{str(variable)}"
-        else:
-            
+        elif variable != "interproscan-exe":
             if interpro_section.get(variable) is not None:
                 interpro_command_line += f" -{str(variable)} {str(interpro_section.get(variable))}"
 
@@ -869,7 +868,7 @@ logger.info("Running HMMSCAN with Hypothetical Proteins")
 
 # General
 hmmscan_command_line = (
-    f"{str(hmmer.get('hmmscan-exe'))} "
+    f"{str(hmmscan.get('hmmscan-exe'))} "
     f"--cpu {str(AnnotaPipeline.get('threads'))} "
     f"--tblout {str(AnnotaBasename)}_hmmscan_output.txt "
     f"--noali"
@@ -879,7 +878,7 @@ hmmscan_command_line = (
 for param in hmmscan:
     if str(hmmscan.get(param)).lower() == "flag":
         hmmscan_command_line += f" --{str(param)}"
-    else:
+    elif param != "hmmscan-exe":
         # These specific arguments are passed through '-'
         if any(arg == str(param) for arg in ("E", "Z", "T")):
             hmmscan_command_line += f" -{str(param)} {str(hmmscan.get(param))}"
