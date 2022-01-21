@@ -14,5 +14,5 @@ dependencies:
   - bioconda::comet-ms>=2019015
   - bioconda::percolator>=3.05.0
   - bioconda::augustus>=3.3.3
-  # - pip:
-  #     - git+
+  - pip:
+    - git+https://github.com/GuiMaia/AnnotaPipeline.git
