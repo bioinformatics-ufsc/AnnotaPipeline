@@ -593,7 +593,7 @@ def check_parameters(sections):
             else:
                 for key in list_section:  # get variable for each box
                     # MS is optional parameter for INTERPROSCAN
-                    if key == "ms":
+                    if str(key) == "ms":
                         pass
                     elif list_section.get(key) is None:
                         # Crash pipeline if some required variable is empty
