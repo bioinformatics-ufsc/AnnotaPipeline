@@ -171,17 +171,6 @@ stderr_logger = logging.getLogger('AnnotaPipeline')
 sl = StreamToLogger(stderr_logger, logging.ERROR)
 sys.stderr = sl
 
-# --- PARSE ARGUMENTS FROM .config FILE ----------------------------------------
-
-config_pwd = pathlib.Path(args.annotaconfig).absolute()
-
-# Get params from yaml
-with open(config_pwd, "r") as stream:
-    try:
-        config = yaml.load(stream, Loader=yaml.SafeLoader)
-    except yaml.YAMLError as exc:
-        print(exc)
-
 # ---------------------- FUNCTIONS ---------------------------------------------
 # Function to close log and quit AnnotaPipeline if some expected file/parameter cant be found
 def log_quit():
@@ -710,6 +699,18 @@ def modify_comet_params(comet_params):
             logger.debug(warn)
     with open(f"{comet_params}", "w") as comet_params_write:
         comet_params_write.write(new_comet_params_read) 
+
+# --- PARSE ARGUMENTS FROM .config FILE ----------------------------------------
+
+config_pwd = pathlib.Path(args.annotaconfig).absolute()
+
+# Get params from yaml
+with open(config_pwd, "r") as stream:
+    try:
+        config = yaml.load(stream, Loader=yaml.SafeLoader)
+    except yaml.YAMLError as exc:
+        logger.error(exc)
+        log_quit()
 
 # ------------------------------------------------------------------------------
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------

@@ -35,7 +35,7 @@ python_exe = config['pipeline']['python']
 AnnotaPipeline = config['pipeline']
 databases = config['databases']
 AnnotaBasename = AnnotaPipeline['basename']
-keyword_list = f"'{AnnotaPipeline['keywords']}'"   # join words with '
+keyword_list = AnnotaPipeline['keywords']   # join words with '
 augustus_main = config['augustus']
 augustus_optional = config['augustus-optional']
 seq_cleaner = config['seq-cleaner']
@@ -46,16 +46,4 @@ rpsblast = config['rpsblast']
 kallisto = config['kallisto']
 proteomics = config['proteomics']
 
-
-
-
-print(f'{str(python_exe)} {str("blastp_parser.py")} -s ' \
-    f' -sp ' \
-    f'{str(databases.get("swissprot-db"))} -basename ' \
-    f'{str(AnnotaBasename)} {str(flag_spdb)} {str(spdb_path)} -id' \
-    f'{str(blast.get("identity"))} -pos' \
-    f'{str(blast.get("positivity"))} -cov' \
-    f'{str(blast.get("coverage"))} -kw' \
-    f'{str(keyword_list)} -t' \
-    f'{str(AnnotaPipeline.get("threads"))} -hsps' \
-    f'{str(blast.get("hsp-max"))} -evalue {str(blast.get("evalue"))}')
+print(str(f'\'{",".join(keyword_list)}\''))
