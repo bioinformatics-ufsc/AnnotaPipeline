@@ -80,7 +80,7 @@ local-aligner:
   positivity: 60  # [int] positivity threshold to filter blast results
   coverage: 30    # [int] query coverage threshold to filter blast results
                   #       use a higher value for more restrict results (default: 30)
-  max_hsp: 10     # [int] exact number of alignments (recommended: 10)
+  max_hsps: 10     # [int] exact number of alignments (recommended: 10)
 
 # RPSBLAST runs by default with:
 #   [-outfmt "6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle"]
@@ -89,7 +89,7 @@ rpsblast:
   rpsblast-exe: rpsblast
   evalue: 0.00001  # [float] e-value (default: 1e-5)
   # OPTIONAL PARAMETERS (remove if not used)
-  max_hsp: 10   # [int] maximum number of high scoring pairs
+  max_hsps: 10   # [int] maximum number of high scoring pairs
 
 # INTERPROSCAN/HMMER -----------------------------------------------------------
 
