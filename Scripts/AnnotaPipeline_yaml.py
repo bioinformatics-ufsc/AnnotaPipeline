@@ -107,6 +107,7 @@ optionalNamed.add_argument(
     '-c', '--config', dest='annotaconfig',
     metavar='[AnnotaPipeline.config]',
     default=pipeline_pwd / "AnnotaPipeline.yaml",
+#   default= os.path.join(sys.prefix, 'config/AnnotaPipeline.yaml'),
     help='configuration file for AnnotaPipeline'
 )
 
