@@ -339,6 +339,7 @@ def interpro_run(type, basename, blast_path, augustus_path, augustus_file, inter
         if str(interpro_section.get(variable)).lower() == "flag":
             interpro_command_line += f" -{str(variable)}"
         else:
+            
             if interpro_section.get(variable) is not None:
                 interpro_command_line += f" -{str(variable)} {str(interpro_section.get(variable))}"
 
@@ -602,7 +603,10 @@ def check_parameters(sections):
                 pass
             else:
                 for key in list_section:  # get variable for each box
-                    if list_section.get(key) is None:
+                    # MS is optional parameter for INTERPROSCAN
+                    if key == "ms":
+                        pass
+                    elif list_section.get(key) is None:
                         # Crash pipeline if some required variable is empty
                         logger.error(f"Variable [{key}] from section [{str(section)}] is null")
                         log_quit() 
