@@ -780,7 +780,7 @@ logger = logging.getLogger('AnnotaPipeline')
 logger.info("Sequence Cleaner has started")
 
 # Clean only with min_size
-sequence_cleaner(str(aug_parsing), int(seq_cleaner.get('minsize-seq')),  int(seq_cleaner.get('clean-percent')))
+sequence_cleaner(str(aug_parsing), int(seq_cleaner.get('minsize-seq')))
 
 # Check if expected file exists
 check_file(f"Clear_{aug_parsing}")
