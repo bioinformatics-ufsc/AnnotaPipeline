@@ -371,7 +371,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
         kallisto_command_quant = (
             f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
             f"{s_flag} {l_flag} "
-            f"-o {basename}_kallisto_output -b {kallisto.get('bootstrap')} {' '.join(kallisto.get('rna-seq'))})"
+            f"-o {basename}_kallisto_output -b {kallisto.get('bootstrap')} {' '.join(kallisto.get('rna-seq'))}"
         )
         logger.info(f"KALLISTO quant has started")
         logger.debug(kallisto_command_quant)
