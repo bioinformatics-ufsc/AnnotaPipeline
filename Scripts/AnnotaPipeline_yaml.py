@@ -1108,6 +1108,9 @@ if proteomics.get('comet-exe') is not None:
     if not list(file_names):
         logger.error("COMET - Fail trying to run COMET, check version of comet.params")
         log_quit()
+    # ----------------------------------------------------------------
+    # MUST GET AGAIN BECAUSE LIST METHOD EMPTY VALUES IF IT HAD ONE
+    file_names = pathlib.Path(mass_path).glob('*.pin')
     # ----------- Create Percolator Output path ----------------------
     logger = logging.getLogger('PERCOLATOR')
     logger.info("PERCOLATOR execution has started")
