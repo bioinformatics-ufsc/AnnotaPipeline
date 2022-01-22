@@ -213,7 +213,8 @@ def sequence_cleaner(fasta_file, min_length=0, por_n=100):
         # Take the current sequence
         sequence = str(seq_record.seq).upper()
         # Check if the current sequence is according to the user parameters
-        if len(sequence) >= min_length and ((float(sequence.count("N")) / float(len(sequence))) * 100 <= por_n):
+#        if len(sequence) >= min_length and ((float(sequence.count("N")) / float(len(sequence))) * 100 <= por_n):
+        if len(sequence) >= min_length:
             output_file.write(f">{str(seq_record.id)}\n{str(sequence)}\n")
     output_file.close()
 
