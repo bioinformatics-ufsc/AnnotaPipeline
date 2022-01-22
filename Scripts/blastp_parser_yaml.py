@@ -241,6 +241,7 @@ def check_query(full_line_list, coverage, word_list, id, pos, list_classificatio
             if float(full_line_list[5]) >= float(pos) and float(full_line_list[6]) >= float(id):
                 # If annotation is strong, is considered as non_hypothetical
                 list_classification.append("non_hypothetical")
+                # Store desc and bitscore
                 list_annot.append(hit(str(description), float(full_line_list[3])))
                 list_desc.append(description)
             else:
@@ -294,7 +295,7 @@ def parser_trembl(basename, result_blast, identidade, positividade, cov):
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
                 nhyp.write(f"{str(old_id)}\t")
-                # Sort annotations by identity
+                # Sort annotations by bitscore
                 annots.sort()
                 # Get best identity, first position of array
                 nhyp.write(f"{str(annots[0].desc)}\n")
@@ -358,7 +359,7 @@ def parser_trytrip(basename, result_blast, identidade, positividade, cov):
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
                 nhyp.write(f"{str(old_id)}\t")
-                # Sort annotations by identity
+                # Sort annotations by bitscore
                 annots.sort()
                 # Get best identity, first position of array
                 nhyp.write(f"{str(annots[0].desc)}\n")
@@ -425,7 +426,7 @@ def parser_nr(basename, result_blast, identidade, positividade, cov):
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
                 nhyp.write(f"{str(old_id)}\t")
-                # Sort annotations by identity
+                # Sort annotations by bitscore
                 annots.sort()
                 # Get best identity, first position of array
                 nhyp.write(f"{str(annots[0].desc)}\n")
@@ -490,7 +491,7 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
             if "non_hypothetical" in ' '.join(classification):
                 nhyp.write(f"{str(old_id)}\t")
                 nhyp_list.append(str(old_id))
-                # Sort annotations by identity
+                # Sort annotations by bitscore
                 annots.sort()
                 # Get best identity, first position of array
                 nhyp.write(f"{str(annots[0].desc)}\n")
