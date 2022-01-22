@@ -235,6 +235,22 @@ def is_tool(name):
         sys.exit(1)
 
 
+def check_query(full_line_list, coverage, word_list, id, pos, list_classification, list_annot, list_desc, description):
+    if float(full_line_list[7]) > float(coverage):
+        if not any(word in description.lower() for word in word_list):
+            if float(full_line_list[5]) >= float(pos) and float(full_line_list[6]) >= float(id):
+                # If annotation is strong, is considered as non_hypothetical
+                list_classification.append("non_hypothetical")
+                list_annot.append(hit(str(description), float(full_line_list[3])))
+                list_desc.append(description)
+            else:
+                list_classification.append("hypothetical")
+        else:
+            list_classification.append("hypothetical")
+    else:
+        pass
+
+
 '''---Keywords-------------------------------------------------------------'''
 
 # defining the keywords that will be used
@@ -292,26 +308,12 @@ def parser_trembl(basename, result_blast, identidade, positividade, cov):
             classification.clear()
             annots.clear()
             desc_list.clear()
+            # check first query of new ID
+            check_query(line_split, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         else:
-            if float(line_split[7]) > float(cov):
-                # Check annotations, if any word doesn't match with keywords
-                if not any(word in desc.lower() for word in keyword_list):
-                    # Results that doesn't have match with keyword_list pass
-                    # Check positivity and identity with subject
-                    # If it's lower than threshold, it's not trustworthy, so, it's considered hypothetical
-                    if float(line_split[5]) >= float(positividade) \
-                            and float(line_split[6]) >= float(identidade):
-                        # If annotation is strong, is considered as non_hypothetical
-                        annots.append(hit(str(desc), float(line_split[3])))
-                        desc_list.append(str(desc))
-                        classification.append("non_hypothetical")
-                    else:
-                        classification.append("hypothetical")
-                    # Check annotations, if any word match with keywords, is considered hypothetical
-                else:
-                    classification.append("hypothetical")
-            else:
-                pass
+            check_query(line_split, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         # saving the information that will be written in the .txt files
         old_id = new_id
 
@@ -370,26 +372,12 @@ def parser_trytrip(basename, result_blast, identidade, positividade, cov):
             classification.clear()
             annots.clear()
             desc_list.clear()
+            # check first query of new ID
+            check_query(title, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         else:
-            if float(title[7]) > float(cov):
-                # Check annotations, if any word doesn't match with keywords
-                if not any(word in desc.lower() for word in keyword_list):
-                    # Results that doesn't have match with keyword_list pass
-                    # Check positivity and identity with subject
-                    # If it's lower than threshold, it's not trustworthy, so, it's considered hypothetical
-                    if float(title[5]) >= float(positividade) \
-                            and float(title[6]) >= float(identidade):
-                        # If annotation is strong, is considered as non_hypothetical
-                        annots.append(hit(str(desc), float(title[3])))
-                        desc_list.append(str(desc))
-                        classification.append("non_hypothetical")
-                    else:
-                        classification.append("hypothetical")
-                    # Check annotations, if any word match with keywords, is considered hypothetical
-                else:
-                    classification.append("hypothetical")
-            else:
-                pass
+            check_query(title, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         # saving the information that will be written in the .txt files
         old_id = new_id
 
@@ -448,26 +436,12 @@ def parser_nr(basename, result_blast, identidade, positividade, cov):
             classification.clear()
             annots.clear()
             desc_list.clear()
+            # check first query of new ID
+            check_query(title, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         else:
-            if float(title[7]) > float(cov):
-                # Check annotations, if any word doesn't match with keywords
-                if not any(word in desc.lower() for word in keyword_list):
-                    # Results that doesn't have match with keyword_list pass
-                    # Check positivity and identity with subject
-                    # If it's lower than threshold, it's not trustworthy, so, it's considered hypothetical
-                    if float(title[5]) >= float(positividade) \
-                            and float(title[6]) >= float(identidade):
-                        # If annotation is strong, is considered as non_hypothetical
-                        classification.append("non_hypothetical")
-                        annots.append(hit(str(desc), float(title[3])))
-                        desc_list.append(desc)
-                    else:
-                        classification.append("hypothetical")
-                # Check annotations, if any word match with keywords, is considered hypothetical
-                else:
-                    classification.append("hypothetical")
-            else:
-                pass
+            check_query(title, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         # saving the information that will be written in the .txt files
         old_id = new_id
 
@@ -528,20 +502,12 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
             desc.clear()
             classification.clear()
             annots.clear()
+            # check first query of new ID
+            check_query(line_split, cov, keyword_list, identidade, positividade,
+                        classification, annots, desc, description)
         else:
-            if float(line_split[7]) > float(cov):
-                if not any(word in description.lower() for word in keyword_list):
-                    if float(line_split[5]) >= float(positividade) and float(line_split[6]) >= float(identidade):
-                        # If annotation is strong, is considered as non_hypothetical
-                        classification.append("non_hypothetical")
-                        annots.append(hit(str(description), float(line_split[3])))
-                        desc.append(description)
-                    else:
-                        classification.append("hypothetical")
-                else:
-                    classification.append("hypothetical")
-            else:
-                pass
+            check_query(line_split, cov, keyword_list, identidade, positividade,
+                        classification, annots, desc, description)
         # saving the information that will be written in the .txt files
         old_id = new_id
 
