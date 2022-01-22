@@ -67,7 +67,6 @@ augustus-optional:
 
 seq-cleaner:
   minsize-seq:     # [int] minimal size for input sequences
-  clean-percent:   # [int] minimal percentage of unknown nucleotides (N)
 
 # BLAST ------------------------------------------------------------------------
 

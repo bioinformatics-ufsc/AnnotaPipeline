@@ -197,14 +197,15 @@ def check_file(file):
                     "But, seriously, check your inputs and outputs and rerun.")
 
 # Function to clean fasta file based on lenght and N bases
-def sequence_cleaner(fasta_file, min_length=0, por_n=100):
+def sequence_cleaner(fasta_file, min_length=0):
     output_file = open(f"Clear_{fasta_file}", "w+")
     # Using the Biopython fasta parse we can read our fasta input
     for seq_record in SeqIO.parse(fasta_file, "fasta"):
         # Take the current sequence
         sequence = str(seq_record.seq).upper()
         # Check if the current sequence is according to the user parameters
-        if len(sequence) >= min_length and ((float(sequence.count("N")) / float(len(sequence))) * 100 <= por_n):
+        # if len(sequence) >= min_length and ((float(sequence.count("N")) / float(len(sequence))) * 100 <= por_n):
+        if len(sequence) >= min_length:
             output_file.write(f">{str(seq_record.id)}\n{str(sequence)}\n")
     output_file.close()
 
