@@ -828,7 +828,7 @@ subprocess.run([
     "-cov",
     str(blast.get('coverage')),
     "-kw",
-    str(f'\'{",".join(keyword_list)}\''),
+    str(f'{",".join(keyword_list)}'),
     "-t",
     str(AnnotaPipeline.get('threads')), 
     "-max_target_seqs", 
