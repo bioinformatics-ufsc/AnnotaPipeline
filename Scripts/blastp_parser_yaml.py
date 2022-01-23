@@ -124,9 +124,9 @@ optionalNamed.add_argument(
 )
 
 optionalNamed.add_argument(
-    '-hsps', dest='hsps',
+    '-max_target_seqs', dest='hsps',
     metavar='', type=int, default=10,
-    help='max_hsps flag from blastp [int] (default: 10)'
+    help='max_target_seqs flag from blastp [int] (default: 10)'
 )
 
 optionalNamed.add_argument(
@@ -213,7 +213,7 @@ def blast(arq1, arq2, db, hsps, evalue):
     command = f"{args.blastp} -query {arq1} -out {arq2}" \
                     f" -db {datab} -evalue {evalue}" \
                     f" -outfmt {fmt}" \
-                    f" -max_hsps {hsps}" \
+                    f" -max_target_seqs {hsps}" \
                     f" -num_threads {str(args.threads)}"
     logger.info(command)
     subprocess.getoutput(command)
@@ -228,16 +228,9 @@ def temporary_query(arq):
     arq.append("\t".join(temp))
 
 
-def is_tool(name):
-    if which(name) is None:
-        logging.error(f"Program: {str(name)} must be avaliable in $PATH")
-        logging.shutdown()
-        sys.exit(1)
-
-
 def check_query(full_line_list, coverage, word_list, id, pos, list_classification, list_annot, list_desc, description):
     if float(full_line_list[7]) > float(coverage):
-        if not any(word in description.lower() for word in word_list):
+        if not any(word.lower() in description.lower() for word in word_list):
             if float(full_line_list[5]) >= float(pos) and float(full_line_list[6]) >= float(id):
                 # If annotation is strong, is considered as non_hypothetical
                 list_classification.append("non_hypothetical")
@@ -556,9 +549,6 @@ def swiss_run():
     blast(args.seq, swiss_out, args.spdb, args.hsps, args.evalue)
     logger.info("Running parser SwissProt")
 
-
-# Check BLAST, run Swissprot and parser it's results
-is_tool("blastp")
 
 # Run BLAST against swissprotDB
 swiss_out = f"{str(args.basename)}_BLASTp_AAvsSwissProt.outfmt6"
