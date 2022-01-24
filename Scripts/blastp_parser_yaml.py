@@ -271,7 +271,6 @@ def parser_trembl(basename, result_blast, identidade, positividade, cov):
     old_id = swiss[0].split("\t") 
     old_id = old_id[0]
     annots = []
-    nhyp_list = []
     classification = []
     desc_list = []
 
@@ -292,10 +291,8 @@ def parser_trembl(basename, result_blast, identidade, positividade, cov):
                 annots.sort()
                 # Get best identity, first position of array
                 nhyp.write(f"{str(annots[0].desc)}\n")
-                nhyp.write(str('\n'))
-                nhyp_list.append(str(old_id))
 
-                all_anot.write(f"{old_id}\t{len(desc)} Annotation(s): [{';'.join(desc_list)}]\n")
+                all_anot.write(f"{old_id}\t{len(desc_list)} Annotation(s): [{';'.join(desc_list)}]\n")
             else:
                 hyp.write(f"{str(old_id)}\n")
             # this just resets the count back to zero, before it starts again
@@ -356,9 +353,7 @@ def parser_trytrip(basename, result_blast, identidade, positividade, cov):
                 annots.sort()
                 # Get best identity, first position of array
                 nhyp.write(f"{str(annots[0].desc)}\n")
-                nhyp_list.append(str(old_id))
-
-                all_anot.write(f"{old_id}\t{len(desc)} Annotation(s): [{';'.join(desc_list)}]")
+                all_anot.write(f"{old_id}\t{len(desc_list)} Annotation(s): [{';'.join(desc_list)}]")
                 all_anot.write(str('\n'))
             else:
                 hyp.write(f"{str(old_id)}\n")
@@ -423,7 +418,7 @@ def parser_nr(basename, result_blast, identidade, positividade, cov):
                 annots.sort()
                 # Get best identity, first position of array
                 nhyp.write(f"{str(annots[0].desc)}\n")
-                all_anot.write(f"{old_id}\t{len(desc)} Annotation(s): [{';'.join(desc_list)}]\n")
+                all_anot.write(f"{old_id}\t{len(desc_list)} Annotation(s): [{';'.join(desc_list)}]\n")
             else:
                 hyp.write(f"{str(old_id)}\n")
             # this just resets the count back to zero, before it starts again
@@ -483,7 +478,6 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
                 nhyp.write(f"{str(old_id)}\t")
-                nhyp_list.append(str(old_id))
                 # Sort annotations by bitscore
                 annots.sort()
                 # Get best identity, first position of array
