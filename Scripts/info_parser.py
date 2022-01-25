@@ -203,6 +203,10 @@ def intepro_process(ids_dict):
                                 nohit.remove(old_id)
                         gos.clear()
                         iprs.clear()
+                        if (ipr != "None") and (ipr not in iprs):
+                                iprs.append(ipr)
+                        if (go != "None") and (go not in gos):
+                                gos.append(go)
                 else:
                         if (ipr != "None") and (ipr not in iprs):
                                 iprs.append(ipr)
