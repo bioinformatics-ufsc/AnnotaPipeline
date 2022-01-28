@@ -1116,10 +1116,10 @@ if proteomics.get('comet-exe') is not None:
     logger.info("PERCOLATOR execution has started")
     # ----------------------------------------------------------------
     # ----------- Create Percolator Output path ----------------------
-    percolator_path_raw = pathlib.Path(comet_output_path / str("Percolator_RAW"))
+    percolator_path_raw = pathlib.Path(comet_output_path / str("PERCOLATOR_Raw"))
     pathlib.Path(percolator_path_raw).mkdir(exist_ok=True)
     # ----------------------------------------------------------------
-    percolator_path_parsed = pathlib.Path(comet_output_path / str("Percolator_PARSED"))
+    percolator_path_parsed = pathlib.Path(comet_output_path / str("PERCOLATOR_Parsed"))
     pathlib.Path(percolator_path_parsed).mkdir(exist_ok=True)
     # ----------------------------------------------------------------
     for comet_output_file in file_names:
