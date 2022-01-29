@@ -42,7 +42,7 @@ parser = argparse.ArgumentParser(
    _           _                     _    __       _             _      
   | |         | |                   | |  /_/      (_)           | |     
   | |     __ _| |__   ___  _ __ __ _| |_ ___  _ __ _  ___     __| | ___ 
-  | |    / _` | '_ \ / _ \| '__/ _` | __/ _ \| '__| |/ _ \   / _` |/ _ \
+  | |    / _` | '_ \ / _ \| '__/ _` | __/ _ \| '__| |/ _ \   / _` |/ _ \\
   | |___| (_| | |_) | (_) | | | (_| | || (_) | |  | | (_) | | (_| |  __/
   |______\__,_|_.__/ \___/|_|  \__,_|\__\___/|_|  |_|\___/   \__,_|\___|
                                                                         
@@ -82,8 +82,8 @@ And shall these hopeful words bring love inside your heart...""",
     formatter_class=argparse.RawTextHelpFormatter
 )
 
-# requiredNamed = parser.add_argument_group('required arguments')
 optionalNamed = parser.add_argument_group('optional arguments')
+requiredNamed = parser.add_argument_group('required arguments')
 
 # mandatory arguments
 #   type (default): string
@@ -99,17 +99,16 @@ group.add_argument(
     help='input protein sequence file'
 )
 
-# optional arguments
-#   no argument: uses default
-#   type (default): string
-optionalNamed.add_argument(
+# required config
+requiredNamed.add_argument(
     '-c', '--config', dest='annotaconfig',
-    metavar='[AnnotaPipeline.config]',
-    default=pipeline_pwd / "AnnotaPipeline.yaml",
-#   default= os.path.join(sys.prefix, 'config/AnnotaPipeline.yaml'),
+    metavar='[AnnotaPipeline_config.yaml]',
     help='configuration file for AnnotaPipeline'
 )
 
+# optional arguments
+#   no argument: uses default
+#   type (default): string
 optionalNamed.add_argument(
     '-gff', dest='gff',
     metavar='gff_file.gff',
