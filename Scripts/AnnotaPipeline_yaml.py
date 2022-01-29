@@ -673,6 +673,8 @@ def quantitative_proteomics(path, basename):
                         'Spectrum':[]}) 
     for file in parsed_files:
         df = pd.read_csv(file, sep='\t', header=0)
+        # FutureWarning: The frame.append method is deprecated and will be
+        # removed from pandas in a future version. Use pandas.concat instead.
         data = data.append(df)
 
     # Empty dataframe to save
