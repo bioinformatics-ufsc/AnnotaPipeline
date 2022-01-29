@@ -146,7 +146,7 @@ def write_no_ipr(ids_dict):
 
 # Function to join IPRs and GOs from InterproScan with IDs hypothetical or without hits
 def intepro_process(ids_dict):
-        # File pre-precessed with IDs, IPRs and GOs
+        # File pre-precessed with IDs, IPRs and go_list
         interpro_out = open("Interpro_out_tmp.txt", "r").read().splitlines()
         temporary_query(interpro_out)
 
@@ -154,65 +154,69 @@ def intepro_process(ids_dict):
         old_id = old_id[0]
 
         # Initialize lists
-        gos = []
-        iprs = []
+        go_list = []
+        ipr_list = []
         for query in interpro_out:
                 title = query.split("\t")
                 new_id = title[0]
-                ipr = title[5]
-                go = title[6]
+                ipr = str(title[5]).split(",")
+                go = str(title[6]).split(",")
                 if old_id != new_id:
-                        # Sort IPRs and GOs
+                        # Sort IPRs and go_list
                         try:
-                                iprs.sort(key=lambda item: item.split("IPR")[1])
-                                gos.sort(key=lambda item: item.split("GO")[1])
+                                ipr_list.sort(key=lambda item: str(item).split("IPR")[1])
+                                go_list.sort(key=lambda item: str(item).split("GO")[1])
                         except Exception:
                                 # No GO or IP for this protein (not a true warning)
                                 pass
                         # Check if interpro_result is in annotated
                         if old_id in ids_dict.keys():
-                                if (len(iprs) > 0) and (len(gos) > 0):
-                                        output.write(f"{old_id}\t{str(ids_dict.get(old_id)).strip()} ({str(','.join(iprs))},{str(','.join(gos))})\n")
-                                elif (len(iprs) > 0) and (len(gos) == 0):
-                                        output.write(f"{old_id}\t{str(ids_dict.get(old_id)).strip()} ({str(','.join(iprs))})\n")
-                                elif (len(iprs) == 0) and (len(gos) > 0):
-                                        output.write(f"{old_id}\t{str(ids_dict.get(old_id)).strip()} ({str(','.join(gos))})\n")
+                                if (len(ipr_list) > 0) and (len(go_list) > 0):
+                                        output.write(f"{old_id}\t{str(ids_dict.get(old_id)).strip()} ({str(','.join(ipr_list))},{str(','.join(go_list))})\n")
+                                elif (len(ipr_list) > 0) and (len(go_list) == 0):
+                                        output.write(f"{old_id}\t{str(ids_dict.get(old_id)).strip()} ({str(','.join(ipr_list))})\n")
+                                elif (len(ipr_list) == 0) and (len(go_list) > 0):
+                                        output.write(f"{old_id}\t{str(ids_dict.get(old_id)).strip()} ({str(','.join(go_list))})\n")
                                 else:
                                         output.write(f"{old_id}\t{str(ids_dict.get(old_id)).strip()}\n")
                                 del ids_dict[old_id]
-                        # Else, interpro_result must be in hyphotetical
+                        # Else, interpro_result must be in hypothetical
                         elif old_id in hypo:
-                                if (len(iprs) > 0) and (len(gos) > 0):
-                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(iprs))},{str(','.join(gos))})\n")
-                                elif (len(iprs) > 0) and (len(gos) == 0):
-                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(iprs))})\n")
-                                elif (len(iprs) == 0) and (len(gos) > 0):
-                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(gos))})\n")
+                                if (len(ipr_list) > 0) and (len(go_list) > 0):
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(ipr_list))},{str(','.join(go_list))})\n")
+                                elif (len(ipr_list) > 0) and (len(go_list) == 0):
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(ipr_list))})\n")
+                                elif (len(ipr_list) == 0) and (len(go_list) > 0):
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(go_list))})\n")
                                 else:
                                         output.write(f"{old_id}\thypothetical protein\n")
                                 hypo.remove(old_id)
                         else:
-                                if (len(iprs) > 0) and (len(gos) > 0):
-                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(iprs))},{str(','.join(gos))})\n")
-                                elif (len(iprs) > 0) and (len(gos) == 0):
-                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(iprs))})\n")
-                                elif (len(iprs) == 0) and (len(gos) > 0):
-                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(gos))})\n")
+                                if (len(ipr_list) > 0) and (len(go_list) > 0):
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(ipr_list))},{str(','.join(go_list))})\n")
+                                elif (len(ipr_list) > 0) and (len(go_list) == 0):
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(ipr_list))})\n")
+                                elif (len(ipr_list) == 0) and (len(go_list) > 0):
+                                        output.write(f"{old_id}\thypothetical protein ({str(','.join(go_list))})\n")
                                 else:
                                         output.write(f"{old_id}\thypothetical protein\n")
                                 nohit.remove(old_id)
-                        gos.clear()
-                        iprs.clear()
+                        go_list.clear()
+                        ipr_list.clear()
                         # GET FIRST ITEM FOR NEW ID - After save old
-                        if (ipr != "None") and (ipr not in iprs):
-                                iprs.append(ipr)
-                        if (go != "None") and (go not in gos):
-                                gos.append(go)
+                        for match in ipr:
+                                if (match != "None") and (match not in ipr_list):
+                                        ipr_list.append(match)
+                        for match in go:
+                                if (match != "None") and (match not in go_list):
+                                        go_list.append(match)
                 else:
-                        if (ipr != "None") and (ipr not in iprs):
-                                iprs.append(ipr)
-                        if (go != "None") and (go not in gos):
-                                gos.append(go)
+                        for match in ipr:
+                                if (match != "None") and (match not in ipr_list):
+                                        ipr_list.append(match)
+                        for match in go:
+                                if (match != "None") and (match not in go_list):
+                                        go_list.append(match)
                 old_id = new_id
         write_no_ipr(ids_dict)
         os.remove("Interpro_out_tmp.txt")
