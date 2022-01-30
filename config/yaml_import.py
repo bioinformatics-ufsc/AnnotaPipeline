@@ -46,4 +46,8 @@ rpsblast = config['rpsblast']
 kallisto = config['kallisto']
 proteomics = config['proteomics']
 
-print(str(f'\'{",".join(keyword_list)}\''))
+kw = str(f'{",".join(keyword_list)}')
+print(kw)
+k2 = kw.split(",")
+for word in k2:
+    print(word)

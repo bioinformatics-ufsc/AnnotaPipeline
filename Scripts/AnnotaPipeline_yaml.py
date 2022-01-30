@@ -225,7 +225,7 @@ def augustus_run(augustus_section, augustus_optional,  basename):
     if str(augustus_section.get('augustus-path')).lower() == 'conda':
         # Runing with conda
         augustus_bin = "augustus"
-        augustus_config = pathlib.Path(sys.prefix, 'config')
+        augustus_config = f'{subprocess.getoutput("echo $CONDA_PREFIX")}/config'
         augustus_script = "getAnnoFasta.pl"
     else:
         # Runing custom
