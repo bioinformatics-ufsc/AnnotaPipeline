@@ -15,4 +15,5 @@ dependencies:
   - bioconda::percolator>=3.05.0
   - bioconda::augustus>=3.3.3
   - pip:
+    - pyyaml>=6.0
     - git+https://github.com/GuiMaia/AnnotaPipeline.git

@@ -34,7 +34,6 @@ setup(
             Tatiany Aparecida Soratto, Renato Moreira Simões, Glauber Wagner',
     author_email='labinfo.ufsc@gmail.com',
     zip_safe=False,
-    data_files=[('config', ['config/AnnotaPipeline.config'])],
     scripts=[
                 'Scripts/AnnotaPipeline.py',
                 'Scripts/blastp_parser.py',
@@ -51,8 +50,6 @@ setup(
     python_requires=">=3.6.9",
     url='https://github.com/GuiMaia/AnnotaPipeline.git',
     download_url='https://github.com/GuiMaia/AnnotaPipeline/archive/refs/heads/conda_env.zip',
-# USA esse cara pra fz o classifier
-# https://pypi.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",
