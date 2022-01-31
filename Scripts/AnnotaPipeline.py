@@ -14,7 +14,6 @@ from Bio import SeqIO
 from shutil import which
 import pandas as pd
 import argparse
-import configparser
 import logging
 import os
 import pathlib
@@ -22,6 +21,7 @@ import shutil
 import subprocess
 import sys
 import re
+import yaml
 
 # --- SCRIPT LOCATION ----------------------------------------------------------
 
@@ -42,7 +42,7 @@ parser = argparse.ArgumentParser(
    _           _                     _    __       _             _      
   | |         | |                   | |  /_/      (_)           | |     
   | |     __ _| |__   ___  _ __ __ _| |_ ___  _ __ _  ___     __| | ___ 
-  | |    / _` | '_ \ / _ \| '__/ _` | __/ _ \| '__| |/ _ \   / _` |/ _ \
+  | |    / _` | '_ \ / _ \| '__/ _` | __/ _ \| '__| |/ _ \   / _` |/ _ \\
   | |___| (_| | |_) | (_) | | | (_| | || (_) | |  | | (_) | | (_| |  __/
   |______\__,_|_.__/ \___/|_|  \__,_|\__\___/|_|  |_|\___/   \__,_|\___|
                                                                         
@@ -82,8 +82,8 @@ And shall these hopeful words bring love inside your heart...""",
     formatter_class=argparse.RawTextHelpFormatter
 )
 
-# requiredNamed = parser.add_argument_group('required arguments')
 optionalNamed = parser.add_argument_group('optional arguments')
+requiredNamed = parser.add_argument_group('required arguments')
 
 # mandatory arguments
 #   type (default): string
@@ -99,16 +99,16 @@ group.add_argument(
     help='input protein sequence file'
 )
 
-# optional arguments
-#   no argument: uses default
-#   type (default): string
-optionalNamed.add_argument(
+# required config
+requiredNamed.add_argument(
     '-c', '--config', dest='annotaconfig',
-    metavar='[AnnotaPipeline.config]',
-    default=pipeline_pwd / "AnnotaPipeline.config",
+    metavar='[AnnotaPipeline_config.yaml]',
     help='configuration file for AnnotaPipeline'
 )
 
+# optional arguments
+#   no argument: uses default
+#   type (default): string
 optionalNamed.add_argument(
     '-gff', dest='gff',
     metavar='gff_file.gff',
@@ -170,16 +170,6 @@ stderr_logger = logging.getLogger('AnnotaPipeline')
 sl = StreamToLogger(stderr_logger, logging.ERROR)
 sys.stderr = sl
 
-# --- PARSE ARGUMENTS FROM .config FILE ----------------------------------------
-
-config_pwd = pathlib.Path(args.annotaconfig).absolute()
-
-config = configparser.ConfigParser()  # call configparser
-config.optionxform = str  # set default: get varibles as str
-config.read(str(config_pwd))  # read configuration file
-config.sections()  # get sections of each program
-
-
 # ---------------------- FUNCTIONS ---------------------------------------------
 # Function to close log and quit AnnotaPipeline if some expected file/parameter cant be found
 def log_quit():
@@ -206,19 +196,19 @@ def check_file(file):
                     "But, seriously, check your inputs and outputs and rerun.")
 
 # Function to clean fasta file based on lenght and N bases
-def sequence_cleaner(fasta_file, min_length=0, por_n=100):
+def sequence_cleaner(fasta_file, min_length=0):
     output_file = open(f"Clear_{fasta_file}", "w+")
     # Using the Biopython fasta parse we can read our fasta input
     for seq_record in SeqIO.parse(fasta_file, "fasta"):
         # Take the current sequence
         sequence = str(seq_record.seq).upper()
         # Check if the current sequence is according to the user parameters
-#        if len(sequence) >= min_length and ((float(sequence.count("N")) / float(len(sequence))) * 100 <= por_n):
+        # if len(sequence) >= min_length and ((float(sequence.count("N")) / float(len(sequence))) * 100 <= por_n):
         if len(sequence) >= min_length:
             output_file.write(f">{str(seq_record.id)}\n{str(sequence)}\n")
     output_file.close()
 
-# Fuction to catch specific sequences from fasta file
+# Function to catch specific sequences from fasta file
 def fasta_fetcher(input_fasta, id_list, fetcher_output):
     wanted = sorted(set(id_list))
     #records = (r for r in SeqIO.parse(input_fasta, "fasta") if r.id in wanted)
@@ -229,19 +219,19 @@ def fasta_fetcher(input_fasta, id_list, fetcher_output):
 
 # ------------------------------------- RUNs -------------------------------------------------
 # Create command line to run augustus (protein prediction)
-def augustus_run(basename):
+def augustus_run(augustus_section, augustus_optional,  basename):
     # create AUGUSTUS directory
     logger = logging.getLogger('AUGUSTUS')
-    if augustus_main['augustus_path'].lower() == 'conda':
+    if str(augustus_section.get('augustus-path')).lower() == 'conda':
         # Runing with conda
         augustus_bin = "augustus"
-        augustus_config = pathlib.Path(sys.prefix, 'config')
+        augustus_config = f'{subprocess.getoutput("echo $CONDA_PREFIX")}/config'
         augustus_script = "getAnnoFasta.pl"
     else:
         # Runing custom
-        augustus_bin = pathlib.Path(augustus_main['augustus_path']) / "bin" / "augustus"
-        augustus_config = pathlib.Path(augustus_main['augustus_path']) / "config"
-        augustus_script = pathlib.Path(augustus_main['augustus_path']) / "scripts" / "getAnnoFasta.pl"
+        augustus_bin = pathlib.Path(augustus_section.get('augustus-path')) / "bin" / "augustus"
+        augustus_config = pathlib.Path(augustus_section.get('augustus-path')) / "config"
+        augustus_script = pathlib.Path(augustus_section.get('augustus-path')) / "scripts" / "getAnnoFasta.pl"
 
     logger.info("AUGUSTUS prediction has started")
 
@@ -249,13 +239,24 @@ def augustus_run(basename):
     aug_config = f"--AUGUSTUS_CONFIG_PATH={str(augustus_config)}"
     aug_command = f"{str(augustus_bin)} {str(aug_config)}"
 
-    for variable in config['AUGUSTUS']:
-        if variable != "augustus_path":
+    # Get mandatory arguments
+    for param in augustus_section:
+        if param != "augustus-path":
             # Check if it's a flag
-            if str(augustus_main.get(variable)).lower() == "flag":
-                aug_command += f" -{str(variable)}"
+            if str(augustus_section.get(param)).lower() == "flag":
+                aug_command += f" -{str(param)}"
             else:
-                aug_command += f" --{str(variable)}={str(augustus_main.get(variable))}"
+                aug_command += f" --{str(param)}={str(augustus_section.get(param))}"
+
+    # Get optional arguments
+    for param in augustus_optional:
+        if str(augustus_optional.get(param)).lower() == "flag":
+            aug_command += f" -{str(param)}"
+        else:
+            # Prevent getting empty arguments
+            if augustus_optional.get(param) is not None:
+                aug_command += f" --{str(param)}={str(augustus_optional.get(param))}"
+
 
     aug_command += f" {str(seq_file)} > AUGUSTUS_{str(basename)}.gff"
 
@@ -326,8 +327,9 @@ def interpro_run(type, basename, blast_path, augustus_path, augustus_file, inter
     for variable in interpro_section:
         if str(interpro_section.get(variable)).lower() == "flag":
             interpro_command_line += f" -{str(variable)}"
-        else:
-            interpro_command_line += f" -{str(variable)} {str(interpro_section.get(variable))}"
+        elif variable != "interproscan-exe":
+            if interpro_section.get(variable) is not None:
+                interpro_command_line += f" -{str(variable)} {str(interpro_section.get(variable))}"
 
     logger.debug(str(interpro_command_line))
 
@@ -354,12 +356,12 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
     # Standart command line for kallisto index
     # kallisto index -i transcripts.idx transcripts.fasta
     if paired_end == True:
-        if len(kallisto.get("l")) != 0:
+        if kallisto.get("l") is not None:
             l_flag = f"-l {kallisto.get('l')}"
             logger.info(f"KALLISTO will run with -l {kallisto.get('l')}")
         else:
             l_flag = ""
-        if len(kallisto.get("s")) != 0:
+        if kallisto.get("s") is not None:
             s_flag = f"-s {kallisto.get('s')}"
             logger.info(f"KALLISTO will run with -s {kallisto.get('s')}")
         else:
@@ -368,7 +370,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
         kallisto_command_quant = (
             f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
             f"{s_flag} {l_flag} "
-            f"-o {basename}_kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+            f"-o {basename}_kallisto_output -b {kallisto.get('bootstrap')} {' '.join(kallisto.get('rna-seq'))}"
         )
         logger.info(f"KALLISTO quant has started")
         logger.debug(kallisto_command_quant)
@@ -379,7 +381,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
         kallisto_command_quant = (
             f"{kallisto_exe} quant -i {basename}_kallisto_index.idx "
             f"-l {kallisto.get('s')} -s {kallisto.get('l')} --single "
-            f"-o kallisto_output -b {kallisto.get('bootstrap')} {kallisto.get('rnaseq-data')}"
+            f"-o kallisto_output -b {kallisto.get('bootstrap')} {' '.join(kallisto.get('rna-seq'))}"
         )
         logger.info(f"KALLISTO quant has started")
         logger.debug(kallisto_command_quant)
@@ -393,7 +395,7 @@ def kallisto_run(python_path, kallisto_exe, paired_end, method, basename, fasta)
     elif method == "mean":
         kallisto_parser_flag = "-tpmavg"
     else:
-        kallisto_parser_flag = f'-tpmval {kallisto.get("value")}'
+        kallisto_parser_flag = f'-tpmval {kallisto.get("threshold")}'
     # Run parser
     # inside 4_Transcript_Quantification_
     kallisto_parser_path =  str(pipeline_pwd / "kallisto_parser.py")
@@ -441,20 +443,20 @@ def gfftofasta(python_path):
 # ------------------------------------------ -------------------------------------------------
 # ------------------------- Check Parameters -------------------------------------------------
 # Part of check parameters function >> check specific entries for kallisto (transcriptomics)
-def kallisto_check_parameters():
+def kallisto_check_parameters(kallisto_section):
     # kallisto method indicate wich method to parse (mean, median, value) 
     # kallisto paired_end indicate rnaseq type (important to run kallisto)
     global kallisto_method, kallisto_paired_end
     # This variable will store method to parse kallisto output
     kallisto_method = None
     # if kallisto path were given, check other arguments, if not pass.
-    if len(config[str('KALLISTO')].get("kallisto_path")) == 0:
+    if kallisto_section.get("kallisto-exe") is None:
         logger.info("Arguments for KALLISTO are empty. This step will be skipped.")
     else:
         kallisto_check = []
-        for argument in ("rnaseq-data", "median", "mean", "value"):
-            if argument == "rnaseq-data":
-                if len(config[str('KALLISTO')].get("rnaseq-data").split()) > 2:
+        for argument in ("rna-seq", "threshold"):
+            if argument == "rna-seq":
+                if len(kallisto_section.get("rna-seq")) > 2:
                     logger.error(
                         "[KALLISTO]: there are more arguments than required for rnaseq-data (KALLISTO). " \
                         "Pass one if your data is from single-end, " \
@@ -462,17 +464,17 @@ def kallisto_check_parameters():
                     )
                     log_quit()
                 ###### This box check how many files were given in rnaseq-data #####
-                elif len(config['KALLISTO'].get("rnaseq-data").split()) == 2:
+                elif len(kallisto_section.get("rna-seq")) == 2:
                     kallisto_paired_end = True
                     logger.info(f"KALLISTO will run with paired end data")
                     kallisto_check.append(argument)
-                elif len(config['KALLISTO'].get("rnaseq-data").split()) == 1:
+                elif len(kallisto_section.get("rna-seq")) == 1:
                     kallisto_paired_end = False
                     # Check required arguments for single end data
-                    if len(config['KALLISTO'].get('l')) == 0:
+                    if kallisto_section.get('l') is None:
                         logger.error("[KALLISTO]: mandatory argument for single-end data 'l' is empty")
                         log_quit()
-                    elif len(config['KALLISTO'].get('s')) == 0:
+                    elif kallisto_section.get('s') is None:
                         logger.error("[KALLISTO]: mandatory argument for single-end data 's' is empty")
                         log_quit()
                     logger.info(f"KALLISTO will run with single-end data")
@@ -486,67 +488,58 @@ def kallisto_check_parameters():
                     log_quit()
                 ####################################################################
             # Check if argument is Empty
-            elif len(config[str('KALLISTO')].get(argument)) == 0:
-                pass
-            else:
-                # If it's not empty, save argument
-                kallisto_check.append(argument)
+            elif argument == "threshold":
+                if kallisto_section.get("threshold") is None:
+                    logger.error("[KALLISTO]: mandatory argument 'threshold' is empty")
+                    log_quit()
+                else:
+                    if kallisto_section.get("threshold") == 'mean':
+                        kallisto_method = "mean"
+                    elif kallisto_section.get("threshold") == 'median':
+                        kallisto_method = "median"
+                    elif type(kallisto_section.get("threshold")) in (int,float):
+                        kallisto_method = "value"
+                    else:
+                        logger.error("[KALLISTO]: Unrecognized type for argument 'threshold'")
+                        log_quit()
         # Check kallisto arguments
         # If all kallisto arguments are empty, then don't run this guy
         if len(kallisto_check) == 0:
             logger.info("Arguments for KALLISTO are empty. This step will be skipped.")
             kallisto_method = None
-        # Rna-seq data is required for calisto
-        if 'rnaseq-data' in kallisto_check:
+        # Rna-seq data is required for kallisto
+        if 'rna-seq' in kallisto_check:
             # if there is rna-seq data, check if method is correctly given
-            if len(kallisto_check) > 2:
-                logger.error("[KALLISTO]: there is more than one method selected to parse KALLISTO ouput. Please, review .config file.")
-                log_quit()
-            elif len(config[str('KALLISTO')].get("bootstrap")) == 0:
+            if kallisto_section.get("bootstrap") is None:
                 logger.error("[KALLISTO]: bootstrap is empty, default value is 0. At least pass this value")
                 log_quit()
             else:
-                logger.info(f"KALLISTO will run with method: {kallisto_check[1]}")
-                # Pass method, to use further
-                kallisto_method = kallisto_check[1]                    
+                logger.info(f"KALLISTO will run with method: {kallisto_method}")
 
-# Part of check parameters function >> check specific entries for percolator (proteomics)
-def percolator_check_parameters():
-    if len(config['PERCOLATOR'].get('percolator_bash')) == 0:
-        logger.error("[PERCOLATOR]: path to software is empty, but COMET was provided")
-        logger.warning("PERCOLATOR leave COMET fields empty or pass parameters for PERCOLATOR")
-        log_quit()
-    if len(config['PERCOLATOR'].get('qvalue')) == 0:
-        logger.error("[PERCOLATOR]: qvalue cutoff is empty, check this parameter")
-        log_quit()
-    # check value for parser
-    if not (0 <= float(config['PERCOLATOR'].get('qvalue')) <= 1):
-        logger.error("[PERCOLATOR] qvalue cutoff invalid. Must be float between [0-1]")
-        log_quit()
 
 # Part of check parameters function >> check specific entries for comet (proteomics)
-def comet_check_parameters():
-    if len(config['COMET'].get("comet_bash")) == 0:
+def proteomics_check_parameters(proteomic_section):
+    if proteomic_section.get("comet-exe") == None:
         logger.info("Arguments for COMET are empty. This step will be skipped.")
     else:
         # ------------ check F and L -------------------
         last_check = False
         first_check = False
-        if len(config['COMET'].get('first')) !=0:
+        if proteomic_section.get('first') is not None:
             first_check = True
-        if len(config['COMET'].get('last')) !=0:
+        if proteomic_section.get('last') is not None:
             last_check = True
         # ----------------------------------------------
-        for argument in ("params", "mass_files"):
-            if len(config['COMET'].get(argument)) == 0:
+        for argument in ("comet-params", "comet-spectometry"):
+            if proteomic_section.get(argument) == 0:
                 logger.error(f"[COMET] Parameter [{argument}] from section [COMET] is null")
                 log_quit()
         # ------------ check extension mass files ------
-        if len(config['COMET'].get('mass_files_ext').split()) < 1:
-            logger.error(f"[COMET] Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] is null")
+        if len(proteomic_section.get('comet-ext').split()) < 1:
+            logger.error(f"[COMET] Parameter [{proteomic_section.get('mass_files_ext')}] from section [PROTEOMICS] is null")
             log_quit()
-        elif len(config['COMET'].get('mass_files_ext').split()) > 1:
-            logger.error(f"[COMET] Parameter [{config['COMET'].get('mass_files_ext')}] from section [COMET] have more than one argument")
+        elif len(proteomic_section.get('comet-ext').split()) > 1:
+            logger.error(f"[COMET] Parameter [{proteomic_section.get('mass_files_ext')}] from section [PROTEOMICS] have more than one argument")
             log_quit()
         # ------------ Specific conditions -----------------------
         # XOR conditional >> check if one value is True and another is False
@@ -560,53 +553,64 @@ def comet_check_parameters():
             use_last_and_first = True
         else:
             use_last_and_first = False
+        # -------------------------------------------------
+        # ------ Check parameters for percolator ----------
         # Only check percolator if comet parames are ok
-        percolator_check_parameters()
+        if proteomic_section.get('percolator-exe') is None:
+            logger.error("[PERCOLATOR]: path to software is empty, but COMET was provided")
+            logger.warning("PERCOLATOR leave COMET fields empty or pass parameters for PERCOLATOR")
+            log_quit()
+        if proteomic_section.get('percolator-qvalue') is None:
+            logger.error("[PERCOLATOR]: qvalue cutoff is empty, check this parameter")
+            log_quit()
+        # check value for parser
+        if not (0 <= float(proteomic_section.get('percolator-qvalue')) <= 1):
+            logger.error("[PERCOLATOR] qvalue cutoff invalid. Must be float between [0-1]")
+            log_quit()
 
 # Function to check if all parameters in config file are correct
 def check_parameters(sections):
-    # Variables to check databases
-    # swissprot database
-    sp_verify = True
-    # nr database
-    nr_verify = True
-    # trembl database
-    trembl_verify = True
-    for section in sections:  # get box of variables
-        # Check kallisto optional arguments
-        if str(section) == "KALLISTO":
-            kallisto_check_parameters()  
-        elif str(section) == "COMET":
-            comet_check_parameters()
-        elif str(section) == "PERCOLATOR":
-            # Percolator depends on COMET, thus, is checked with comet_check_parameters()
+    for section, list_section in sections.items():
+        if str(section) == "kallisto":
+            kallisto_check_parameters(list_section)  
+        elif str(section) == "proteomics":
+            proteomics_check_parameters(list_section)
+        elif str(section) == "databases":
+            params_empty = ([param for param in list_section if list_section.get(param) == None])
+            if params_empty:
+                logger.error("[DATABASE]: there is some secondary database missing. Please review config file!")
+                log_quit()
+            else:
+                # Check if format of secondary database is correct
+                if list_section['secondary-format'] not in ('eupathdb', 'nrdb', 'trembldb'):
+                    logger.error("[DATABASE]: Unrecognized type for 'secondary-format'. Please review config file!")
+                    log_quit()
+        elif str(section) == "augustus":
+            # Arguments for augustus don't need to be checked if protein file were given
+            if args.protein is not None:
+                pass
+            else:
+                for key in list_section:  # get variable for each box
+                    # MS is optional parameter for INTERPROSCAN
+                    if str(key) == "ms":
+                        pass
+                    elif list_section.get(key) is None:
+                        # Crash pipeline if some required variable is empty
+                        logger.error(f"Variable [{key}] from section [{str(section)}] is null")
+                        log_quit() 
+        # augustus optionals are optionals
+        elif str(section) in "augustus-optional":
             pass
-        else:  
-            for key in config[str(section)]:  # get variable for each box
-                # Arguments for agutustus don't need to be checked if protein file were given
-                if args.protein is not None and key is config['AUGUSTUS']:
-                    pass                       
-                else:
-                    if (len(config[str(section)].get(key))) < 1:
-                        # Check if any secondary database were given
-                        if str(section) == "EssentialParameters" and key == "specific_db_path":
-                            sp_verify = False
-                        elif str(section) == "EssentialParameters" and key == "nr_db_path":
-                            nr_verify = False
-                        elif str(section) == "EssentialParameters" and key == "trembl_db_path":
-                            trembl_verify = False
-                        # Any other parameter checked
-                        else:
-                            # Crash pipeline if some required variable is empty
-                            logger.error(f"Variable [{key}] from section [{str(section)}] is null")
-                            log_quit()
-    # Exit and report error if there is more than one database or if there is no one
-    if sp_verify == nr_verify == trembl_verify == False:
-        logger.error("[DATABASE]: there is no secondary database. Please review config file!")
-        log_quit()
-    if sum([sp_verify, nr_verify, trembl_verify]) == 2:
-        logger.error("[DATABASE]: there are two secondary databases. Select one of them in the config file.")
-        log_quit()
+        else:
+            # check if variable in list each section
+            for key in list_section:  # get variable for each box
+                # MS is optional parameter for INTERPROSCAN
+                if str(key) == "ms":
+                    pass
+                elif list_section.get(key) is None:
+                    # Crash pipeline if some required variable is empty
+                    logger.error(f"Variable [{key}] from section [{str(section)}] is null")
+                    log_quit()
 # -------------------------------------------------------------------------------------------
 
 # Function to annotate coding sequences
@@ -668,7 +672,9 @@ def quantitative_proteomics(path, basename):
                         'Spectrum':[]}) 
     for file in parsed_files:
         df = pd.read_csv(file, sep='\t', header=0)
-        data = data.append(df)
+        # FutureWarning: The frame.append method is deprecated and will be
+        # removed from pandas in a future version. Use pandas.concat instead.
+        data = pd.concat([data, df])
 
     # Empty dataframe to save
     total = pd.DataFrame({}) 
@@ -695,20 +701,29 @@ def modify_comet_params(comet_params):
     with open(f"{comet_params}", "w") as comet_params_write:
         comet_params_write.write(new_comet_params_read) 
 
+# --- PARSE ARGUMENTS FROM .config FILE ----------------------------------------
+
+config_pwd = pathlib.Path(args.annotaconfig).absolute()
+
+# Get params from yaml
+with open(config_pwd, "r") as stream:
+    try:
+        config = yaml.load(stream, Loader=yaml.SafeLoader)
+    except yaml.YAMLError as exc:
+        logger.error(exc)
+        log_quit()
+
 # ------------------------------------------------------------------------------
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
-is_tool("blastp")
 is_tool("perl")
-is_tool("rpsblast")
 # ------------------------------------------------------------------------------
 
 logger.info("IT'S DANGEROUS TO GO ALONE! TAKE THIS.")
 
-sections_config = config.sections()
 logger = logging.getLogger('AnnotaPipeline')
 logger.info("---------------------------------------------------------------")
-logger.info("Checking parameters in AnnotaPipeline.config file")
-check_parameters(sections_config)
+logger.info("Checking parameters in AnnotaPipelin.yaml file")
+check_parameters(config)
 
 # --- PREPARING SOME VARIABLES -------------------------------------------------
 # \\ Check if user pass protein and gff file -> if it is, redirect variables
@@ -720,19 +735,20 @@ if args.gff is not None:
     gff_path = pathlib.Path(args.gff).absolute()
 
 # Parameters from config file, each line is one script/software configuration
-python_exe = config['EssentialParameters']['python_exe']
-AnnotaPipeline = config['EssentialParameters']
+python_exe = config['pipeline']['python']
+AnnotaPipeline = config['pipeline']
+databases = config['databases']
 AnnotaBasename = AnnotaPipeline['basename']
-keyword_list = config['EssentialParameters']['key_words']
-augustus_main = config['AUGUSTUS']
-seq_cleaner = config['SequenceCleaner']
-interpro = config['INTERPROSCAN']
-hmmscan = config['HMMSCAN']
-blast = config['BLAST']
-rpsblast = config['RPSBLAST']
-kallisto = config['KALLISTO']
-comet = config['COMET']
-percolator = config['PERCOLATOR']
+keyword_list = AnnotaPipeline['keywords']       # join words with '
+augustus_main = config['augustus']
+augustus_optional = config['augustus-optional']
+seq_cleaner = config['seq-cleaner']
+interpro = config['interproscan']
+hmmscan = config['hmmer']
+blast = config['local-aligner']
+rpsblast = config['rpsblast']
+kallisto = config['kallisto']
+proteomics = config['proteomics']
 
 # AnnotaPipeline main directory
 home_dir = f"AnnotaPipeline_{str(AnnotaBasename)}"
@@ -753,9 +769,9 @@ os.chdir(augustus_folder)
 logger.info("---------------------------------------------------------------")
 logger.info("----------------- Gene Prediction has started -----------------")
 if args.protein is None:
-    augustus_run(AnnotaBasename)
+    augustus_run(augustus_main, augustus_optional, AnnotaBasename)
 else:
-    # Copy protein file to AUGUSTUS path and padronize variable to run Annotapipeline after augustus
+    # Copy protein file to AUGUSTUS path and patronized variable to run Annotapipeline after augustus
     shutil.copy2(prot_path, augustus_folder)
     aug_parsing = args.protein
 
@@ -765,7 +781,7 @@ logger = logging.getLogger('AnnotaPipeline')
 logger.info("Sequence Cleaner has started")
 
 # Clean only with min_size
-sequence_cleaner(str(aug_parsing), int(seq_cleaner.get('minsize_seq')))
+sequence_cleaner(str(aug_parsing), int(seq_cleaner.get('minsize-seq')))
 
 # Check if expected file exists
 check_file(f"Clear_{aug_parsing}")
@@ -787,15 +803,13 @@ logger.info("--------------- Similarity Analysis has started ---------------")
 logger.info("BLAST execution and parsing has started")
 
 # Select secondary database from config file
-if (len(AnnotaPipeline.get("specific_db_path"))) > 1:
-    spdb_path = AnnotaPipeline.get("specific_db_path")
+spdb_path = databases.get("secondary-db")
+if str(databases.get("secondary-format")).lower() == 'eupathdb':
     flag_spdb = "-spdb"
-elif (len(AnnotaPipeline.get("nr_db_path"))) > 1:
-    spdb_path = AnnotaPipeline.get("nr_db_path")
-    flag_spdb = "-nr"
-elif (len(AnnotaPipeline.get("trembl_db_path"))) > 1:
-    spdb_path = AnnotaPipeline.get("trembl_db_path")
+elif str(databases.get("secondary-format")).lower() == 'trembldb':
     flag_spdb = "-trbl"
+else:
+    flag_spdb = "-nr"
 
 subprocess.run([
     str(python_exe),
@@ -803,7 +817,7 @@ subprocess.run([
     "-s",
     str(augustus_folder / str("Clear_" + aug_parsing)),
     "-sp",
-    str(AnnotaPipeline.get('swissprot_path_db')),
+    str(databases.get('swissprot-db')),
     "-basename",
     str(AnnotaBasename),
     str(flag_spdb),  # Flag for databse
@@ -815,13 +829,15 @@ subprocess.run([
     "-cov",
     str(blast.get('coverage')),
     "-kw",
-    str(keyword_list),
+    str(f'{",".join(keyword_list)}'),
     "-t",
     str(AnnotaPipeline.get('threads')), 
-    "-hsps", 
-    str(blast.get('max_hsps')), 
+    "-max_target_seqs", 
+    str(blast.get('max_target_seqs')), 
     "-evalue", 
-    str(blast.get('evalue'))
+    str(blast.get('evalue')),
+    "-blastp",
+    str(blast.get('blast-exe'))
     ]
 )
 
@@ -843,10 +859,10 @@ os.chdir(interpro_folder)
 logger.info("---------------------------------------------------------------")
 logger.info("------------- Functional Annotation has started ---------------")
 # Running interproscan with hypothetical proteins
-interpro_run("hypothetical", AnnotaBasename, blast_folder, augustus_folder, aug_parsing, interpro, AnnotaPipeline.get('interpro_exe'))
+interpro_run("hypothetical", AnnotaBasename, blast_folder, augustus_folder, aug_parsing, interpro, interpro.get('interproscan-exe'))
 
 # Running interproscan with annotated proteins 
-interpro_run("annotated", AnnotaBasename, blast_folder, augustus_folder, aug_parsing, interpro, AnnotaPipeline.get('interpro_exe'))
+interpro_run("annotated", AnnotaBasename, blast_folder, augustus_folder, aug_parsing, interpro, interpro.get('interproscan-exe'))
 
 # HMMER ------------------------------------------------------------------------
 logger = logging.getLogger('HMMSCAN')
@@ -854,26 +870,27 @@ logger.info("Running HMMSCAN with Hypothetical Proteins")
 
 # General
 hmmscan_command_line = (
-    f"{str(AnnotaPipeline.get('hmm_exe'))} "
+    f"{str(hmmscan.get('hmmscan-exe'))} "
     f"--cpu {str(AnnotaPipeline.get('threads'))} "
     f"--tblout {str(AnnotaBasename)}_hmmscan_output.txt "
     f"--noali"
 )
 
 # Optionals
-for variable in hmmscan:
-    if str(hmmscan.get(variable)).lower() == "flag":
-        hmmscan_command_line += f" --{str(variable)}"
-    else:
+for param in hmmscan:
+    if str(hmmscan.get(param)).lower() == "flag":
+        hmmscan_command_line += f" --{str(param)}"
+    elif param != "hmmscan-exe":
         # These specific arguments are passed through '-'
-        if any(arg == str(variable) for arg in ("E", "Z", "T")):
-            hmmscan_command_line += f" -{str(variable)} {str(hmmscan.get(variable))}"
+        if any(arg == str(param) for arg in ("E", "Z", "T")):
+            hmmscan_command_line += f" -{str(param)} {str(hmmscan.get(param))}"
         # Everyone else are passed through '--'
         else:
-            hmmscan_command_line += f" --{str(variable)} {str(hmmscan.get(variable))}"
+            hmmscan_command_line += f" --{str(param)} {str(hmmscan.get(param))}"
 
+# Add Database
 hmmscan_command_line += (
-    f" {str(AnnotaPipeline.get('pfam'))} "
+    f" {str(databases.get('pfam'))} "
     f"Hypothetical_Products.fasta "
     f"> /dev/null 2> hmmscan.err"
 )
@@ -893,19 +910,19 @@ logger.info("Running RPSBLAST with Hypothetical Proteins")
 
 # General
 rpsblast_command_line = (
-    f"rpsblast -query Hypothetical_Products.fasta "
+    f"{str(rpsblast.get('rpsblast-exe'))} -query Hypothetical_Products.fasta "
     f"-out {str(AnnotaBasename)}_rpsblast_output.outfmt6 "
-    f"-db {str(AnnotaPipeline.get('cdd'))} "
+    f"-db {str(databases.get('cdd-db'))} "
     f"-outfmt \"6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle\" "
     f"-num_threads {str(AnnotaPipeline.get('threads'))}"
 )
 
 # Optionals
-for variable in rpsblast:
-    if str(rpsblast.get(variable)).lower() == "flag":
-        rpsblast_command_line += f" -{str(variable)}"
-    else:
-        rpsblast_command_line += f" -{str(variable)} {str(rpsblast.get(variable))}"
+for param in rpsblast:
+    if str(rpsblast.get(param)).lower() == "flag":
+        rpsblast_command_line += f" -{str(param)}"
+    elif param != "rpsblast-exe":
+        rpsblast_command_line += f" -{str(param)} {str(rpsblast.get(param))}"
 
 logger.debug(str(rpsblast_command_line))
 
@@ -1040,7 +1057,7 @@ if kallisto_method != None and args.seq is not None:
 
     # Annotated_Products.cdsexon 
     kallisto_run(str(python_exe),
-        kallisto.get("kallisto_path"), kallisto_paired_end, kallisto_method,
+        kallisto.get("kallisto-exe"), kallisto_paired_end, kallisto_method,
         AnnotaBasename, f"{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_transcripts.fasta'}"
         )
 
@@ -1051,7 +1068,7 @@ if kallisto_method != None and args.seq is not None:
 
 #------------------------------------------------------------------------
 # ----------------------- Commet ----------------------------------------
-if len(comet.get('comet_bash')) != 0:
+if proteomics.get('comet-exe') is not None:
     logger.info("---------------------------------------------------------------")
     logger.info("------------ Peptide Identification has started ---------------")
     if kallisto_method == None or args.seq is None:
@@ -1066,18 +1083,18 @@ if len(comet.get('comet_bash')) != 0:
 
     # Check if overwrite parameters will be used
     if use_last_and_first == True:
-        first_last_param = f"-F{comet.get('first')} -L{comet.get('last')}"
+        first_last_param = f"-F{proteomics.get('first')} -L{proteomics.get('last')}"
     else:
         first_last_param = str()
     # Mass files location
-    mass_path = f"{str(comet.get('mass_files')).rstrip('/')}/"
+    mass_path = f"{str(proteomics.get('comet-spectometry')).rstrip('/')}/"
 
     # Add percolator output in comet.params
     # change arguments for comet
-    modify_comet_params(comet.get('params'))
-    commet_command = f"{comet.get('comet_bash')} -P{comet.get('params')} " \
+    modify_comet_params(proteomics.get('comet-params'))
+    commet_command = f"{proteomics.get('comet-exe')} -P{proteomics.get('comet-params')} " \
                 f"-D{annota_pwd / f'AnnotaPipeline_{AnnotaBasename}_proteins.fasta'} " \
-                f"{first_last_param} {mass_path}*.{comet.get('mass_files_ext')}"
+                f"{first_last_param} {mass_path}*.{proteomics.get('comet-ext')}"
 
     logger.info("COMET execution has started")
     logger.info(commet_command)
@@ -1092,15 +1109,18 @@ if len(comet.get('comet_bash')) != 0:
     if not list(file_names):
         logger.error("COMET - Fail trying to run COMET, check version of comet.params")
         log_quit()
+    # ----------------------------------------------------------------
+    # MUST GET AGAIN BECAUSE LIST METHOD EMPTY VALUES IF IT HAD ONE
+    file_names = pathlib.Path(mass_path).glob('*.pin')
     # ----------- Create Percolator Output path ----------------------
     logger = logging.getLogger('PERCOLATOR')
     logger.info("PERCOLATOR execution has started")
     # ----------------------------------------------------------------
     # ----------- Create Percolator Output path ----------------------
-    percolator_path_raw = pathlib.Path(comet_output_path / str("Percolator_RAW"))
+    percolator_path_raw = pathlib.Path(comet_output_path / str("PERCOLATOR_Raw"))
     pathlib.Path(percolator_path_raw).mkdir(exist_ok=True)
     # ----------------------------------------------------------------
-    percolator_path_parsed = pathlib.Path(comet_output_path / str("Percolator_PARSED"))
+    percolator_path_parsed = pathlib.Path(comet_output_path / str("PERCOLATOR_Parsed"))
     pathlib.Path(percolator_path_parsed).mkdir(exist_ok=True)
     # ----------------------------------------------------------------
     for comet_output_file in file_names:
@@ -1109,7 +1129,7 @@ if len(comet.get('comet_bash')) != 0:
         # --------- RUN Percolator inside Percolator RAW path -------------------
         os.chdir(percolator_path_raw)
         percolator_out_basename = re.sub(r"\.[0-9].*","",comet_output_file.stem)
-        percolator_command = f"{percolator.get('percolator_bash')} -r {percolator_out_basename}_peptide_output.tsv" \
+        percolator_command = f"{proteomics.get('percolator-exe')} -r {percolator_out_basename}_peptide_output.tsv" \
                              f" -m {percolator_out_basename}_percolator_output.tsv" \
                              f" -B {percolator_out_basename}_decoy_output.tsv {comet_output_file}"
         subprocess.getoutput(percolator_command)
@@ -1118,7 +1138,7 @@ if len(comet.get('comet_bash')) != 0:
         os.chdir(percolator_path_parsed)
         parser_percolator_command = f"{python_exe} {str(pipeline_pwd / 'percolator_parser.py')}" \
                             f" -p {percolator_path_raw}/{percolator_out_basename}_percolator_output.tsv" \
-                            f" -qv {percolator.get('qvalue')}" \
+                            f" -qv {proteomics.get('percolator-qvalue')}" \
                             f" -b {AnnotaBasename}_{percolator_out_basename}"
         try:
             subprocess.getoutput(parser_percolator_command)
@@ -1163,7 +1183,7 @@ summary_parser_command_line = f"{python_exe} {str(pipeline_pwd / 'summary_parser
 # Add optional parametes (if kallisto and/or comet were executed)
 if kallisto_method != None and args.seq is not None:
     summary_parser_command_line = summary_parser_command_line + f" -tr {str(kallisto_output_path / str(AnnotaBasename + '_Transcript_Quantification.tsv'))}"
-if len(comet.get('comet_bash')) != 0:
+if proteomics.get('comet-exe') is not None:
     summary_parser_command_line = summary_parser_command_line + f" -proteomics {str(comet_output_path / str(AnnotaBasename + '_Total_Proteomics_Quantification.tsv'))}"
 
 #This is the end of the line
@@ -1177,3 +1197,4 @@ except Exception:
 logger.info("That's all folks")
 # close logger
 logging.shutdown()
+

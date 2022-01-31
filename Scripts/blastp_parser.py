@@ -64,7 +64,6 @@ requiredNamed.add_argument(
     required=True
 )
 
-
 #   type (default): string
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument(
@@ -125,9 +124,9 @@ optionalNamed.add_argument(
 )
 
 optionalNamed.add_argument(
-    '-hsps', dest='hsps',
+    '-max_target_seqs', dest='hsps',
     metavar='', type=int, default=10,
-    help='max_hsps flag from blastp [int] (default: 10)'
+    help='max_target_seqs flag from blastp [int] (default: 10)'
 )
 
 optionalNamed.add_argument(
@@ -214,11 +213,10 @@ def blast(arq1, arq2, db, hsps, evalue):
     command = f"{args.blastp} -query {arq1} -out {arq2}" \
                     f" -db {datab} -evalue {evalue}" \
                     f" -outfmt {fmt}" \
-                    f" -max_hsps {hsps}" \
+                    f" -max_target_seqs {hsps}" \
                     f" -num_threads {str(args.threads)}"
     logger.info(command)
     subprocess.getoutput(command)
-
 
 
 def temporary_query(arq):
@@ -228,6 +226,23 @@ def temporary_query(arq):
     del temp[0]
     temp.insert(0, "QueryTemp")
     arq.append("\t".join(temp))
+
+
+def check_query(full_line_list, coverage, word_list, id, pos, list_classification, list_annot, list_desc, description):
+    if float(full_line_list[7]) > float(coverage):
+        if not any(word.lower() in description.lower() for word in word_list):
+            if float(full_line_list[5]) >= float(pos) and float(full_line_list[6]) >= float(id):
+                # If annotation is strong, is considered as non_hypothetical
+                list_classification.append("non_hypothetical")
+                # Store desc and bitscore
+                list_annot.append(hit(str(description), float(full_line_list[3])))
+                list_desc.append(description)
+            else:
+                list_classification.append("hypothetical")
+        else:
+            list_classification.append("hypothetical")
+    else:
+        pass
 
 
 '''---Keywords-------------------------------------------------------------'''
@@ -256,7 +271,6 @@ def parser_trembl(basename, result_blast, identidade, positividade, cov):
     old_id = swiss[0].split("\t") 
     old_id = old_id[0]
     annots = []
-    nhyp_list = []
     classification = []
     desc_list = []
 
@@ -273,40 +287,24 @@ def parser_trembl(basename, result_blast, identidade, positividade, cov):
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
                 nhyp.write(f"{str(old_id)}\t")
-                # Sort annotations by identity
+                # Sort annotations by bitscore
                 annots.sort()
                 # Get best identity, first position of array
                 nhyp.write(f"{str(annots[0].desc)}\n")
-                nhyp.write(str('\n'))
-                nhyp_list.append(str(old_id))
 
-                all_anot.write(f"{old_id}\t{len(desc)} Annotation(s): [{';'.join(desc_list)}]\n")
+                all_anot.write(f"{old_id}\t{len(desc_list)} Annotation(s): [{';'.join(desc_list)}]\n")
             else:
                 hyp.write(f"{str(old_id)}\n")
             # this just resets the count back to zero, before it starts again
             classification.clear()
             annots.clear()
             desc_list.clear()
+            # check first query of new ID
+            check_query(line_split, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         else:
-            if float(line_split[7]) > float(cov):
-                # Check annotations, if any word doesn't match with keywords
-                if not any(word in desc.lower() for word in keyword_list):
-                    # Results that doesn't have match with keyword_list pass
-                    # Check positivity and identity with subject
-                    # If it's lower than threshold, it's not trustworthy, so, it's considered hypothetical
-                    if float(line_split[5]) >= float(positividade) \
-                            and float(line_split[6]) >= float(identidade):
-                        # If annotation is strong, is considered as non_hypothetical
-                        annots.append(hit(str(desc), float(line_split[3])))
-                        desc_list.append(str(desc))
-                        classification.append("non_hypothetical")
-                    else:
-                        classification.append("hypothetical")
-                    # Check annotations, if any word match with keywords, is considered hypothetical
-                else:
-                    classification.append("hypothetical")
-            else:
-                pass
+            check_query(line_split, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         # saving the information that will be written in the .txt files
         old_id = new_id
 
@@ -351,13 +349,11 @@ def parser_trytrip(basename, result_blast, identidade, positividade, cov):
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
                 nhyp.write(f"{str(old_id)}\t")
-                # Sort annotations by identity
+                # Sort annotations by bitscore
                 annots.sort()
                 # Get best identity, first position of array
                 nhyp.write(f"{str(annots[0].desc)}\n")
-                nhyp_list.append(str(old_id))
-
-                all_anot.write(f"{old_id}\t{len(desc)} Annotation(s): [{';'.join(desc_list)}]")
+                all_anot.write(f"{old_id}\t{len(desc_list)} Annotation(s): [{';'.join(desc_list)}]")
                 all_anot.write(str('\n'))
             else:
                 hyp.write(f"{str(old_id)}\n")
@@ -365,26 +361,12 @@ def parser_trytrip(basename, result_blast, identidade, positividade, cov):
             classification.clear()
             annots.clear()
             desc_list.clear()
+            # check first query of new ID
+            check_query(title, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         else:
-            if float(title[7]) > float(cov):
-                # Check annotations, if any word doesn't match with keywords
-                if not any(word in desc.lower() for word in keyword_list):
-                    # Results that doesn't have match with keyword_list pass
-                    # Check positivity and identity with subject
-                    # If it's lower than threshold, it's not trustworthy, so, it's considered hypothetical
-                    if float(title[5]) >= float(positividade) \
-                            and float(title[6]) >= float(identidade):
-                        # If annotation is strong, is considered as non_hypothetical
-                        annots.append(hit(str(desc), float(title[3])))
-                        desc_list.append(str(desc))
-                        classification.append("non_hypothetical")
-                    else:
-                        classification.append("hypothetical")
-                    # Check annotations, if any word match with keywords, is considered hypothetical
-                else:
-                    classification.append("hypothetical")
-            else:
-                pass
+            check_query(title, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         # saving the information that will be written in the .txt files
         old_id = new_id
 
@@ -432,37 +414,23 @@ def parser_nr(basename, result_blast, identidade, positividade, cov):
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
                 nhyp.write(f"{str(old_id)}\t")
-                # Sort annotations by identity
+                # Sort annotations by bitscore
                 annots.sort()
                 # Get best identity, first position of array
                 nhyp.write(f"{str(annots[0].desc)}\n")
-                all_anot.write(f"{old_id}\t{len(desc)} Annotation(s): [{';'.join(desc_list)}]\n")
+                all_anot.write(f"{old_id}\t{len(desc_list)} Annotation(s): [{';'.join(desc_list)}]\n")
             else:
                 hyp.write(f"{str(old_id)}\n")
             # this just resets the count back to zero, before it starts again
             classification.clear()
             annots.clear()
             desc_list.clear()
+            # check first query of new ID
+            check_query(title, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         else:
-            if float(title[7]) > float(cov):
-                # Check annotations, if any word doesn't match with keywords
-                if not any(word in desc.lower() for word in keyword_list):
-                    # Results that doesn't have match with keyword_list pass
-                    # Check positivity and identity with subject
-                    # If it's lower than threshold, it's not trustworthy, so, it's considered hypothetical
-                    if float(title[5]) >= float(positividade) \
-                            and float(title[6]) >= float(identidade):
-                        # If annotation is strong, is considered as non_hypothetical
-                        classification.append("non_hypothetical")
-                        annots.append(hit(str(desc), float(title[3])))
-                        desc_list.append(desc)
-                    else:
-                        classification.append("hypothetical")
-                # Check annotations, if any word match with keywords, is considered hypothetical
-                else:
-                    classification.append("hypothetical")
-            else:
-                pass
+            check_query(title, cov, keyword_list, identidade, positividade, 
+                        classification, annots, desc_list, desc)
         # saving the information that will be written in the .txt files
         old_id = new_id
 
@@ -510,8 +478,7 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
         if old_id != new_id:
             if "non_hypothetical" in ' '.join(classification):
                 nhyp.write(f"{str(old_id)}\t")
-                nhyp_list.append(str(old_id))
-                # Sort annotations by identity
+                # Sort annotations by bitscore
                 annots.sort()
                 # Get best identity, first position of array
                 nhyp.write(f"{str(annots[0].desc)}\n")
@@ -523,20 +490,12 @@ def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, co
             desc.clear()
             classification.clear()
             annots.clear()
+            # check first query of new ID
+            check_query(line_split, cov, keyword_list, identidade, positividade,
+                        classification, annots, desc, description)
         else:
-            if float(line_split[7]) > float(cov):
-                if not any(word in description.lower() for word in keyword_list):
-                    if float(line_split[5]) >= float(positividade) and float(line_split[6]) >= float(identidade):
-                        # If annotation is strong, is considered as non_hypothetical
-                        classification.append("non_hypothetical")
-                        annots.append(hit(str(description), float(line_split[3])))
-                        desc.append(description)
-                    else:
-                        classification.append("hypothetical")
-                else:
-                    classification.append("hypothetical")
-            else:
-                pass
+            check_query(line_split, cov, keyword_list, identidade, positividade,
+                        classification, annots, desc, description)
         # saving the information that will be written in the .txt files
         old_id = new_id
 
