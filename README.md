@@ -1,4 +1,9 @@
-# AnnotaPipeline
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+<font size=16>**AnnotaPipeline**</font>
+
+# About AnnotaPipeline
+
 Integrated tool to annotate hypothetical proteins developed by the Laboratorio de Bioinformática at the Universidade Federal de Santa Catarina, in Brazil.
 
 If you have questions about the pipeline or difficulties with its execution, please do not hesitate to contact our team here on GitHub or to contact me by email: Guilherme Maia <labioinfo.genome@gmail.com>
