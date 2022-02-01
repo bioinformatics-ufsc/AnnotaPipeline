@@ -63,15 +63,15 @@ After gene prediction, sequences are "cleaned" based on minimal sequence size fr
 ## **2. Similarity analysis**
 
 Similarity analysis run through `blastp_parser.py`, which executes `blastp` with format 6 output (parsed after run) on predicted proteins (cleaned) against SwissProt:
-  * `qseqid`
-  * `sseqid`
-  * `sacc`
-  * `bitscore`
-  * `evalue`
-  * `ppos`
-  * `pident`
-  * `qcovs`
-  * `stitle`
+  * qseqid
+  * sseqid
+  * sacc
+  * bitscore
+  * evalue
+  * ppos
+  * pident
+  * qcovs
+  * stitle
   > `evalue` and `max_target_seqs` given by user
 
 This output is parsed to find annotations in the secondary database. The keyword list in `AnnotaPipeline.yaml` is used to exclude potential hyphotetical annotations.
