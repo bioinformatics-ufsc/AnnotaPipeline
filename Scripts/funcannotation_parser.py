@@ -212,7 +212,10 @@ def sort_arq(arq_entrada, arq_saida):
 
 # ----------- Start -------------
 # Parse interproscan file
-parser_interproscan(args.interpro, f"InterProScan_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
+parser_interproscan(args.interpro, f"InterProScan_Out{args.basename}.txt", f"Temp_{args.basename}.txt")
+# Sort and include header
+sort_arq(f"InterProScan_Out{args.basename}.txt", f"InterProScan_Out_{args.basename}.txt")
+os.remove(f"InterProScan_Out{args.basename}.txt")
 logger.info("InterProScan parser done")
 # Parse HMMer file
 pfam_format(args.hmm, f"Hmmscan_Out_{args.basename}.txt")
