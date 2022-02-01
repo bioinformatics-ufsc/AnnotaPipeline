@@ -19,7 +19,7 @@
 pipeline:
   python: /usr/bin/python3  # [path] full path to python interpreter (>=3.6)
   perl: /usr/bin/perl       # [path] full path to perl interpreter (required for augustus)
-  threads: 8               # [int] number of threads to run all programs (default: 8)
+  threads: 8                # [int] number of threads to run all programs (default: 8)
   organism: Trypanosoma rangeli SC58
   basename: TrangeliSC58
   keywords:
@@ -40,6 +40,7 @@ databases:
   pfam: /bases_externas/interproscan-5.52-86.0/data/pfam/33.1/pfam_a.hmm
 
 # AUGUSTUS ---------------------------------------------------------------------
+
 augustus:
   augustus-path: conda          # if you are using our conda environment, set "conda"
                                 # and we will find augustus path
@@ -74,21 +75,21 @@ seq-cleaner:
 # blast will run *exclusively* with these parameters (any others will be ignored)
 local-aligner:
   blast-exe: blastp
-  evalue: 0.00001    # [float] e-value (default: 0.00001)
-  identity: 40    # [int] identity threshold to filter blast results
-  positivity: 60  # [int] positivity threshold to filter blast results
-  coverage: 30    # [int] query coverage threshold to filter blast results
-                  #       use a higher value for more restrict results (default: 30)
-  max_target_seqs: 10     # [int] exact number of alignments (recommended: 10)
+  evalue: 0.00001      # [float] e-value (default: 0.00001)
+  identity: 40         # [int] identity threshold to filter blast results
+  positivity: 60       # [int] positivity threshold to filter blast results
+  coverage: 30         # [int] query coverage threshold to filter blast results
+                       #       use a higher value for more restrict results (default: 30)
+  max_target_seqs: 10  # [int] exact number of alignments (recommended: 10)
 
 # RPSBLAST runs by default with:
 #   [-outfmt "6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle"]
 #   these flags are not listed
 rpsblast:
   rpsblast-exe: rpsblast
-  evalue: 0.00001  # [float] e-value (default: 1e-5)
+  evalue: 0.00001      # [float] e-value (default: 1e-5)
   # OPTIONAL PARAMETERS (remove if not used)
-  max_target_seqs: 10   # [int] maximum number of high scoring pairs
+  max_target_seqs: 10  # [int] maximum number of high scoring pairs
 
 # INTERPROSCAN/HMMER -----------------------------------------------------------
 
@@ -103,7 +104,7 @@ rpsblast:
 interproscan:
   #run with previous version of interproscan (wich databases are already configurated)
   interproscan-exe: /home/opt/interproscan.sh 
-  ms:     # OPTIONAL: minimum nucleotide size
+  ms:         # OPTIONAL: minimum nucleotide size
 
 hmmer:
   hmmscan-exe: hmmscan
@@ -120,11 +121,11 @@ hmmer:
 kallisto:
   kallisto-exe: kallisto
   # FILE(s): path to rna-seq reads
-  #          2 files for paired-end data or 1 file for single-end data
+  #          2 files for paired-end data OR 1 file for single-end data
   # EXAMPLE:
-  #   rna-seq: >-
-  #     /path/to/R1.fastq
-  #     /path/to/R2.fastq
+  #   rna-seq:
+  #     - /path/to/R1.fastq
+  #     - /path/to/R2.fastq
   rna-seq:
     - /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR1_05aug2021.fastq
     - /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR2_05aug2021.fastq              
@@ -157,4 +158,4 @@ proteomics:
   last: 2000                  # [int] specify the last/end scan to search
                               #       overriding entry in parameters file
   percolator-exe: percolator  # [path] /full/path/to/percolator
-  percolator-qvalue: 0.5     # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)
+  percolator-qvalue: 0.5      # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)

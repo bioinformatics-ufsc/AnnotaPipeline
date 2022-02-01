@@ -29,6 +29,7 @@ pipeline:
     - uncharacterized
     - unknown
     - unspecified
+
 # DATABASES --------------------------------------------------------------------
 
 databases:
@@ -39,6 +40,7 @@ databases:
   pfam:               # [path] full path to pfam hmm profile
 
 # AUGUSTUS ---------------------------------------------------------------------
+
 augustus:
   augustus-path: conda  # if you are using our conda environment, set "conda"
                         # and we will find augustus path
@@ -117,7 +119,7 @@ hmmer:
 kallisto:
   kallisto-exe:   # [path] /full/path/to/kallisto
   # FILE(s): path to rna-seq reads
-  #          2 files for paired-end data or 1 file for single-end data
+  #          2 files for paired-end data OR 1 file for single-end data
   # EXAMPLE:
   #   rna-seq:
   #     - /path/to/R1.fastq
