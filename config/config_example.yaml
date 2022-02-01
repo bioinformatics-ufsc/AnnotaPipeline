@@ -144,9 +144,9 @@ kallisto:
 
 # comet is OPTIONAL but requires percolator
 proteomics:
-  comet-exe: comet            # [path] /full/path/to/comet
-  comet-params: /home/teste/comet.params
-  comet-spectometry: /home/TrangeliSC58/Proteome/
+  comet-exe: comet            # [path-to-file] /full/path/to/comet
+  comet-params: /home/teste/comet.params    # [path-to-file] /full/path/to/comet.params
+  comet-spectometry: /home/TrangeliSC58/Proteome/   # [path] /full/path/to/spectometryfiles
   comet-ext: mzXML            # [extension] mass spectometry file extension
                               # WARNING:    provide only one type
                               # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
