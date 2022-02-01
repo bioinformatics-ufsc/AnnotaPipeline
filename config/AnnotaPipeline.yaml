@@ -53,7 +53,7 @@ augustus:
   stop:                 # [ on / off ]
   cds:                  # [ on / off ]
 
-# following options have *not* been tested in AnnotaPipeline (leave empty to deconsider)
+# following options have *not* been tested in AnnotaPipeline (leave empty to disconsider)
 #   if you pass a flag that by default doesn't have a value please inform "value: flag"
 #   EXAMPLE:
 #     goterms: flag
@@ -144,8 +144,8 @@ kallisto:
 proteomics:
   comet-exe:               # [path] /full/path/to/comet
   comet-params:            # [path] full path to comet.params
-  comet-spectometry:       # [path] full path to directory containing mass spectometry files
-  comet-ext:               # [extension] mass spectometry file extension
+  comet-spectrometry:      # [path] full path to directory containing mass spectrometry files
+  comet-ext:               # [extension] mass spectrometry file extension
                            # WARNING:    provide only one type
                            # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
   # WARNING: first is required if last is given and vice-versa

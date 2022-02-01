@@ -74,17 +74,17 @@ Similarity analysis run through `blastp_parser.py`, which executes `blastp` with
   * stitle
   > `evalue` and `max_target_seqs` given by user
 
-This output is parsed to find annotations in the secondary database. The keyword list in `AnnotaPipeline.yaml` is used to exclude potential hyphotetical annotations.
+This output is parsed to find annotations in the secondary database. The keyword list in `AnnotaPipeline.yaml` is used to exclude potential hypothetical annotations.
 
 Hits are classified &ndash; as a potential annotation &ndash; if: (i) it doesn't have any words in the keyword list, and (ii) passed value thresholds for identity, positivity and coverage. All potential annotations &ndash; hits that passed all criteria &ndash; are present in `BASENAME_SwissProt_annotations.txt` for manual check.
 
-Potential annotations are ranqued by `bitscore` and the best hit is assigned to the corresponding protein. Proteins that aren't annotated based on SwissProt annotations, are separated in `BASENAME_BLASTp_AA_SwissProted.fasta` and `blastp` is rerun against the secondary database (selected in `AnnotaPipeline.yaml`).
+Potential annotations are ranked by `bitscore` and the best hit is assigned to the corresponding protein. Proteins that aren't annotated based on SwissProt annotations, are separated in `BASENAME_BLASTp_AA_SwissProted.fasta` and `blastp` is rerun against the secondary database (selected in `AnnotaPipeline.yaml`).
 
-Following the same proccess, `BASENAME_SpecifiedDB_annotations.txt` classifies potential annotations.
+Following the same process, `BASENAME_SpecifiedDB_annotations.txt` classifies potential annotations.
 
 Annotation files:
   * `BASENAME_annotated_products.txt` contains all annotations
-  * `BASENAME_hypothetical_products.txt` contains hyphotetical proteins with no hits that passed all criteria(wich doesn't have a single hit that passes all criteria) are present in `BASENAME_hypothetical_products.txt`
+  * `BASENAME_hypothetical_products.txt` contains hypothetical proteins with no hits that passed all criteria(which doesn't have a single hit that passes all criteria) are present in `BASENAME_hypothetical_products.txt`
   * `BASENAME_no_hit_products.txt` contains proteins with no hits &ndash; against SwissProt and the secondary database &ndash; that are treated as hypothetical for subsequent analysis
 
 
@@ -92,7 +92,7 @@ Annotation files:
 
 **Functional analysis runs in two different ways:**
   * For annotated proteins:
-    * InterProScan is used (with configurated databases) to get ontology and IPR terms
+    * InterProScan is used (with configured databases) to get ontology and IPR terms
   * For hypothetical proteins (which includes no_hit_products):
     * InterProScan, RPS-BLAST and HMMER are used to find hits of possible functions of predicted proteins
 
@@ -105,7 +105,7 @@ Annotation files:
 **Parsing:**
   * `functional_annotation_parser.py` join outputs for both InterProScan runs in a single file called `InterProScan_Out_BASENAME.txt`. This file summarizes outputs for each predicted protein.
     * Coils, Gene3D and MobiDBLite databases are structural databases and are excluded from this output.
-  * RPS-BLAST information for hyphotetical proteins are summarized in `BASENAME_Grouped_Hypothetical_Information.txt` as it gives long descriptions. It may be helpful to find functional hints for proteins.
+  * RPS-BLAST information for hypothetical proteins are summarized in `BASENAME_Grouped_Hypothetical_Information.txt` as it gives long descriptions. It may be helpful to find functional hints for proteins.
   * `info_parser.py` uses InterProScan results with parsed files from BLAST results to generate `All_annotated_products.txt`. This file joins gene annotation (from BLAST) with functional annotation (from InterProScan) using GOs and IPR values. This file is used to annotate sequences (aminoacid and nucleotide) in FASTA and GFF files.
 
 ## **4. Transcript quantification (Optional)**
@@ -129,8 +129,8 @@ Analysis starts with `kallisto index` and is followed by `kallisto quant`:
     * Float value (user input)
   * Parsed output file is called `BASENAME_Transcript_Quantification.tsv` and contains a simplified result of Kallisto output (`abundance.tsv`) with target_id and TPM value
 
-## **5. Peptide idenfication (Optional)**
-> **WARNING:** Faild runs for Comet MS/MS don't crash AnnotaPipeline, so check AnnotaPipeline_Log.log to assure all spectometry files produced outputs
+## **5. Peptide identification (Optional)**
+> **WARNING:** Faild runs for Comet MS/MS don't crash AnnotaPipeline, so check AnnotaPipeline_Log.log to assure all spectrometry files produced outputs
 
 Proteomics analysis uses Comet MS/MS with `comet.params` config given by user. In this file, our script overwrite values for following parameters:
   * `decoy_search = 1`
@@ -141,7 +141,7 @@ Proteomics analysis uses Comet MS/MS with `comet.params` config given by user. I
 Comet MS/MS runs with:
   * *Modified* `comet.params`
   * Annotated protein file
-  * Path containing mass spectometry files (`comet-spectometry` param) and extension (`comet-ext` param)
+  * Path containing mass spectrometry files (`comet-spectrometry` param) and extension (`comet-ext` param)
     * Extension can be *mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)*
   * Optional arguments `first` and `last` are used, if given, and overwrite cutoff values defined in `comet.params`
 
@@ -159,7 +159,7 @@ This output quantifies (all spectometry outputs):
 
 ## **Last things last**
 
-`summary_parser.py` integrates all outputs (in a single file summarizing all anotations found for each protein) from:
+`summary_parser.py` integrates all outputs (in a single file summarizing all annotations found for each protein) from:
   * Prediction and similarity analysis
   * Functional annotation
   * Transcriptomic
@@ -180,13 +180,13 @@ Before executing, please modify the necessary fields in the configuration file (
 ## **Download databases**
 
 **Required:**
-  * SwissProt (avaliable at <https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz>)
-  * Pfam (avaliable at <http://pfam.xfam.org>)
-  * CDD (avaliable at <https://www.ncbi.nlm.nih.gov/cdd>)
+  * SwissProt (available at <https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz>)
+  * Pfam (available at <http://pfam.xfam.org>)
+  * CDD (available at <https://www.ncbi.nlm.nih.gov/cdd>)
 
 **Choose one secondary database:**
-  * TrEMBL (avaliable at <https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_trembl.fasta.gz>)
-  * EuPathDB (avaliable at <https://veupathdb.org/veupathdb/app>):
+  * TrEMBL (available at <https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_trembl.fasta.gz>)
+  * EuPathDB (available at <https://veupathdb.org/veupathdb/app>):
     * AmoebaDB
     * CryptoDB
     * FungiDB
@@ -205,7 +205,7 @@ Before executing, please modify the necessary fields in the configuration file (
 
 1. Download `conda_environment.yaml` file
 
-2. Create envinroment
+2. Create environment
 ```bash
     conda env create -n <desired_name> -f conda_environment.yaml
 ```
@@ -236,7 +236,7 @@ Before executing, please modify the necessary fields in the configuration file (
     git clone https://github.com/GuiMaia/AnnotaPipeline.git
 ```
 
-2. Run `setup.py` (Scripts will be avaliable at `$PATH`)
+2. Run `setup.py` (Scripts will be available at `$PATH`)
 
 3. Install required softwares:
   * BLAST+ and RPS-BLAST (available at <https://ftp.ncbi.nih.gov/blast/executables/blast+/LATEST>)
@@ -290,7 +290,7 @@ Given the prediction process, it is important to use a trained AUGUSTUS model fo
 AnnotaPipeline.py -p protein_sequences.fasta -gff gff_file.gff
 ```
 
-You can execute AnnotaPipeline &ndash; with this command line &ndash; if you already have a protein sequence file and a GFF3 file from previous AUGUSTUS predictions. The submited `gff_file.gff` needs to be in GFF3 format.
+You can execute AnnotaPipeline &ndash; with this command line &ndash; if you already have a protein sequence file and a GFF3 file from previous AUGUSTUS predictions. The submitted `gff_file.gff` needs to be in GFF3 format.
 
 The annotation process is the same as the first option, the difference being you will also have an annotated GFF3 output.
 
@@ -306,7 +306,7 @@ Depending on which option you decided to execute AnnotaPipeline, it will output 
 Raw outputs are listed inside output folders:
   * `1_GenePrediction_BASENAME`           &ndash; AUGUSTUS files
   * `2_SimilarityAnalysis_BASENAME`       &ndash; BLAST+ analysis
-  * `3_FunctionalAnnotation_BASENAME`     &ndash; InterProscan/HMMER/RPS-BLAST analysis
+  * `3_FunctionalAnnotation_BASENAME`     &ndash; InterProScan/HMMER/RPS-BLAST analysis
   * `4_TranscriptQuantification_BASENAME` &ndash; Kallisto analysis
   * `5_PeptideIdentification_BASENAME`    &ndash; Comet MS/MS and Percolator analysis
 

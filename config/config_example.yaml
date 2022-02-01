@@ -53,7 +53,7 @@ augustus:
   stop: on                      # [ on / off ]
   cds: on                       # [ on / off ]
 
-# following options have *not* been tested in AnnotaPipeline (leave empty to deconsider)
+# following options have *not* been tested in AnnotaPipeline (leave empty to disconsider)
 #   if you pass a flag that by default doesn't have a value please inform "value: flag"
 #   EXAMPLE:
 #     goterms: flag
@@ -102,7 +102,7 @@ rpsblast:
 # EXAMPLE:
 #   goterms: flag
 interproscan:
-  #run with previous version of interproscan (wich databases are already configurated)
+  #run with previous version of interproscan (which databases are already configured)
   interproscan-exe: /home/opt/interproscan.sh 
   ms:         # OPTIONAL: minimum nucleotide size
 
@@ -147,8 +147,8 @@ kallisto:
 proteomics:
   comet-exe: comet            # [path-to-file] /full/path/to/comet
   comet-params: /home/teste/comet.params    # [path-to-file] /full/path/to/comet.params
-  comet-spectometry: /home/TrangeliSC58/Proteome/   # [path] /full/path/to/spectometryfiles
-  comet-ext: mzXML            # [extension] mass spectometry file extension
+  comet-spectrometry: /home/TrangeliSC58/Proteome/   # [path] /full/path/to/spectrometryfiles
+  comet-ext: mzXML            # [extension] mass spectrometry file extension
                               # WARNING:    provide only one type
                               # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
   # WARNING: first is required if last is given and vice-versa

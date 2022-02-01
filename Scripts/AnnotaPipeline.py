@@ -530,7 +530,7 @@ def proteomics_check_parameters(proteomic_section):
         if proteomic_section.get('last') is not None:
             last_check = True
         # ----------------------------------------------
-        for argument in ("comet-params", "comet-spectometry"):
+        for argument in ("comet-params", "comet-spectrometry"):
             if proteomic_section.get(argument) == 0:
                 logger.error(f"[COMET] Parameter [{argument}] from section [COMET] is null")
                 log_quit()
@@ -1087,7 +1087,7 @@ if proteomics.get('comet-exe') is not None:
     else:
         first_last_param = str()
     # Mass files location
-    mass_path = f"{str(proteomics.get('comet-spectometry')).rstrip('/')}/"
+    mass_path = f"{str(proteomics.get('comet-spectrometry')).rstrip('/')}/"
 
     # Add percolator output in comet.params
     # change arguments for comet
