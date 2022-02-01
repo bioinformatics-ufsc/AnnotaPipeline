@@ -101,7 +101,8 @@ rpsblast:
 # EXAMPLE:
 #   goterms: flag
 interproscan:
-  interproscan-exe: interproscan.sh
+  #run with previous version of interproscan (wich databases are already configurated)
+  interproscan-exe: /home/opt/interproscan.sh 
   ms:     # OPTIONAL: minimum nucleotide size
 
 hmmer:
@@ -144,8 +145,8 @@ kallisto:
 # comet is OPTIONAL but requires percolator
 proteomics:
   comet-exe: comet            # [path] /full/path/to/comet
-  comet-params: /home/vilmar/teste_env/GENOME/comet.params
-  comet-spectometry: /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Proteome/
+  comet-params: /home/teste/comet.params
+  comet-spectometry: /home/TrangeliSC58/Proteome/
   comet-ext: mzXML            # [extension] mass spectometry file extension
                               # WARNING:    provide only one type
                               # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
