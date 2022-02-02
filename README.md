@@ -9,10 +9,11 @@
   - [**2. Similarity analysis**](#2-similarity-analysis)
   - [**3. Functional annotation**](#3-functional-annotation)
   - [**4. Transcript quantification (Optional)**](#4-transcript-quantification-optional)
-  - [**5. Peptide idenfication (Optional)**](#5-peptide-idenfication-optional)
+  - [**5. Peptide identification (Optional)**](#5-peptide-identification-optional)
   - [**Last things last**](#last-things-last)
 - [**How to setup**](#how-to-setup)
   - [**Download databases**](#download-databases)
+  - [**InterProScan &ndash; Tested databases**](#interproscan--tested-databases)
   - [**Using conda**](#using-conda)
     - [**Setup AUGUSTUS species for personalized predictions**](#setup-augustus-species-for-personalized-predictions)
   - [**Manual install**](#manual-install)
@@ -165,24 +166,6 @@ This output quantifies (all spectometry outputs):
   * Transcriptomic (if used)
   * Peptide identification (if used)
 
-# **InterProScan - Tested Databaeses**
-
-* CDD
-* Gene3D
-* Hamap
-* Panther
-* Pfam
-* Pirsf
-* Pirsr
-* Prints
-* PrositePatterns
-* PrositeProfiles
-* Sfld
-* Smart (unlicenced)
-* Superfamily
-* Tigrfam
-* Coils
-* MobiDBLite
 
 # **How to setup**
 
@@ -218,6 +201,25 @@ Before executing, please modify the necessary fields in the configuration file (
     * TriTrypDB (tested)
   * NR Database | NCBI (available at <https://ftp.ncbi.nlm.nih.gov/blast/db>)
   > **TIP:** You can use a subset of NR Database
+
+## **InterProScan &ndash; Tested databases**
+
+* CDD
+* Gene3D
+* Hamap
+* Panther
+* Pfam
+* Pirsf
+* Pirsr
+* Prints
+* PrositePatterns
+* PrositeProfiles
+* Sfld
+* Smart (unlicenced)
+* Superfamily
+* Tigrfam
+* Coils
+* MobiDBLite
 
 ## **Using conda**
 
