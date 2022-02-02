@@ -203,7 +203,7 @@ Before executing, please modify the necessary fields in the configuration file (
   > **TIP:** You can use a subset of NR Database
 
 ## **InterProScan &ndash; Tested databases**
-
+> WARNING: Installation through conda/mamba requires manual download and configuration of InterProScan databases
 * CDD
 * Gene3D
 * Hamap
@@ -225,17 +225,37 @@ Before executing, please modify the necessary fields in the configuration file (
 
 1. Download `conda_environment.yaml` file
 
-2. Create environment
-```bash
-    conda env create -n <desired_name> -f conda_environment.yaml
-```
+
+2. Create environment 
+
+    2.1 with _default_ conda
+    ```bash
+    conda env create -n <desired_name> -f Annota_environment.yaml
+    ```
+
+    2.2 with [mamba](https://github.com/mamba-org/mamba) (speedup installation)
+
+    ```bash
+    conda update -n base conda
+    
+    conda install -n base -c conda-forge mamba
+
+    mamba create -n <desired_name> -f Annota_environment.yaml
+    ```
+
 
 3. Activate environment
 ```bash
     conda activate <desired_name>
 ```
 
+4. [**Download databases**](#download-databases)
+
+
+5. Configure [**InterProScan**](#interproscan--tested-databases) and `AnnotaPipeline.yaml`
+
 ### **Setup AUGUSTUS species for personalized predictions**
+
 
 1. Locate AnnotaPipeline environment home
 ```bash
@@ -268,7 +288,7 @@ Before executing, please modify the necessary fields in the configuration file (
   * Comet MS/MS (available at <https://github.com/UWPR/Comet/releases/latest>)
     * Requires Percolator (available at <https://github.com/percolator/percolator>)
 
-5. Download databases
+5. [**Download databases**](#download-databases)
 
 6. Configure `AnnotaPipeline.yaml`
 

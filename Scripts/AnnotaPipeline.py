@@ -942,7 +942,9 @@ logger.info("Parsing information from INTERPROSCAN, HMMSCAN and RPSBLAST")
 subprocess.run([
     str(python_exe),
     str(pipeline_pwd / "funcannotation_parser.py"),
-    "-interpro",
+    "-ipr_annot",
+    str(AnnotaBasename + "_interproscan_annotated_output.gff3"),
+    "-ipr_hyp",
     str(AnnotaBasename + "_interproscan_hypothetical_output.gff3"),
     "-hmm",
     str(AnnotaBasename + "_hmmscan_output.txt"),

@@ -23,11 +23,19 @@ optionalNamed = parser.add_argument_group('optional arguments')
 # mandatory arguments
 #   type (default): string
 requiredNamed.add_argument(
-    '-interpro', '--inter', dest='interpro',
-    metavar='[InterProScan_Output.gff3]',
+    '-ipr_annot', dest='ipr_annot',
+    metavar='[InterProScan_Output_annotated.gff3]',
     help='InterProScan_Input',
     required=True
 )
+
+requiredNamed.add_argument(
+    '-ipr_hyp', dest='ipr_hyp',
+    metavar='[InterProScan_Output_hyphotetical.gff3]',
+    help='InterProScan_Input',
+    required=True
+)
+
 
 requiredNamed.add_argument(
     '-hmm', '--hmmscan', dest='hmm',
@@ -112,7 +120,7 @@ def parser_interproscan(arq_entrada, arq_ipr, arq_saida):
     entrada = open(str(arq_entrada), "r").read().split("##FASTA")  # SPLITTING THE GFF3 FILE IN TWO CATEGORIES
     interp = entrada[0].split("##sequence-region")  # WE'LL BE USING ONLY THE FIRST PART OF THE GFF3 OUTPUT FILE
     del interp[0]
-    ipr = open(str(arq_ipr), "w")
+    ipr = open(str(arq_ipr), "a")
     output = open(str(arq_saida), "a")
 
     db_list = ["Coils", "Gene3D", "MobiDBLite"]
@@ -210,12 +218,9 @@ def sort_arq(arq_entrada, arq_saida):
         ordered.write(str(line))
     ordered.close()
 
-# ----------- Start -------------
+# ------------ Hipothetical ---------------------------------------
 # Parse interproscan file
-parser_interproscan(args.interpro, f"InterProScan_Out{args.basename}.txt", f"Temp_{args.basename}.txt")
-# Sort and include header
-sort_arq(f"InterProScan_Out{args.basename}.txt", f"InterProScan_Out_{args.basename}.txt")
-os.remove(f"InterProScan_Out{args.basename}.txt")
+parser_interproscan(args.ipr_hyp, f"InterProScan_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
 logger.info("InterProScan parser done")
 # Parse HMMer file
 pfam_format(args.hmm, f"Hmmscan_Out_{args.basename}.txt")
@@ -227,7 +232,11 @@ parser_rpsblast(args.rpsblast, f"RPSblast_Out_{args.basename}.txt", f"Temp_{args
 logger.info("RPSblast parser done")
 # Group and sort 
 sort_arq(f"Temp_{args.basename}.txt", f"{args.basename}_Grouped_Hypothetical_Information.txt")
-logger.info("Sorting querys in files")
+logger.info("Sorting queryes in files")
+
+# ------------ Annotated -----------------------------------------
+# Save annotated proteins in Interpro_Out
+parser_interproscan(args.ipr_annot, f"InterProScan_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
 # Cleaning the house
 os.system(f"rm Temp_{args.basename}.txt")
 logger.info("Temporary file removed")
