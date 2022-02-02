@@ -240,7 +240,7 @@ Before executing, please modify the necessary fields in the configuration file (
     
     conda install -n base -c conda-forge mamba
 
-    mamba create -n <desired_name> -f Annota_environment.yaml
+    mamba env create -n <desired_name> -f Annota_environment.yaml
     ```
 
 
