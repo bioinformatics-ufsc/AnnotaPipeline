@@ -162,9 +162,27 @@ This output quantifies (all spectometry outputs):
 `summary_parser.py` integrates all outputs (in a single file summarizing all annotations found for each protein) from:
   * Prediction and similarity analysis
   * Functional annotation
-  * Transcriptomic
+  * Transcriptomic (if used)
   * Peptide identification (if used)
 
+# **InterProScan - Tested Databaeses**
+
+* CDD
+* Gene3D
+* Hamap
+* Panther
+* Pfam
+* Pirsf
+* Pirsr
+* Prints
+* PrositePatterns
+* PrositeProfiles
+* Sfld
+* Smart (unlicenced)
+* Superfamily
+* Tigrfam
+* Coils
+* MobiDBLite
 
 # **How to setup**
 
