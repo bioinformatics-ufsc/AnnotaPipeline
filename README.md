@@ -13,7 +13,7 @@
   - [**Last things last**](#last-things-last)
 - [**How to setup**](#how-to-setup)
   - [**Download databases**](#download-databases)
-  - [**InterProScan &ndash; Tested databases**](#interproscan--tested-databases)
+  - [**InterProScan Tested databases**](#interproscan-tested-databases)
   - [**Using conda**](#using-conda)
     - [**Setup AUGUSTUS species for personalized predictions**](#setup-augustus-species-for-personalized-predictions)
   - [**Manual install**](#manual-install)
@@ -202,7 +202,7 @@ Before executing, please modify the necessary fields in the configuration file (
   * NR Database | NCBI (available at <https://ftp.ncbi.nlm.nih.gov/blast/db>)
   > **TIP:** You can use a subset of NR Database
 
-## **InterProScan &ndash; Tested databases**
+## **InterProScan: Tested databases**
 > WARNING: Installation through conda/mamba requires manual download and configuration of InterProScan databases
 * CDD
 * Gene3D
@@ -223,7 +223,7 @@ Before executing, please modify the necessary fields in the configuration file (
 
 ## **Using conda**
 
-1. Download `conda_environment.yaml` file
+1. Download `Annota_environment.yaml` file
 
 
 2. Create environment 
@@ -252,7 +252,7 @@ Before executing, please modify the necessary fields in the configuration file (
 4. [**Download databases**](#download-databases)
 
 
-5. Configure [**InterProScan**](#interproscan--tested-databases) and `AnnotaPipeline.yaml`
+5. Configure [**InterProScan databases**](#interproscan-tested-databases) and `AnnotaPipeline.yaml`
 
 ### **Setup AUGUSTUS species for personalized predictions**
 
@@ -279,14 +279,14 @@ Before executing, please modify the necessary fields in the configuration file (
 2. Run `setup.py` (Scripts will be available at `$PATH`)
 
 3. Install required softwares:
-  * BLAST+ and RPS-BLAST (available at <https://ftp.ncbi.nih.gov/blast/executables/blast+/LATEST>)
-  * InterProScan (available at <https://interproscan-docs.readthedocs.io/en/latest/HowToDownload.html>)
-  * HMMER (available at <http://hmmer.org/download.html>)
+    * BLAST+ and RPS-BLAST (available at <https://ftp.ncbi.nih.gov/blast/executables/blast+/LATEST>)
+    * InterProScan (available at <https://interproscan-docs.readthedocs.io/en/latest/HowToDownload.html>)
+    * HMMER (available at <http://hmmer.org/download.html>)
 
 4. Optional softwares
-  * Kallisto (available at <https://pachterlab.github.io/kallisto/download.html>)
-  * Comet MS/MS (available at <https://github.com/UWPR/Comet/releases/latest>)
-    * Requires Percolator (available at <https://github.com/percolator/percolator>)
+    * Kallisto (available at <https://pachterlab.github.io/kallisto/download.html>)
+    * Comet MS/MS (available at <https://github.com/UWPR/Comet/releases/latest>)
+      * Requires Percolator (available at <https://github.com/percolator/percolator>)
 
 5. [**Download databases**](#download-databases)
 
@@ -301,22 +301,23 @@ We recommend using our example configuration file as a guide (`config_example.ya
 # **How to run**
 
 `AnnotaPipeline.py` can run with three different options:
-  * Protein file as input
-  * Genome file as input
-  * Protein and GFF file as input
+  * [**Protein file as input**](#protein-file-as-input)
+  * [**Genome file as input**](#genome-file-as-input)
+  * [**Protein and GFF files as input**](#protein-and-gff-files-as-input)
 
 ## **Protein file as input**
 ```bash
-AnnotaPipeline.py -p protein_sequences.fasta
+AnnotaPipeline.py -c AnnotaPipeline.yaml -p protein_sequences.fasta
 ```
 
 This is the simplest execution of AnnotaPipeline.
 
-The annotation process will begin with the submitted `protein_sequences.fasta` and a simplified version of `BASENAME_Annotated_GFF.gff` file at the end.
+The annotation process will begin with the submitted `protein_sequences.fasta` and will contain a simplified version of header.
 
+Also, this way to run **will not produce** and annotated GFF output.
 ## **Genome file as input**
 ```bash
-AnnotaPipeline.py -s genomic_data.fasta
+AnnotaPipeline.py -c AnnotaPipeline.yaml -s genomic_data.fasta
 ```
 
 This is the complete execution of AnnotaPipeline.
@@ -325,27 +326,28 @@ It will execute gene/protein prediction based on `genomic_data.fasta` utilizing 
 
 Given the prediction process, it is important to use a trained AUGUSTUS model for your species before executing AnnotaPipeline.
 
-## **Protein and GFF file as input**
+## **Protein and GFF files as input**
 ```bash
-AnnotaPipeline.py -p protein_sequences.fasta -gff gff_file.gff
+AnnotaPipeline.py -c AnnotaPipeline.yaml -p protein_sequences.fasta -gff gff_file.gff
 ```
 
-You can execute AnnotaPipeline &ndash; with this command line &ndash; if you already have a protein sequence file and a GFF3 file from previous AUGUSTUS predictions. The submitted `gff_file.gff` needs to be in GFF3 format.
+You can execute AnnotaPipeline with this command line if you already have `.aa` and `.gff` files from previous **AUGUSTUS predictions**. The submitted `.gff` needs to be in GFF3 format.
 
-The annotation process is the same as the first option, the difference being you will also have an annotated GFF3 output.
+The annotation process is the same as the genomic data input, the difference being you will skip gene prediction and start with similarity analysis.
 
 
 # **Output**
-Depending on which option you decided to execute AnnotaPipeline, it will output three files (along with many others in their respective folders):
+AnnotaPipeline, it will output five main files (along with many others in their respective folders):
   * `All_Annotated_Products.txt` contains all unique sequence identifiers and their respective annotations (with functional annotations &ndash; when present).
   * ` Annota_BASENAME.fasta` contains all sequences and their annotations (with functional annotations &ndash; when present) in FASTA format.
   * `BASENAME_Annotated_GFF.gff` contains all sequences and their annotations (with functional annotations &ndash; when present) in GFF3 format.
+    > This file is absent in [**Protein file as input**](#protein-file-as-input) run mode
   * `AnnotaPipeline_BASENAME_transcripts.fasta` contains nucleotide sequences for predicted proteins, with the same features present in the protein file.
   * `AnnotaPipeline_BASENAME_Summary.tsv` summarizes hits for each protein in similarity, functional, transcriptomics (if used) and proteomics analysis (if used).
 
 Raw outputs are listed inside output folders:
   * `1_GenePrediction_BASENAME`           &ndash; AUGUSTUS files
-  * `2_SimilarityAnalysis_BASENAME`       &ndash; BLAST+ analysis
+  * `2_SimilarityAnalysis_BASENAME`       &ndash; BLASTP analysis
   * `3_FunctionalAnnotation_BASENAME`     &ndash; InterProScan/HMMER/RPS-BLAST analysis
   * `4_TranscriptQuantification_BASENAME` &ndash; Kallisto analysis
   * `5_PeptideIdentification_BASENAME`    &ndash; Comet MS/MS and Percolator analysis
