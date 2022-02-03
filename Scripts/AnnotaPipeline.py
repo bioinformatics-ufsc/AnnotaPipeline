@@ -722,7 +722,7 @@ logger.info("IT'S DANGEROUS TO GO ALONE! TAKE THIS.")
 
 logger = logging.getLogger('AnnotaPipeline')
 logger.info("---------------------------------------------------------------")
-logger.info("Checking parameters in AnnotaPipelin.yaml file")
+logger.info("Checking parameters in AnnotaPipeline.yaml file")
 check_parameters(config)
 
 # --- PREPARING SOME VARIABLES -------------------------------------------------
