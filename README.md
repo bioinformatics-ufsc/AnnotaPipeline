@@ -132,6 +132,7 @@ Analysis starts with `kallisto index` and is followed by `kallisto quant`:
 
 ## **5. Peptide identification (Optional)**
 > **WARNING:** Faild runs for Comet MS/MS don't crash AnnotaPipeline, so check AnnotaPipeline_Log.log to assure all spectrometry files produced outputs
+> **WARNING2:** Before run, check if your comet.params file is compatible with installed comet version 
 
 Proteomics analysis uses Comet MS/MS with `comet.params` config given by user. In this file, our script overwrite values for following parameters:
   * `decoy_search = 1`
