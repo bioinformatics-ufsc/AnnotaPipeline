@@ -23,6 +23,7 @@
   - [**Genome file as input**](#genome-file-as-input)
   - [**Protein and GFF file as input**](#protein-and-gff-file-as-input)
 - [**Output**](#output)
+- [**Citation**](#citation)
 
 
 # **About AnnotaPipeline**
@@ -355,3 +356,22 @@ Raw outputs are listed inside output folders:
   * `5_PeptideIdentification_BASENAME`    &ndash; Comet MS/MS and Percolator analysis
 
 The output folders and files will be located in the same folder you executed the pipeline.
+
+
+
+# **Citation**
+
+If you use AnnotPipeline in your research, please cite the following papers:
+
+* AUGUSTUS: [Stanke M. et al., 2003](https://doi.org/10.1093/bioinformatics/btg1080)
+* BLAST+: [Camacho C. et al., 2008](https://doi.org/10.1186/1471-2105-10-421) 
+* HMMER: follow [HMMER user guide](http://eddylab.org/software/hmmer/Userguide.pdf)
+* InterProScan: [Jones et al., 2014](https://doi.org/10.1093/bioinformatics/btu031)
+
+If you used Transcriptomics module, please also cite:
+
+* Kallisto: [Bray, N. L. et al., 2016](https://doi.org/10.1038/nbt.3519)
+
+If you used Proteomics module, please also cite:
+* COMET MS/MS: [Eng, J. K., et al., 2012](https://doi.org/10.1002/pmic.201200439)
+* percolator: [The, M. et al., 2016](https://doi.org/10.1007/s13361-016-1460-7)
