@@ -361,7 +361,7 @@ The output folders and files will be located in the same folder you executed the
 
 # **Citation**
 
-If you use AnnotPipeline in your research, please cite the following papers:
+If you used AnnotPipeline in your research, please cite the following papers:
 
 * AUGUSTUS: [Stanke M. et al., 2003](https://doi.org/10.1093/bioinformatics/btg1080)
 * BLAST+: [Camacho C. et al., 2008](https://doi.org/10.1186/1471-2105-10-421) 
