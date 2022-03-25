@@ -565,6 +565,7 @@ if args.nr is not None:
     parser_nr(args.basename, odb_out_name, args.id, args.pos, args.cov)
     logger.info("Parser NR done")
     # -------------No hit-----------
+    logger.info("Identifying proteins with no hits in Swissprot and NR databases")
     no_hit(str(args.basename), odb_out_name)
 
 elif args.trembl is not None:
@@ -578,6 +579,7 @@ elif args.trembl is not None:
     parser_trembl(args.basename, odb_out_name, args.id, args.pos, args.cov)
     logger.info("Parser TrEMBL done")
     # ----------No hit--------------
+    logger.info("Identifying proteins with no hits in Swissprot and TrEMBL databases")
     no_hit(str(args.basename), odb_out_name)
 
 # EupathDB
@@ -592,7 +594,9 @@ elif args.specificdb is not None:
     parser_trytrip(args.basename, odb_out_name, args.id, args.pos, args.cov)
     logger.info("Parser specificDB done")
     # ----------No hit--------------
+    logger.info("Identifying proteins with no hits in Swissprot and SpecificDB databases")
     no_hit(str(args.basename), odb_out_name)
 else:
     logger.error("Can't find any secondary database")
 # ------------------------------
+logger.info("Blastp_parser is Finished")
