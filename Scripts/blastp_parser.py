@@ -405,7 +405,12 @@ def parser_nr(basename, result_blast, identidade, positividade, cov):
         title = query.split("\t")
         description = title[8]
         # search for description without name in []
-        desc = re.search(r'\s(.*?)\s\[.*', description).group(1)
+        # Try to remove species from annotation
+        try:
+            desc = re.search(r'\s(.*?)\s\[.*', description).group(1)
+        # if regex fail, catch annotation
+        except AttributeError:
+            desc = description.replace("\n","")
         new_id = title[0]
         # defining which file will receive each HSP depending on the counter number
         #   the script will write each HSP on its corresponding .txt file
