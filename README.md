@@ -51,7 +51,8 @@ Run AUGUSTUS for gene prediction, using these required arguments:
   * cds
 
 You can also use these optional arguments:
-| Or add augustus argument below `augustus-optional:` (as described in example config file)  
+> Or add augustus argument below `augustus-optional:` (as described in example config file)
+
   * hintsfile
   * extrinsicCfgFile
   * UTR
