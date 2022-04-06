@@ -48,8 +48,8 @@ setup(
              ],
     include_package_data=True,
     python_requires=">=3.6.9",
-    url='https://github.com/GuiMaia/AnnotaPipeline.git',
-    download_url='https://github.com/GuiMaia/AnnotaPipeline/archive/refs/heads/conda_env.zip',
+    url="https://github.com/bioinformatics-ufsc/AnnotaPipeline.git",
+    download_url="https://github.com/bioinformatics-ufsc/AnnotaPipeline/archive/refs/heads/v1.0.zip",
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",
