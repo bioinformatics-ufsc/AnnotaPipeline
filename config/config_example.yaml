@@ -20,8 +20,8 @@ pipeline:
   python: /usr/bin/python3  # [path] full path to python interpreter (>=3.6)
   perl: /usr/bin/perl       # [path] full path to perl interpreter (required for augustus)
   threads: 8                # [int] number of threads to run all programs (default: 8)
-  organism: Trypanosoma rangeli SC58
-  basename: TrangeliSC58
+  organism: Arabidopsis thaliana
+  basename: Athaliana
   keywords:
     - fragment
     - hypothetical
@@ -34,8 +34,8 @@ pipeline:
 
 databases:
   swissprot-db: /bases_externas/SwissProt_11_2019/uniprot_sprot.fasta
-  secondary-db: /bases_externas/TriTrypDB_v46_11_2019/TriTrypDB_v46_11_2019_Prot.fasta
-  secondary-format: eupathdb
+  secondary-db: /bases_externas/NR_Subset_Athaliana_Prot.fasta
+  secondary-format: NR
   cdd-db: /bases_externas/interproscan-5.52-86.0/data/cdd/3.18/db/Cdd_NCBI
   pfam: /bases_externas/interproscan-5.52-86.0/data/pfam/33.1/pfam_a.hmm
 
@@ -46,7 +46,7 @@ augustus:
                                 # and we will find augustus path
   strand: both                  # [ both / forward / backward ]
   genemodel: intronless         # [ partial / intronless / complete / atleastone / exactlyone ]
-  species: trypanosoma_rangeli  # based on species within /path/to/augustus/config/species
+  species: arabidopsis thaliana  # based on species within /path/to/augustus/config/species
   protein: on                   # [ on / off ]
   introns: on                   # [ on / off ]
   start: on                     # [ on / off ]
@@ -127,8 +127,8 @@ kallisto:
   #     - /path/to/R1.fastq
   #     - /path/to/R2.fastq
   rna-seq:
-    - /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR1_05aug2021.fastq
-    - /bruto/DadosBioinfo/Dados_GuiMaia/TrangeliSC58/Transcriptome/Trangeli_RNAdataR2_05aug2021.fastq              
+    - /bruto/Transcriptome/Athaliana_RNAdataR1_05aug2021.fastq
+    - /bruto/Transcriptome/Athaliana_RNAdataR2_05aug2021.fastq              
   l:               # [float] estimated average fragment length
   s:               # [float] estimated standard deviation of fragment length
 # tpm threshold to parse kallisto output [ mean / median / value ] (choose only one)
@@ -147,7 +147,7 @@ kallisto:
 proteomics:
   comet-exe: comet            # [path-to-file] /full/path/to/comet
   comet-params: /home/teste/comet.params    # [path-to-file] /full/path/to/comet.params
-  comet-spectrometry: /home/TrangeliSC58/Proteome/   # [path] /full/path/to/spectrometryfiles
+  comet-spectrometry: /home/Athaliana/Proteome/   # [path] /full/path/to/spectrometryfiles
   comet-ext: mzXML            # [extension] mass spectrometry file extension
                               # WARNING:    provide only one type
                               # FORMATS:    mzXML, mzML, Thermo raw, mgf, and ms2 variants (cms2, bms2, ms2)
