@@ -1,5 +1,6 @@
 [![Quote](https://img.shields.io/badge/Quote-May%20the%20Dark%20shine%20your%20way%20(Darkdiver%20Grandahl)-blueviolet)](https://g.co/kgs/bMJLfj)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Anaconda-Server Badge](https://anaconda.org/bioinfo-ufsc/annotapipeline/badges/version.svg)](https://anaconda.org/bioinfo-ufsc/annotapipeline)
 
 <font size=16>**AnnotaPipeline**</font>
 
