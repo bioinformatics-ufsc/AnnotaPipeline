@@ -278,10 +278,13 @@ Before executing, please modify the necessary fields in the configuration file (
 
 1. Clone repository
 ```bash
-    git clone https://github.com/GuiMaia/AnnotaPipeline.git
+   git clone https://github.com/bioinformatics-ufsc/AnnotaPipeline.git
 ```
 
 2. Run `setup.py` (Scripts will be available at `$PATH`)
+```bash
+   python3 setup.py
+```
 
 3. Install required softwares:
     * BLAST+ and RPS-BLAST (available at <https://ftp.ncbi.nih.gov/blast/executables/blast+/LATEST>)
