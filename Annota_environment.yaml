@@ -16,4 +16,4 @@ dependencies:
   - bioconda::augustus>=3.3.3
   - pip:
     - PyYAML==6.0
-    - git+https://github.com/GuiMaia/AnnotaPipeline.git
+    - git+https://github.com/bioinformatics-ufsc/AnnotaPipeline.git
