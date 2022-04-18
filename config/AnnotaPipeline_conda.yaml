@@ -112,12 +112,13 @@ hmmer:
 # KALLISTO/RNA-seq -------------------------------------------------------------
 
 # kallisto is OPTIONAL
+#   add kallisto to "kallisto-exe" to run this analysis
 # WARNINGS:
 #   flags -l and -s are required for single-end data
 #     if one file was given in rna-seq, provide a value for these parameters
 #   do not fill if you don't want to use these flags with paired-end data
 kallisto:
-  kallisto-exe: kallisto  # [path] /full/path/to/kallisto
+  kallisto-exe:  # [path] kallisto
   # FILE(s): path to rna-seq reads
   #          2 files for paired-end data OR 1 file for single-end data
   # EXAMPLE:
@@ -141,8 +142,9 @@ kallisto:
 # COMET/PERCOLATOR -------------------------------------------------------------
 
 # comet is OPTIONAL but requires percolator
-proteomics: comet
-  comet-exe:               # [path] /full/path/to/comet
+#   add comet to "comet-exe" to run this analysis
+proteomics:
+  comet-exe:               # [path] comet
   comet-params:            # [path] full path to comet.params
   comet-spectrometry:      # [path] full path to directory containing mass spectrometry files
   comet-ext:               # [extension] mass spectrometry file extension
