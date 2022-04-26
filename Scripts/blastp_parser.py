@@ -182,7 +182,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
     datefmt='%d/%m/%Y %H:%M:%S',
-    filename="Blast.log",
+    filename="SimilarityAnalysis.log",
     filemode='a'
 )
 
@@ -555,8 +555,9 @@ swiss_run()
 process_swiss(args.basename, args.seq, swiss_out, args.id, args.pos, args.cov)
 
 # Secondary database
+odb_out_name = f"{str(args.basename)}_BLASTp_AAvsSpecifiedDB.outfmt6"
 if args.nr is not None:
-    odb_out_name = f"{str(args.basename)}_BLASTp_AAvsNRDB.outfmt6"
+    #odb_out_name = f"{str(args.basename)}_BLASTp_AAvsNRDB.outfmt6"
     logger.info("Running BLAST against NR")
     # Use the file above without sequences already annotated by swissprot
     blast(f"{args.basename}_BLASTp_AA_SwissProted.fasta", odb_out_name, args.nr, args.hsps, args.evalue)
@@ -569,7 +570,7 @@ if args.nr is not None:
     no_hit(str(args.basename), odb_out_name)
 
 elif args.trembl is not None:
-    odb_out_name = f"{str(args.basename)}_BLASTp_AAvsTrembl.outfmt6"
+    #odb_out_name = f"{str(args.basename)}_BLASTp_AAvsTrembl.outfmt6"
     odb = args.trembl
     logger.info("Running BLAST against TrEMBL")
     # Use the file above without sequences already annotated by swissprot
@@ -584,7 +585,7 @@ elif args.trembl is not None:
 
 # EupathDB
 elif args.specificdb is not None:
-    odb_out_name = f"{str(args.basename)}_BLASTp_AAvsSpecifiedDB.outfmt6"
+    #odb_out_name = f"{str(args.basename)}_BLASTp_AAvsSpecifiedDB.outfmt6"
     odb = args.specificdb
     logger.info("Running BLAST against specificDB")
     # Use the file above without sequences already annotated by swissprot
