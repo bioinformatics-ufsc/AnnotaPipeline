@@ -220,24 +220,24 @@ def sort_arq(arq_entrada, arq_saida):
 
 # ------------ Hipothetical ---------------------------------------
 # Parse interproscan file
-parser_interproscan(args.ipr_hyp, f"InterProScan_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
+parser_interproscan(args.ipr_hyp, f"InterProScan_Out_{args.basename}.tsv", f"Temp_{args.basename}.tsv")
 logger.info("InterProScan parser done")
 # Parse HMMer file
-pfam_format(args.hmm, f"Hmmscan_Out_{args.basename}.txt")
+pfam_format(args.hmm, f"Hmmscan_Out_{args.basename}.tsv")
 logger.info("Hmmscan format done")
-parser_pfam(f"Hmmscan_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
+parser_pfam(f"Hmmscan_Out_{args.basename}.tsv", f"Temp_{args.basename}.tsv")
 logger.info("Hmmscan parser done")
 # Parse RPSblast file
-parser_rpsblast(args.rpsblast, f"RPSblast_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
+parser_rpsblast(args.rpsblast, f"RPSblast_Out_{args.basename}.tsv", f"Temp_{args.basename}.tsv")
 logger.info("RPSblast parser done")
 # Group and sort 
-sort_arq(f"Temp_{args.basename}.txt", f"{args.basename}_Grouped_Hypothetical_Information.txt")
+sort_arq(f"Temp_{args.basename}.tsv", f"{args.basename}_Grouped_Hypothetical_Information.tsv")
 logger.info("Sorting queryes in files")
 
 # ------------ Annotated -----------------------------------------
 # Save annotated proteins in Interpro_Out
-parser_interproscan(args.ipr_annot, f"InterProScan_Out_{args.basename}.txt", f"Temp_{args.basename}.txt")
+parser_interproscan(args.ipr_annot, f"InterProScan_Out_{args.basename}.tsv", f"Temp_{args.basename}.tsv")
 # Cleaning the house
-os.system(f"rm Temp_{args.basename}.txt")
+os.system(f"rm Temp_{args.basename}.tsv")
 logger.info("Temporary file removed")
 logger.info("Functional Annotation step is completed")
