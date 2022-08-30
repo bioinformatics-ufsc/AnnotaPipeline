@@ -56,7 +56,6 @@ optionalNamed.add_argument(
 # arguments saved here
 args = parser.parse_args()
 
-gff = open(str(args.gff), "r").read().split("# start gene ")
 annotations = open(args.anot, "r")
 anots = []
 ids = []
@@ -75,6 +74,8 @@ while True:
 # Build dictionary with id and anotation
 dict_anot = dict(zip(ids, anots))
 del ids, anots
+
+gff = open(str(args.gff), "r").read().split("# start gene ")
 header_gff = gff[0]
 del gff[0]
 
@@ -96,7 +97,10 @@ for gene in gff:
                         infos.append(stat)
                 else:
                         stat_split = stat.split("\t")
-                        id_gene = stat_split[-1]
+                        #id_gene = stat_split[-1]
+                        # use regex to remove ID= and ;PARENT from annotation ID in gff AUGUSTUS output
+                        id_gene =  re.sub(r';.*', '', stat_split[-1])
+                        id_gene =  re.sub(r'.*=', '', id_gene)
                         count_transcript = count
                         transcript_line = "\t".join(stat_split[0:-1])
                 if stat is gene_stats[-1]:
