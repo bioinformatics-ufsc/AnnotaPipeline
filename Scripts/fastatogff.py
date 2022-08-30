@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
+import re
 
 # --- PARSER ARGUMENTS ---------------------------------------------------------
 
@@ -96,6 +97,7 @@ for gene in gff:
                 if "\ttranscript\t" not in stat:
                         infos.append(stat)
                 else:
+                        # SPLIT STATS TO CATCH ID
                         stat_split = stat.split("\t")
                         #id_gene = stat_split[-1]
                         # use regex to remove ID= and ;PARENT from annotation ID in gff AUGUSTUS output
