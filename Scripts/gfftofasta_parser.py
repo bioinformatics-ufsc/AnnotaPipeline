@@ -2,6 +2,7 @@
 
 import argparse
 import warnings
+import re
 
 parser = argparse.ArgumentParser(
     add_help=False,  # removes original [--help]
@@ -79,11 +80,12 @@ gff = open(str(args.gff), "r").read().split("# start gene ")
 del gff[0]
 
 for gene in gff:
-    # Get second line - transcript atributes
     gene = gene.split("\n")
     gene_features = gene[2].split()
-    # Save all info into a dictionary
-    trans[gene_features[-1]] = {"scaff": str(gene_features[0]), "start": str(gene_features[3]),
+    # use regex to remove ID= and ;PARENT from annotation ID in gff AUGUSTUS output
+    id_store =  re.sub(r';.*', '', gene_features[-1])
+    id_store =  re.sub(r'.*=', '', id_store )
+    trans[id_store] = {"scaff": str(gene_features[0]), "start": str(gene_features[3]),
                                 "end": str(gene_features[4]), "strand": str(gene_features[6])}
 
 # ============================= Extract annotations ==========================
