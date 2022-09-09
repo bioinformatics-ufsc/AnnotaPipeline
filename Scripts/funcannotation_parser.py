@@ -1,4 +1,4 @@
-# _*_ coding: utf-8 _*_
+#!/usr/bin/python3
 
 import re
 import logging
