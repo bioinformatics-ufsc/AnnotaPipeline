@@ -35,9 +35,17 @@ pipeline:
 databases:
   swissprot-db: /full/path/to/swissprot.db
   secondary-db:       # [path] full path to secondary database [accepted any of eupathdb], nrdb or trembl
-  secondary-format:   # file formatted as [ eupathdb / nrdb / trembldb ]
-  cdd-db:             # [path] full path to cdd database
-  pfam:               # [path] full path to pfam hmm profile
+  secondary-format:   # file formatted as [ eupathdb / nrdb / trembldb / custom]
+  # For custom DB ONLY
+  # Example:
+  #      Header in customdb is >id == organism == description == strain
+  #      customsep will be "=="
+  #      customcolumn will be "2" (starts to count by 0)
+  # --------- If custom was set to secondary-format, customsep and customcolumn will be mandatory
+  customsep: "|"      # [string] Field separator in header of fasta sequences that are in customDB
+  customcolumn: 8     # [int]    Column field that contains annotation
+  cdd-db:             # [path]   full path to cdd database
+  pfam:               # [path]   full path to pfam hmm profile
 
 # AUGUSTUS ---------------------------------------------------------------------
 

@@ -143,6 +143,20 @@ optionalNamed.add_argument(
     help='It\'s going to be legen - wait for it - dary!'
 )
 
+optionalNamed.add_argument(
+    '-customsep', dest='customsep',
+    metavar='\\t \\s |', default="|",
+    help=('Custom separator for specifiedDB when is not a pattern of NR/Trembl/Eupathdb\
+        Default is Eupathdb pattern')
+)
+
+optionalNamed.add_argument(
+    '-customcolumn', dest='customcolumn',
+    metavar='', default=5, type=int,
+    help=('Custom column that contains protein annotation for specifiedDB when is not a pattern of NR/Trembl/Eupathdb\
+         Default is Eupathdb pattern')
+)
+
 # arguments saved here
 args = parser.parse_args()
 
@@ -194,7 +208,6 @@ sys.stderr = sl
 
 '''---SOFTWARE SETTINGS------------------------------------------------------'''
 
-
 class hit:
 
     def __init__(self, desc, bitscore):
@@ -227,7 +240,7 @@ def temporary_query(arq):
         del temp[0]
         temp.insert(0, "QueryTemp")
         arq.append("\t".join(temp))
-    # Index error ocours when Interproscan returns no results, as consequence, arq is empty, and split empty file is not allowed
+        # Index error ocours when Interproscan returns no results, as consequence, arq is empty, and split empty file is not allowed
     except IndexError:
         arq.append("\t".join("QueryTemp"))
 
@@ -255,167 +268,74 @@ def check_query(full_line_list, coverage, word_list, id, pos, list_classificatio
 #   to separate each HSP found in the BLAST output_file.txt:
 keyword_list = args.keywords.split(",")
 
-
-def parser_trembl(basename, result_blast, identidade, positividade, cov):
-    ## Parser start
-
-    swiss = open(str(result_blast), "r").read().splitlines()
-
-    hyp = open(f"{str(basename)}_hypothetical_products.txt", "w")
-    nhyp = open(f"{str(basename)}_annotated_products.txt", "a")
-    all_anot = open(f"{str(basename)}_SpecifiedDB_annotations.txt", "w")
-    # temporary adding a line
-    #   so it accounts for the last query found by the BLAST analysis
-    temporary_query(swiss)
-
-    # creating the lists and counter that will be used
-    #   to make sure the script goes through each HSP in every query
-    # it's important that these lists are set back to NULL
-    #   and the counter is set to zero before we start
-    old_id = swiss[0].split("\t") 
-    old_id = old_id[0]
-    annots = []
-    classification = []
-    desc_list = []
-
-    for query in swiss:
-        line_split = query.split("\t")
-        title = line_split[-1]  # get description
-        title_split = title.split(" ", 1)[-1]  # get last part of description
-        desc = title_split.split("OS=")[0].strip().rstrip()  # get only description
-        new_id = line_split[0]
-        # defining which file will receive each HSP depending on the counter number
-        #   the script will write each HSP on its corresponding .txt file
-        # IMPORTANT: the first time this loop runs it will add an empty line ("\n")
-        #            to the first line of the hyp_file.txt
-        if old_id != new_id:
-            if "non_hypothetical" in ' '.join(classification):
-                nhyp.write(f"{str(old_id)}\t")
-                # Sort annotations by bitscore
-                annots.sort()
-                # Get best identity, first position of array
-                nhyp.write(f"{str(annots[0].desc)}\n")
-
-                all_anot.write(f"{old_id}\t{len(desc_list)} Annotation(s): [{';'.join(desc_list)}]\n")
-            else:
-                hyp.write(f"{str(old_id)}\n")
-            # this just resets the count back to zero, before it starts again
-            classification.clear()
-            annots.clear()
-            desc_list.clear()
-            # check first query of new ID
-            check_query(line_split, cov, keyword_list, identidade, positividade, 
-                        classification, annots, desc_list, desc)
-        else:
-            check_query(line_split, cov, keyword_list, identidade, positividade, 
-                        classification, annots, desc_list, desc)
-        # saving the information that will be written in the .txt files
-        old_id = new_id
-
-    hyp.close()
-    nhyp.close()
-    all_anot.close()
+def define_db():
+    # check dbtype to get pattern correctly
+    if args.nr is not None:
+        dbtype = "nr"
+        secondary_db = args.nr
+    elif args.trembl is not None:
+        dbtype = "trembl"
+        secondary_db = args.trembl
+    elif args.specificdb is not None:
+        dbtype = "specificdb"
+        secondary_db = args.specificdb
+    else:
+        logger.error("Can't find any secondary database")
+        sys.exit(1)
+    return dbtype, secondary_db
 
 
-def parser_trytrip(basename, result_blast, identidade, positividade, cov):
-    ## Parser start
-
-    swiss = open(str(result_blast), "r").read().splitlines()
-
-    hyp = open(f"{str(basename)}_hypothetical_products.txt", "w")
-    nhyp = open(f"{str(basename)}_annotated_products.txt", "a")
-    all_anot = open(f"{str(basename)}_SpecifiedDB_annotations.txt", "w")
-    # temporary adding a line
-    #   so it accounts for the last query found by the BLAST analysis
-    temporary_query(swiss)
-
-    # creating the lists and counter that will be used
-    #   to make sure the script goes through each HSP in every query
-    # it's important that these lists are set back to NULL
-    #   and the counter is set to zero before we start
-    old_id = swiss[0].split("\t")  # recebe a primeira query para começar a contagem
-    old_id = old_id[0]
-    annots = []
-    nhyp_list = []
-    classification = []
-    desc_list = []
-
-    for query in swiss:
+# Get patten according to database
+def get_pattern(query, dbtype):
+    if dbtype == "nr":
         # split line by \t > separate columns > each line becomes a list
-        title = query.split("\t")
-        description = title[8].split("|")
-        desc = description[5].replace("transcript_product=", "")
-        new_id = title[0]
-        # defining which file will receive each HSP depending on the counter number
-        #   the script will write each HSP on its corresponding .txt file
-        # IMPORTANT: the first time this loop runs it will add an empty line ("\n")
-        #            to the first line of the hyp_file.txt
-        if old_id != new_id:
-            if "non_hypothetical" in ' '.join(classification):
-                nhyp.write(f"{str(old_id)}\t")
-                # Sort annotations by bitscore
-                annots.sort()
-                # Get best identity, first position of array
-                nhyp.write(f"{str(annots[0].desc)}\n")
-                all_anot.write(f"{old_id}\t{len(desc_list)} Annotation(s): [{';'.join(desc_list)}]")
-                all_anot.write(str('\n'))
-            else:
-                hyp.write(f"{str(old_id)}\n")
-            # this just resets the count back to zero, before it starts again
-            classification.clear()
-            annots.clear()
-            desc_list.clear()
-            # check first query of new ID
-            check_query(title, cov, keyword_list, identidade, positividade, 
-                        classification, annots, desc_list, desc)
-        else:
-            check_query(title, cov, keyword_list, identidade, positividade, 
-                        classification, annots, desc_list, desc)
-        # saving the information that will be written in the .txt files
-        old_id = new_id
-
-    hyp.close()
-    nhyp.close()
-    all_anot.close()
-
-
-'''Parser nr, the same thing, but different'''
-
-
-def parser_nr(basename, result_blast, identidade, positividade, cov):
-    # Parser start
-
-    nr = open(str(result_blast), "r").read().splitlines()
-
-    hyp = open(f"{str(basename)}_hypothetical_products.txt", "w")
-    nhyp = open(f"{str(basename)}_annotated_products.txt", "a")
-    all_anot = open(f"{str(basename)}_SpecifiedDB_annotations.txt", "w")
-    # temporary adding a line
-    #   so it accounts for the last query found by the BLAST analysis
-    temporary_query(nr)
-
-    # creating the lists and counter that will be used
-    #   to make sure the script goes through each HSP in every query
-    # it's important that these lists are set back to NULL
-    #   and the counter is set to zero before we start
-    old_id = nr[0].split("\t")  # recebe a primeira query para começar a contagem
-    old_id = old_id[0]
-    annots = []
-    classification = []
-    desc_list = []
-
-    for query in nr:
-        # split line by \t > separate columns > each line becomes a list
-        title = query.split("\t")
-        description = title[8]
-        # search for description without name in []
-        # Try to remove species from annotation
+        fields = query.split("\t")
+        desc = fields[8]
         try:
-            desc = re.search(r'\s(.*?)\s\[.*', description).group(1)
+            desc = re.search(r'\s(.*?)\s\[.*', desc).group(1)
         # if regex fail, catch annotation
         except AttributeError:
-            desc = description.replace("\n","")
-        new_id = title[0]
+            desc = desc.replace("\n","")
+        seqname = fields[0]
+    elif dbtype == "trembl":
+        fields = query.split("\t")
+        title = fields[-1]  # get description
+        title_split = title.split(" ", 1)[-1]  # get last part of description
+        desc = title_split.split("OS=")[0].strip().rstrip()  # get only description
+        seqname = fields[0]
+    elif dbtype == "specificdb":
+        fields = query.split("\t")
+        # 8 is the column for annotaion in blast results
+        description = fields[8].split(str(args.customsep))
+        desc = description[int(args.customcolumn)].replace("transcript_product=", "")
+        seqname=fields[0]
+    else:
+        logger.error("Wrong dbtype - exiting")
+        sys.exit(1)
+
+    return seqname, desc.strip(), fields
+
+
+def parser_blast(basename, result_blast, identidade, positividade, cov, dbtype):
+    result_blast_file = open(str(result_blast), "r").read().splitlines()
+    hyp = open(f"{str(basename)}_hypothetical_products.txt", "w")
+    nhyp = open(f"{str(basename)}_annotated_products.txt", "a")
+    all_anot = open(f"{str(basename)}_SpecifiedDB_annotations.txt", "w")
+    # temporary adding a line
+    #   so it accounts for the last query found by the BLAST analysis
+    temporary_query(result_blast_file)
+    # creating the lists and counter that will be used
+    #   to make sure the script goes through each HSP in every query
+    # it's important that these lists are set back to NULL
+    #   and the counter is set to zero before we start
+    old_id = result_blast_file[0].split("\t")  # recebe a primeira query para começar a contagem
+    old_id = old_id[0]
+    annots = []
+    classification = []
+    desc_list = []
+
+    for query in result_blast_file:
+        new_id, desc, fields = get_pattern(query, dbtype)
         # defining which file will receive each HSP depending on the counter number
         #   the script will write each HSP on its corresponding .txt file
         # IMPORTANT: the first time this loop runs it will add an empty line ("\n")
@@ -435,10 +355,10 @@ def parser_nr(basename, result_blast, identidade, positividade, cov):
             annots.clear()
             desc_list.clear()
             # check first query of new ID
-            check_query(title, cov, keyword_list, identidade, positividade, 
+            check_query(fields, cov, keyword_list, identidade, positividade, 
                         classification, annots, desc_list, desc)
         else:
-            check_query(title, cov, keyword_list, identidade, positividade, 
+            check_query(fields, cov, keyword_list, identidade, positividade, 
                         classification, annots, desc_list, desc)
         # saving the information that will be written in the .txt files
         old_id = new_id
@@ -446,9 +366,6 @@ def parser_nr(basename, result_blast, identidade, positividade, cov):
     hyp.close()
     nhyp.close()
     all_anot.close()
-
-
-'''Parser swissprot, the same thing, but different'''
 
 
 def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, cov):
@@ -546,62 +463,27 @@ def no_hit(basename, blast6):
 
     # =========================================================================================
 
-
 def swiss_run():
     logger.info("Running BLAST against SwissProt")
     blast(args.seq, swiss_out, args.spdb, args.hsps, args.evalue)
     logger.info("Running parser SwissProt")
 
 
+dbtype, second_db = define_db()
 # Run BLAST against swissprotDB
 swiss_out = f"{str(args.basename)}_BLASTp_AAvsSwissProt.outfmt6"
 swiss_run()
 process_swiss(args.basename, args.seq, swiss_out, args.id, args.pos, args.cov)
-
 # Secondary database
 odb_out_name = f"{str(args.basename)}_BLASTp_AAvsSpecifiedDB.outfmt6"
-if args.nr is not None:
-    #odb_out_name = f"{str(args.basename)}_BLASTp_AAvsNRDB.outfmt6"
-    logger.info("Running BLAST against NR")
-    # Use the file above without sequences already annotated by swissprot
-    blast(f"{args.basename}_BLASTp_AA_SwissProted.fasta", odb_out_name, args.nr, args.hsps, args.evalue)
-    # ------------------------------
-    logger.info("Running parser NR")
-    parser_nr(args.basename, odb_out_name, args.id, args.pos, args.cov)
-    logger.info("Parser NR done")
-    # -------------No hit-----------
-    logger.info("Identifying proteins with no hits in Swissprot and NR databases")
-    no_hit(str(args.basename), odb_out_name)
-
-elif args.trembl is not None:
-    #odb_out_name = f"{str(args.basename)}_BLASTp_AAvsTrembl.outfmt6"
-    odb = args.trembl
-    logger.info("Running BLAST against TrEMBL")
-    # Use the file above without sequences already annotated by swissprot
-    blast(f"{args.basename}_BLASTp_AA_SwissProted.fasta", odb_out_name, args.trembl, args.hsps, args.evalue)
-    # ------------------------------
-    logger.info("Running parser TrEMBL")
-    parser_trembl(args.basename, odb_out_name, args.id, args.pos, args.cov)
-    logger.info("Parser TrEMBL done")
-    # ----------No hit--------------
-    logger.info("Identifying proteins with no hits in Swissprot and TrEMBL databases")
-    no_hit(str(args.basename), odb_out_name)
-
-# EupathDB
-elif args.specificdb is not None:
-    #odb_out_name = f"{str(args.basename)}_BLASTp_AAvsSpecifiedDB.outfmt6"
-    odb = args.specificdb
-    logger.info("Running BLAST against specificDB")
-    # Use the file above without sequences already annotated by swissprot
-    blast(f"{args.basename}_BLASTp_AA_SwissProted.fasta", odb_out_name, args.specificdb, args.hsps, args.evalue)
-    # ------------------------------
-    logger.info("Running parser specificDB")
-    parser_trytrip(args.basename, odb_out_name, args.id, args.pos, args.cov)
-    logger.info("Parser specificDB done")
-    # ----------No hit--------------
-    logger.info("Identifying proteins with no hits in Swissprot and SpecificDB databases")
-    no_hit(str(args.basename), odb_out_name)
-else:
-    logger.error("Can't find any secondary database")
+logger.info(f"Running BLAST against {dbtype}")
+blast(f"{args.basename}_BLASTp_AA_SwissProted.fasta", odb_out_name, second_db, args.hsps, args.evalue)
+# ------------------------------
+logger.info(f"Running parser {dbtype}")
+parser_blast(args.basename, odb_out_name, args.id, args.pos, args.cov,dbtype)
+logger.info(f"Parser blast done")
+# -------------No hit-----------
+logger.info(f"Identifying proteins with no hits in Swissprot and {dbtype} databases")
+no_hit(str(args.basename), odb_out_name)
 # ------------------------------
 logger.info("Blastp_parser is Finished")

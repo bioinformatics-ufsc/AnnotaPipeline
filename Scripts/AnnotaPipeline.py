@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/python3
 
 ####################################################
 ###                PRIMARY SCRIPT                ###
@@ -577,12 +577,22 @@ def check_parameters(sections):
             proteomics_check_parameters(list_section)
         elif str(section) == "databases":
             params_empty = ([param for param in list_section if list_section.get(param) == None])
+            # When databse is not custom, parameters customsep and customcolumn aren't used
+            if list_section.get("secondary-format") != "custom":
+                try:
+                    params_empty.remove("customsep")
+                except ValueError:
+                    pass
+                try:
+                    params_empty.remove("customcolumn")
+                except ValueError:
+                    pass
             if params_empty:
-                logger.error("[DATABASE]: there is some secondary database missing. Please review config file!")
+                logger.error(f"[DATABASE]: there is some secondary database parameters missing. Params empty: {' '.join(params_empty)}. Please review config file!")
                 log_quit()
             else:
                 # Check if format of secondary database is correct
-                if list_section['secondary-format'] not in ('eupathdb', 'nrdb', 'trembldb'):
+                if list_section['secondary-format'] not in ('eupathdb', 'nrdb', 'trembldb', 'custom'):
                     logger.error("[DATABASE]: Unrecognized type for 'secondary-format'. Please review config file!")
                     log_quit()
         elif str(section) == "augustus":
@@ -715,10 +725,10 @@ with open(config_pwd, "r") as stream:
 
 # ------------------------------------------------------------------------------
 # --- CHECK EACH BOX OF VARIABLES ----------------------------------------------
-is_tool("perl")
+#is_tool("perl")
 # ------------------------------------------------------------------------------
 
-logger.info("IT'S DANGEROUS TO GO ALONE! TAKE THIS.")
+#logger.info("IT'S DANGEROUS TO GO ALONE! TAKE THIS.")
 
 logger = logging.getLogger('AnnotaPipeline')
 logger.info("---------------------------------------------------------------")
@@ -804,12 +814,21 @@ logger.info("BLAST execution and parsing has started")
 
 # Select secondary database from config file
 spdb_path = databases.get("secondary-db")
+# Default custom sep, wich is used only form customdb, so its defined here 
+# and will be ignored in blastp_parser.py for other databases
+customsep = "|"
+customfield = 5
 if str(databases.get("secondary-format")).lower() == 'eupathdb':
     flag_spdb = "-spdb"
 elif str(databases.get("secondary-format")).lower() == 'trembldb':
     flag_spdb = "-trbl"
-else:
+elif str(databases.get("secondary-format")).lower() == 'nr':
     flag_spdb = "-nr"
+elif str(databases.get("secondary-format")).lower() == 'custom':
+    flag_spdb = "-spdb"
+    customsep = databases.get("customsep")
+    customfield = databases.get("customcolumn")
+
 
 subprocess.run([
     str(python_exe),
@@ -837,7 +856,12 @@ subprocess.run([
     "-evalue", 
     str(blast.get('evalue')),
     "-blastp",
-    str(blast.get('blast-exe'))
+    str(blast.get('blast-exe')), 
+    # Flags used only with customdb
+    "-customsep",
+    str(customsep), 
+    "-customcolumn", 
+    str(customfield)
     ]
 )
 

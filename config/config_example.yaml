@@ -36,6 +36,14 @@ databases:
   swissprot-db: /bases_externas/SwissProt_11_2019/uniprot_sprot.fasta
   secondary-db: /bases_externas/NR_Subset_Athaliana_Prot.fasta
   secondary-format: NR
+  # For custom DB ONLY
+  # Example:
+  #      Header in customdb is >id == organism == description == strain
+  #      customsep will be ==
+  #      customcolumn will be 2 (starts to count by 0)
+  #      If is a special character provide between double quotes
+  customsep:       # [string] Field separator in header of fasta sequences that are in customDB
+  customcolumn:    # [int]    Column field that contains annotation
   cdd-db: /bases_externas/interproscan-5.52-86.0/data/cdd/3.18/db/Cdd_NCBI
   pfam: /bases_externas/interproscan-5.52-86.0/data/pfam/33.1/pfam_a.hmm
 

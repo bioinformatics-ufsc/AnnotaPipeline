@@ -82,6 +82,7 @@ def temporary_query(arq):
         except IndexError:
                 arq.append("\t".join("QueryTemp"))
 
+
 # ------------------------------------------
 
 def parser_interproscan(arq_entrada, arq_ipr):
