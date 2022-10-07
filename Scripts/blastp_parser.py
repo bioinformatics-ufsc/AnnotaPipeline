@@ -222,10 +222,14 @@ def blast(arq1, arq2, db, hsps, evalue):
 def temporary_query(arq):
     # temporary adding a line to the BLAST analysis
     #   so it accounts for the last query found by the BLAST algorithm
-    temp = arq[-1].split("\t")
-    del temp[0]
-    temp.insert(0, "QueryTemp")
-    arq.append("\t".join(temp))
+    try:
+        temp = arq[-1].split("\t")
+        del temp[0]
+        temp.insert(0, "QueryTemp")
+        arq.append("\t".join(temp))
+    # Index error ocours when Interproscan returns no results, as consequence, arq is empty, and split empty file is not allowed
+    except IndexError:
+        arq.append("\t".join("QueryTemp"))
 
 
 def check_query(full_line_list, coverage, word_list, id, pos, list_classification, list_annot, list_desc, description):
