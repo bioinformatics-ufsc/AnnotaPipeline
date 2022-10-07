@@ -205,6 +205,21 @@ Before executing, please modify the necessary fields in the configuration file (
     * TrichDB
     * TriTrypDB (tested)
   * NR Database | NCBI (available at <https://ftp.ncbi.nlm.nih.gov/blast/db>)
+  * CUSTOM Database: You can set a custom database if you know the pattern to get description in fasta file.
+    > Example:
+    
+    > ArabdopsisDB Tair10 (https://www.arabidopsis.org/download_files/Sequences/TAIR10_blastsets/TAIR10_pep_20101214) has a pattern that fields are separated by "|", and description is the 3th field.
+    
+    > User can use AnnotaPipeline with Tair10DB setting the following parameters: 
+    
+      `secondary-format` to `custom`
+    
+      `customsep` to  `"|"`
+    
+      `customcolumn` to `2`
+
+    > column two because we count starting by 0.
+  
   > **TIP:** You can use a subset of NR Database
 
 ## **InterProScan: Tested databases**
