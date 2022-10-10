@@ -23,7 +23,7 @@
   - [**Genome file as input**](#genome-file-as-input)
   - [**Protein and GFF files as input**](#protein-and-gff-files-as-input)
 - [**Output**](#output)
-- [**Output Example**](#Output-example)
+- [**Output Example**](#output-example)
 - [**Citation**](#citation)
 
 
@@ -414,7 +414,7 @@ Raw outputs are listed inside output folders:
 
 The output folders and files will be located in the same folder you executed the pipeline.
 
-# **Output**
+# **Output example**
 
 - _Arabdopsis thaliana_ dataset output is avaliable at:  http://150.162.6.129/Athaliana_Annota/
 
