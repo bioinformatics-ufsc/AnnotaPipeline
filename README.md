@@ -1,6 +1,9 @@
 [![Quote](<https://img.shields.io/badge/Quote-May%20the%20Dark%20shine%20your%20way%20(Darkdiver%20Grandahl)-blueviolet>)](https://g.co/kgs/bMJLfj)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+<font size=16>**Disclamer:**</font>
+<font size=16>**As of August 15th, 2022, the AnnotaPipeline is being prepared for publication. Its manuscript is currently submitted to Frontiers in Genetics journal. The respective authors reserve the right to make this repository publicly available and to maintain ownership over all content published here.**</font>
+
 <font size=16>**AnnotaPipeline**</font>
 
 - [**About AnnotaPipeline**](#about-annotapipeline)
