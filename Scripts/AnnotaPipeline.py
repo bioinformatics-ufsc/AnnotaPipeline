@@ -822,7 +822,7 @@ if str(databases.get("secondary-format")).lower() == 'eupathdb':
     flag_spdb = "-spdb"
 elif str(databases.get("secondary-format")).lower() == 'trembldb':
     flag_spdb = "-trbl"
-elif str(databases.get("secondary-format")).lower() == 'nr':
+elif str(databases.get("secondary-format")).lower() == 'nrdb':
     flag_spdb = "-nr"
 elif str(databases.get("secondary-format")).lower() == 'custom':
     flag_spdb = "-spdb"
