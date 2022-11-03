@@ -16,6 +16,7 @@ import subprocess
 import logging
 import sys
 import re
+import os
 from shutil import which
 
 '''---ARGUMENTS AND [--help / -help / -h]------------------------------------'''
@@ -228,7 +229,7 @@ def blast(arq1, arq2, db, hsps, evalue):
                     f" -outfmt {fmt}" \
                     f" -max_target_seqs {hsps}" \
                     f" -num_threads {str(args.threads)}"
-    logger.info(command)
+    logger.debug(command)
     subprocess.getoutput(command)
 
 
@@ -271,7 +272,8 @@ def check_file(file):
     elif os.path.getsize(file) == 0:
         logger.error(f"File {str(file)} is empty, this is uncommon for a blastp search with a set of proteins")
         logger.warning("AnnotaPipeline can't go on with this uncertainty.")
-        logger.warning("Check Similarity Analysis log to find out what happened and change the secondary database if needed"
+        logger.warning("Check command Blast line execution to find out what happened")
+        logger.info("Exiting")
         logging.shutdown()
         sys.exit(1)
 
