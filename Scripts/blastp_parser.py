@@ -262,6 +262,20 @@ def check_query(full_line_list, coverage, word_list, id, pos, list_classificatio
         pass
 
 
+# Function to check if file was generated. It helps if AnnotaPipeline crash
+def check_file(file):
+    logger = logging.getLogger('Blast')
+    if os.path.isfile(file) == 0:
+        logger.error(f"File {str(file)} does not exist, please check command line for blastp execution")
+        log_quit()
+    elif os.path.getsize(file) == 0:
+        logger.error(f"File {str(file)} is empty, this is uncommon for a blastp search with a set of proteins")
+        logger.warning("AnnotaPipeline can't go on with this uncertainty.")
+        logger.warning("Check Similarity Analysis log to find out what happened and change the secondary database if needed"
+        logging.shutdown()
+        sys.exit(1)
+
+
 '''---Keywords-------------------------------------------------------------'''
 
 # defining the keywords that will be used
@@ -478,6 +492,9 @@ process_swiss(args.basename, args.seq, swiss_out, args.id, args.pos, args.cov)
 odb_out_name = f"{str(args.basename)}_BLASTp_AAvsSpecifiedDB.outfmt6"
 logger.info(f"Running BLAST against {dbtype}")
 blast(f"{args.basename}_BLASTp_AA_SwissProted.fasta", odb_out_name, second_db, args.hsps, args.evalue)
+# check file for secondary database
+# -----------------------------
+check_file(odb_out_name)
 # ------------------------------
 logger.info(f"Running parser {dbtype}")
 parser_blast(args.basename, odb_out_name, args.id, args.pos, args.cov,dbtype)
