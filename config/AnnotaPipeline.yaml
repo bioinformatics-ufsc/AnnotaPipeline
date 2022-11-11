@@ -70,8 +70,7 @@ augustus-optional:
                       # OPTIONAL: prediction considers hints (extrinsic information) if turned on
   extrinsicCfgFile:   # [path] full path to cfgfile
                       # OPTIONAL: file contains the list of used sources for the hints and their boni and mali
-  UTR:                # [ on / off ]
-                      # OPTIONAL: currently *only* works for human, galdieria, toxoplasma and caenorhabditis
+  UTR: off            # [ on / off ] currently *only* works for human, galdieria, toxoplasma and caenorhabditis
 
 # SEQUENCE CLEANER -------------------------------------------------------------
 
