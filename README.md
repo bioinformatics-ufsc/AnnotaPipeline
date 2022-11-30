@@ -421,7 +421,11 @@ The output folders and files will be located in the same folder you executed the
 
 # **Citation**
 
-If you used AnnotPipeline in your research, please cite the following papers:
+If you used AnnotPipeline in your research, please cite us
+
+[AnnotaPipeline: An integrated tool to annotate eukaryotic proteins using multi-omics data](https://doi.org/10.3389/fgene.2022.1020100)
+
+...And the following papers:
 
 - AUGUSTUS: [Stanke M. et al., 2003](https://doi.org/10.1093/bioinformatics/btg1080)
 - BLAST+: [Camacho C. et al., 2008](https://doi.org/10.1186/1471-2105-10-421)
