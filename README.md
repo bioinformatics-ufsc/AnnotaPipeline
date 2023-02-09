@@ -414,9 +414,9 @@ Raw outputs are listed inside output folders:
 
 The output folders and files will be located in the same folder you executed the pipeline.
 
-# **Output example**
+# **Output Files**
 
-- _Arabdopsis thaliana_ dataset output is avaliable at:  http://150.162.6.129/Athaliana_Annota/
+- Output files for Organisms present in AnnotaPipeline publication are available at: http://150.162.6.129/Annotafiles/
 
 
 # **Citation**
