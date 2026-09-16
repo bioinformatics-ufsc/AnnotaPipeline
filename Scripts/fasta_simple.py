@@ -1,104 +1,120 @@
 #!/usr/bin/env python3
+"""
+fasta_simple.py - Simple FASTA header annotator for AnnotaPipeline.
+
+Formats FASTA sequence headers with organism and annotation information:
+>{sequence_id} | Organism: {organism} | Description: {description}
+"""
 
 import argparse
-import warnings
+from pathlib import Path
 import sys
+import warnings
+from Bio import SeqIO
 
-def cli():
-	parser = argparse.ArgumentParser(
-		add_help=False,  # removes original [--help]
-		description='''Script to join sequence and annotations in a simple way (alternative to gff_to fasta, if you don't
-	have a gff file)
-	Sequence's headers will be like this:
-	><sequence_id> | Organism: <given organism> | Description: <info>
-	Example:
-	>g1.t1 | Organism: Homo sapiens | Description: Glucose-6-phosphate 1
-	-dehydrogenase 5, cytoplasmic		 ''',
-		epilog="""We stand before the dawn of a new world.""", formatter_class=argparse.RawTextHelpFormatter
-	)
 
-	requiredNamed = parser.add_argument_group('required arguments')
-	optionalNamed = parser.add_argument_group('optional arguments')
+def cli() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Join sequences and annotations into FASTA headers.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-annot", "--annotations", dest="annot",
+        metavar="[annotations.txt]",
+        required=True,
+        help="File containing ID and annotation separated by tab (\\t).",
+    )
+    parser.add_argument(
+        "-b", "--basename", dest="basename",
+        metavar="[basename]",
+        required=True,
+        help="Output file basename prefix.",
+    )
+    parser.add_argument(
+        "-faf", "--fasta", dest="seqs",
+        metavar="[fasta.fasta]",
+        required=True,
+        help="FASTA file with protein sequences.",
+    )
+    parser.add_argument(
+        "-org", "--organism", dest="org",
+        metavar="[organism]",
+        required=True,
+        help="Organism name (e.g. 'Homo sapiens').",
+    )
+    return parser
 
-	# mandatory arguments
-	#   type (default): string
 
-	requiredNamed.add_argument(
-		'-annot', '--annotations', dest='annot',
-		metavar='[annotations.txt]',
-		help='File with id and annotation separated by \t',
-		required=True
-	)
+def parse_annotations(annot_file: Path) -> dict[str, str]:
+    """Parse tab-separated ID and annotation file into a dictionary."""
+    annotations = {}
+    with open(annot_file, "r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("\t", 1)
+            if len(parts) == 2:
+                annotations[parts[0].strip()] = parts[1].strip()
+            elif len(parts) == 1:
+                annotations[parts[0].strip()] = ""
+    return annotations
 
-	requiredNamed.add_argument(
-		'-b', '--basename', dest='basename',
-		metavar='[Jonas]',
-		help='It\'s a boy, and will be called Jonas',
-		required=True
-	)
 
-	requiredNamed.add_argument(
-		'-faf', '--fasta', dest='seqs',
-		metavar='[fasta.fasta]',
-		help='Fasta file with protein sequences, extracted from augustus gff',
-		required=True
-	)
+def write_simple_fasta(
+    annot_file: str | Path,
+    fasta_file: str | Path,
+    basename: str,
+    organism: str,
+    output_dir: str | Path | None = None,
+) -> Path:
+    """Format fasta headers with organism and description."""
+    annot_path = Path(annot_file)
+    fasta_path = Path(fasta_file)
+    out_dir = Path(output_dir) if output_dir else Path.cwd()
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-	requiredNamed.add_argument(
-		'-org', '--organism', dest='org',
-		metavar='[Homo sapiens]',
-		help='Organism name. PS: if you want to pass genus and species give it with " - ex: "Homo Sapiens"',
-		required=True
-	)
+    org_clean = str(organism).strip("\"'")
+    annotations = parse_annotations(annot_path)
 
-	# custom [--help] argument
-	optionalNamed.add_argument(
-		'-h', '-help', '--help',
-		action='help',
-		default=argparse.SUPPRESS,  # hidden argument
-		help='It\'s going to be legen - wait for it - dary!'
-	)
-	return parser
+    out_fasta = out_dir / f"AnnotaPipeline_{basename}_proteins.fasta"
+    ids_without_annot = []
 
-# --------------------------------------------------------
-def main():
-	parser = cli()
-	# arguments saved here
-	args = parser.parse_args()
-	# Info from annotation will be stored here
-	ant = {}
-	# ============================= Extract annotations ==========================
-	annot = open(str(args.annot)).read().splitlines()
-	for line in annot:
-		line = line.split("\t")
-		ant[line[0]] = line[1]
+    with open(fasta_path, "r", encoding="utf-8", errors="replace") as fasta_handle, \
+         open(out_fasta, "w", encoding="utf-8") as out_handle:
+        for record in SeqIO.parse(fasta_handle, "fasta"):
+            seq_id = record.id.strip()
+            desc = annotations.get(seq_id)
+            if desc is not None:
+                new_header = f"{seq_id} | Organism: {org_clean} | Description: {desc}"
+                out_handle.write(f">{new_header}\n{str(record.seq).upper()}\n")
+            else:
+                ids_without_annot.append(seq_id)
 
-	fasta = open(str(args.seqs), "r").read().split(">")
-	del fasta[0]  # remove empty value
-	# ============== Write fasta file with new header ==========================
-	out = open(f"AnnotaPipeline_{str(args.basename)}_proteins.fasta", "w")
-	ids_warn = []  # store ids with no annotation
-	for sequence in fasta:
-		sequence = sequence.split("\n")
-		id = sequence[0]
-		try:
-			out.write(f">{str(id)} | Organism: {str(args.org)} | Description: {str(ant[id])}\n")
-			out.write(str("\n".join(sequence[1:])))
-		except Exception as warn:
-			ids_warn.append(id)
-			pass
+    if ids_without_annot:
+        warn_file = out_dir / f"{basename}_ids_with_no_annotations.txt"
+        with open(warn_file, "w", encoding="utf-8") as wf:
+            for item in ids_without_annot:
+                wf.write(f"{item}\n")
+        warnings.warn(
+            f"WARNING: {len(ids_without_annot)} sequence(s) lacked annotations. IDs saved to {warn_file}",
+            stacklevel=2,
+        )
 
-	out.close()
+    return out_fasta
 
-	# =============== Warning message, if something goes wrong =====================
 
-	if len(ids_warn) > 0:
-		warnings.warn("WARNING: Not all sequences from fasta file were in annotation file", stacklevel=2)
-		warn_seq = open(f"{str(args.basename)}_ids_with_no_annotations.txt", "w")
-		for a in ids_warn:
-			warn_seq.write(str(a) + "\n")
-		warn_seq.close()
-		warnings.warn("INFO: IDs stored in ids_with_no_annotations.txt", stacklevel=2)
+def main(argv: list[str] | None = None) -> int:
+    parser = cli()
+    args = parser.parse_args(argv)
+    write_simple_fasta(
+        annot_file=args.annot,
+        fasta_file=args.seqs,
+        basename=args.basename,
+        organism=args.org,
+    )
+    return 0
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())

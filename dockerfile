@@ -1,138 +1,165 @@
-
-
 FROM ubuntu:20.04
-ENV DEBIAN_FRONTEND="noninteractive"
 
-# --------------------------------
-# envs
+LABEL maintainer="Laboratório de Bioinformática - UFSC"
+LABEL description="AnnotaPipeline: Multi-Omics Protein Annotation Pipeline"
+
+ENV DEBIAN_FRONTEND="noninteractive"
+ENV TZ="Etc/UTC"
+
+# Software versions
 ENV IPR="5"
 ENV HMMER_VERSION="3.4"
 ENV IPRSCAN_VERSION="5.68-100.0"
 ENV BLAST_VERSION="2.16.0"
 ENV PERCOLATOR_VERSION="3-07-01"
-ENV COMMET_VERSION="2021010"
-ENV TZ=Europe/London
+ENV COMET_VERSION="2021010"
 ENV XERCES_VERSION="3.2.4"
 
-# --------------------------------
-RUN apt-get update -y 
-
+# Set timezone and install base packages & dependencies
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone && \
     apt-get update -y && \
-    apt-get install -y wget python3.8 python2.7 openjdk-11-jre-headless libpcre2-dev libgomp1 perl-doc && \
-    ln -s /usr/bin/python3.8 /usr/bin/python3 && ln -s /usr/bin/python3.8 /usr/bin/python
+    apt-get install -y --no-install-recommends \
+        software-properties-common \
+        build-essential \
+        wget \
+        curl \
+        git \
+        cmake \
+        autoconf \
+        zip \
+        unzip \
+        ca-certificates \
+        rpm \
+        python3 \
+        python3-pip \
+        python3-dev \
+        python3-distutils \
+        python3-biopython \
+        openjdk-11-jre-headless \
+        perl \
+        perl-doc \
+        libfile-which-perl \
+        libparallel-forkmanager-perl \
+        libyaml-perl \
+        libdbd-mysql-perl \
+        libpcre2-dev \
+        libgomp1 \
+        libgsl-dev \
+        libboost-all-dev \
+        libsuitesparse-dev \
+        liblpsolve55-dev \
+        libsqlite3-dev \
+        libmysql++-dev \
+        libbamtools-dev \
+        samtools \
+        libhts-dev \
+        cdbfasta \
+        diamond-aligner \
+        libtokyocabinet-dev \
+        zlib1g-dev \
+        libbz2-dev && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get install -y --no-install-recommends g++-11 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN apt-get install -y software-properties-common build-essential wget git autoconf libgsl-dev \ 
-    libboost-all-dev libsuitesparse-dev liblpsolve55-dev libsqlite3-dev libmysql++-dev g++ xsdcxx \ 
-    libboost-iostreams-dev zlib1g-dev libbamtools-dev samtools libhts-dev libboost-all-dev cdbfasta  \
-    diamond-aligner libfile-which-perl libparallel-forkmanager-perl libyaml-perl libdbd-mysql-perl \
-    curl cmake zip unzip  ca-certificates libboost-dev  libboost-filesystem-dev  libboost-system-dev libboost-thread-dev \
-    libtokyocabinet-dev zlib1g-dev libbz2-dev rpm python3-distutils 
-RUN apt-get install -y --no-install-recommends python3-biopython
-# percolator req
-RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
-    apt install -y g++-11
+# Symlink python
+RUN ln -sf /usr/bin/python3 /usr/bin/python
 
 # --------------------------------
-# Install Blast
-RUN mkdir /opt/blast
-WORKDIR /opt/blast
-RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/${BLAST_VERSION}/ncbi-blast-${BLAST_VERSION}+-x64-linux.tar.gz  && \
-    tar zxf ncbi-blast-${BLAST_VERSION}+-x64-linux.tar.gz --strip-components=1
-RUN rm -f ncbi-blast-${BLAST_VERSION}+-x64-linux.tar.gz 
-ENV PATH="$PATH:/opt/blast/bin"
+# 1. Install BLAST+
 # --------------------------------
-# Download Interproscan
-RUN curl -o /opt/interproscan-${IPRSCAN_VERSION}.tar.gz ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/${IPR}/${IPRSCAN_VERSION}/alt/interproscan-core-${IPRSCAN_VERSION}.tar.gz
+RUN mkdir -p /opt/blast && \
+    wget -q https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/${BLAST_VERSION}/ncbi-blast-${BLAST_VERSION}+-x64-linux.tar.gz -O /tmp/blast.tar.gz && \
+    tar -zxf /tmp/blast.tar.gz -C /opt/blast --strip-components=1 && \
+    rm -f /tmp/blast.tar.gz
+ENV PATH="/opt/blast/bin:$PATH"
 
-WORKDIR /opt/
 # --------------------------------
-# Install InterProScan5.
-RUN mkdir -p /opt/interproscan
-# no db
-RUN  tar -pxvzf interproscan-${IPRSCAN_VERSION}.tar.gz \
-    -C /opt/interproscan --strip-components=1
+# 2. Install InterProScan (Core)
+# --------------------------------
+RUN mkdir -p /opt/interproscan && \
+    curl -sSL "ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/${IPR}/${IPRSCAN_VERSION}/alt/interproscan-core-${IPRSCAN_VERSION}.tar.gz" -o /tmp/iprscan.tar.gz && \
+    tar -pxzf /tmp/iprscan.tar.gz -C /opt/interproscan --strip-components=1 && \
+    rm -f /tmp/iprscan.tar.gz
+ENV PATH="/opt/interproscan/bin:/opt/interproscan:$PATH"
 
-RUN rm -f /opt/interproscan-${IPRSCAN_VERSION}-64-bit.tar.gz
-ENV PATH="/opt/interproscan/bin:/opt/interproscan/:$PATH"
 # --------------------------------
-# Install hmmer
-RUN mkdir /opt/hmmer
-WORKDIR /opt/hmmer
-RUN wget http://eddylab.org/software/hmmer/hmmer-${HMMER_VERSION}.tar.gz && \
-    tar zxf hmmer-${HMMER_VERSION}.tar.gz --strip-components=1 && \
-    ./configure --prefix /opt/hmmer  && \
-    make  && \
-    make check  && \
+# 3. Install HMMER
+# --------------------------------
+RUN mkdir -p /opt/hmmer && \
+    wget -q "http://eddylab.org/software/hmmer/hmmer-${HMMER_VERSION}.tar.gz" -O /tmp/hmmer.tar.gz && \
+    tar -zxf /tmp/hmmer.tar.gz -C /opt/hmmer --strip-components=1 && \
+    rm -f /tmp/hmmer.tar.gz && \
+    cd /opt/hmmer && \
+    ./configure --prefix=/opt/hmmer && \
+    make -j$(nproc) && \
     make install
-
-RUN rm -f hmmer-${HMMER_VERSION}.tar.gz
 ENV PATH="/opt/hmmer/bin:$PATH"
-# --------------------------------
-# Install Augustus
-WORKDIR /opt/
-RUN git clone https://github.com/Gaius-Augustus/Augustus.git  && \
-    cd Augustus  && \
-    make augustus
 
-ENV PATH="/opt/Augustus/bin:/opt/Augustus/scripts:$PATH" 
+# --------------------------------
+# 4. Install AUGUSTUS
+# --------------------------------
+RUN git clone --depth 1 https://github.com/Gaius-Augustus/Augustus.git /opt/Augustus && \
+    cd /opt/Augustus && \
+    make augustus -j$(nproc)
+ENV PATH="/opt/Augustus/bin:/opt/Augustus/scripts:$PATH"
 ENV AUGUSTUS_CONFIG_PATH="/opt/Augustus/config/"
 
-## Install kallisto
-WORKDIR /opt/
-RUN git clone https://github.com/pachterlab/kallisto.git && \
-    cd kallisto && \
-    mkdir build && \
-    cd build && \
-    cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/opt/kallisto && \
-    make
-
-RUN ln -s /opt/kallisto/build/src/kallisto /bin/kallisto
-## Install comet
-RUN mkdir /opt/comet
-WORKDIR  /opt/comet
-RUN wget https://sourceforge.net/projects/comet-ms/files/comet_${COMMET_VERSION}.zip && \
-    unzip comet_${COMMET_VERSION}.zip && \
-    mv comet.${COMMET_VERSION}.debian.exe comet && \
-    chmod 777 comet
-
-RUN rm -f comet.${COMMET_VERSION}.win64.exe comet.${COMMET_VERSION}.win32.exe comet.${COMMET_VERSION}.linux.exe comet.${COMMET_VERSION}.zip comet_source.${COMMET_VERSION}.zip 
-RUN ln -s /opt/comet/comet /bin/comet
-
-
-## Install percolator req
-RUN mkdir /opt/percolator && \
-    mkdir /opt/percolator/xerces && \
-    cd /opt/percolator/xerces
-
-RUN wget --no-check-certificate https://archive.apache.org/dist/xerces/c/3/sources/xerces-c-${XERCES_VERSION}.tar.gz && \
-    tar xzf xerces-c-${XERCES_VERSION}.tar.gz --strip-components=1 
-
-RUN ./configure --prefix=/opt/percolator/xerces --disable-netaccessor-curl --disable-transcoder-icu > xercesc_config.log 2>&1
-RUN make > xercesc_make.log 2>&1
-RUN make install > xercesc_install.log 2>&1
-RUN rm -f xerces-c-${XERCES_VERSION}.tar.gz
-
-
-## Install percolator
-WORKDIR  /opt/percolator
-RUN wget https://github.com/percolator/percolator/archive/refs/tags/rel-${PERCOLATOR_VERSION}.tar.gz && \
-    tar -xf rel-${PERCOLATOR_VERSION}.tar.gz --strip-components=1 && \
-    mkdir build && \
-    cd build && \
-    cmake .. && \
-    make
-
-RUN ln -s /opt/percolator/build/src/percolator /bin/percolator
-
-RUN rm -f rel-${PERCOLATOR_VERSION}.tar.gz
-
-WORKDIR /
-## Install AnnotaPipeline
 # --------------------------------
-RUN git clone https://github.com/pharaohs-son/AnnotaPipeline && \
-    cd AnnotaPipeline && \
-    pip install .
+# 5. Install Kallisto
+# --------------------------------
+RUN git clone --depth 1 https://github.com/pachterlab/kallisto.git /opt/kallisto-src && \
+    mkdir -p /opt/kallisto-src/build && \
+    cd /opt/kallisto-src/build && \
+    cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/opt/kallisto && \
+    make -j$(nproc) && \
+    make install && \
+    ln -sf /opt/kallisto/bin/kallisto /usr/local/bin/kallisto && \
+    rm -rf /opt/kallisto-src
 
-WORKDIR /home
+# --------------------------------
+# 6. Install Comet MS/MS
+# --------------------------------
+RUN mkdir -p /opt/comet && \
+    wget -q "https://sourceforge.net/projects/comet-ms/files/comet_${COMET_VERSION}.zip" -O /tmp/comet.zip && \
+    unzip -q /tmp/comet.zip -d /opt/comet && \
+    mv /opt/comet/comet.${COMET_VERSION}.debian.exe /opt/comet/comet && \
+    chmod 755 /opt/comet/comet && \
+    ln -sf /opt/comet/comet /usr/local/bin/comet && \
+    rm -rf /tmp/comet.zip /opt/comet/*.exe
+
+# --------------------------------
+# 7. Install Xerces-C and Percolator
+# --------------------------------
+RUN mkdir -p /opt/percolator/xerces && \
+    wget -q --no-check-certificate "https://archive.apache.org/dist/xerces/c/3/sources/xerces-c-${XERCES_VERSION}.tar.gz" -O /tmp/xerces.tar.gz && \
+    tar -zxf /tmp/xerces.tar.gz -C /opt/percolator/xerces --strip-components=1 && \
+    rm -f /tmp/xerces.tar.gz && \
+    cd /opt/percolator/xerces && \
+    ./configure --prefix=/opt/percolator/xerces --disable-netaccessor-curl --disable-transcoder-icu && \
+    make -j$(nproc) && \
+    make install
+
+RUN wget -q "https://github.com/percolator/percolator/archive/refs/tags/rel-${PERCOLATOR_VERSION}.tar.gz" -O /tmp/percolator.tar.gz && \
+    mkdir -p /opt/percolator/src && \
+    tar -zxf /tmp/percolator.tar.gz -C /opt/percolator/src --strip-components=1 && \
+    rm -f /tmp/percolator.tar.gz && \
+    mkdir -p /opt/percolator/src/build && \
+    cd /opt/percolator/src/build && \
+    cmake .. && \
+    make -j$(nproc) && \
+    ln -sf /opt/percolator/src/build/src/percolator /usr/local/bin/percolator
+
+# --------------------------------
+# 8. Install AnnotaPipeline
+# --------------------------------
+WORKDIR /opt/AnnotaPipeline
+COPY . /opt/AnnotaPipeline
+RUN pip3 install --no-cache-dir .
+
+WORKDIR /data
+VOLUME /data
+
+CMD ["AnnotaPipeline", "--help"]

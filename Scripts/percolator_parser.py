@@ -1,132 +1,131 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+"""
+percolator_parser.py - Filter and parse Percolator peptide identification outputs.
 
-# --- A AVENTURA VAI COMEÇAR ---------------------------------------------------
+Filters PSMs by q-value threshold, discards decoy hits, and generates
+a simplified ProteinID -> Peptide -> Spectrum mapping file.
+"""
 
 import argparse
+from pathlib import Path
 import sys
 import warnings
-import sys
 
-# PARSER ARGUMENTS -------------------------------------------------------------
-def cli():
+
+def cli() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        add_help=False,
-        description='''
-    Script to parse Percolator Outputs
-    INFO: DECOY results will also be parsed
-        ''',
-        epilog="""Shadows will fade... someday...""",
-        formatter_class=argparse.RawTextHelpFormatter
+        description="Filter Percolator output by q-value and extract protein-peptide-spectrum mappings.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
-    required_args = parser.add_argument_group("required arguments")
-    optional_args = parser.add_argument_group("custom arguments")
-
-    # mandatory arguments
-    required_args.add_argument(
+    required = parser.add_argument_group("required arguments")
+    required.add_argument(
         "-p", "--percolator-output", dest="proteom",
-        metavar="[Percolator output]",
-        help="Peptide quantification file (Percolator output)",
-        required=True
+        metavar="[percolator.tsv]",
+        required=True,
+        help="Percolator output file.",
     )
-
-    required_args.add_argument(
+    required.add_argument(
         "-b", "--basename", dest="basename",
-        metavar="[Jonas]",
-        type=str, 
-        help="It's a boy and will be called Jonas",
-        required=True
+        metavar="[basename]",
+        required=True,
+        help="Basename prefix for output files.",
     )
-
-    # custom [--help] argument
-    required_args.add_argument(
-        "-qv", "-q-value", dest='qvalue',
-        metavar = "[between 0-1]",
-        type=float, 
-        help="Min qvalue to accept a peptide",
-        required=False
-    )
-
-    # custom [--help] argument
-    optional_args.add_argument(
-        "-h", "-help", "--help",
-        action="help",
-        default=argparse.SUPPRESS,
-        help=""
+    required.add_argument(
+        "-qv", "-q-value", dest="qvalue",
+        type=float,
+        default=0.05,
+        help="Maximum q-value threshold to accept a peptide (0.0 to 1.0).",
     )
     return parser
 
 
-def main():
-    parser=cli()
-    # arguments saved here
-    args = parser.parse_args()
+def parse_percolator(
+    percolator_file: str | Path,
+    basename: str,
+    qvalue: float = 0.05,
+    output_dir: str | Path | None = None,
+) -> tuple[Path, Path]:
+    """Filter Percolator output by q-value cutoff and produce parsed TSV."""
+    p_path = Path(percolator_file)
+    out_dir = Path(output_dir) if output_dir else Path.cwd()
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Check qvalue
-    if  0 < args.qvalue > 1:
-        print("-qv value must be between 0-1")
-        sys.exit(1)
+    if not (0.0 <= qvalue <= 1.0):
+        raise ValueError(f"q-value must be between 0.0 and 1.0, got: {qvalue}")
 
-    # --- PARSE QVALUE -----------------------------
+    filtered_file = out_dir / f"{basename}_qvalue_filtered.tsv"
+    parsed_file = out_dir / f"{basename}_parsed.tsv"
 
-    percolator_file = open(str(args.proteom), "r").readlines()
+    # Step 1: Filter lines by q-value (column index 2)
+    filtered_rows = []
+    with open(p_path, "r", encoding="utf-8", errors="replace") as f_in:
+        header = f_in.readline()
+        for line in f_in:
+            parts = line.rstrip("\r\n").split("\t")
+            if len(parts) > 2:
+                try:
+                    qv = float(parts[2])
+                    if qv <= qvalue:
+                        filtered_rows.append(parts)
+                except ValueError:
+                    continue
 
-    parcial_output = open(f"{args.basename}_qvalue_filtered.tsv", "w")
-    parcial_output.write(str(percolator_file[0]))
-    del percolator_file[0]
-    for line in percolator_file:
-        line = line.split("\t")
-        if float(line[2]) <= args.qvalue:
-            parcial_output.write(str('\t'.join(line)))
+    with open(filtered_file, "w", encoding="utf-8") as f_qval:
+        f_qval.write(header)
+        for parts in filtered_rows:
+            f_qval.write("\t".join(parts) + "\n")
 
-    parcial_output.close()
+    if not filtered_rows:
+        warnings.warn(f"No valid PSMs found below q-value threshold {qvalue} in {p_path}", stacklevel=2)
+        # Create empty parsed file with header
+        with open(parsed_file, "w", encoding="utf-8") as f_out:
+            f_out.write("ProteinID\tPeptide\tSpectrum\n")
+        return filtered_file, parsed_file
 
-    # ---------- Parse information ----------------
+    # Step 2: Extract ProteinID, Peptide, Spectrum
+    # Format of PSM id in Percolator: path/basename_spectrum_charge_num
+    protein_map: dict[str, list[tuple[str, str]]] = {}
 
-    # open file that will be used to extract peptides
-    percolator_out = open(f"{args.basename}_qvalue_filtered.tsv", "r").readlines()
-    # Check if there are valid queries for qvalue used as cutoff
-    if len(percolator_out) < 2:
-        warnings.warn(f"INFO: file {args.basename}_qvalue_filtered.tsv return no valid queries for qvalue", stacklevel=2)
-        sys.exit(2)
-    # Remove index
-    del percolator_out[0]
+    for row in filtered_rows:
+        if len(row) < 5:
+            continue
+        psm_id = row[0].split("/")[-1]
+        tokens = psm_id.rsplit("_", 3)
+        spectrum = tokens[1] if len(tokens) >= 4 else tokens[0]
 
-    dict_write = {}
-    for line in percolator_out:
-        line_split = line.rstrip("\n").split("\t")
-        # Protein Id > can have more than one
-        all_ids = line_split[5:]
-        peptide = line_split[4]
-        filecontent = line_split[0].split("/")[-1]
-        idname, spectrum, charge, num = filecontent.rsplit("_", 3)
-        if len(all_ids)> 1:
-            for proteinID in all_ids:
-                # remove decoy matches
-                if "DECOY" in proteinID:
-                    pass
-                elif proteinID not in dict_write.keys():
-                    dict_write[f'{proteinID}'] = [f"{peptide}\t{spectrum}\n"]
-                else:
-                    dict_write[f'{proteinID}'].append([f"{peptide}\t{spectrum}\n"])
-        else:
-            # If list contains only one element, get this guy
-            only_id = all_ids[0]
-            # remove decoy matches
-            if "DECOY" in only_id:
-                pass
-            elif only_id not in dict_write.keys():
-                dict_write[only_id] = [f"{peptide}\t{spectrum}\n"]
-            else:
-                dict_write[only_id].append([f"{peptide}\t{spectrum}\n"])
+        peptide = row[4]
+        protein_ids = row[5:] if len(row) > 5 else []
+
+        for pid in protein_ids:
+            clean_pid = pid.strip()
+            if "DECOY" in clean_pid:
+                continue
+            protein_map.setdefault(clean_pid, []).append((peptide, spectrum))
+
+    # Step 3: Write parsed output
+    with open(parsed_file, "w", encoding="utf-8") as f_out:
+        f_out.write("ProteinID\tPeptide\tSpectrum\n")
+        for pid in sorted(protein_map.keys()):
+            for pep, spec in protein_map[pid]:
+                f_out.write(f"{pid}\t{pep}\t{spec}\n")
+
+    return filtered_file, parsed_file
 
 
-    with open(f"{args.basename}_parsed.tsv", "w") as output:
-        output.write("ProteinID\tPeptide\tSpectrum\n")
-        for key in sorted(dict_write.keys()) :
-            info = dict_write.get(key)
-            for peptide in info:
-                output.write(f"{key}\t{''.join(peptide)}")
+def main(argv: list[str] | None = None) -> int:
+    parser = cli()
+    args = parser.parse_args(argv)
+    try:
+        parse_percolator(
+            percolator_file=args.proteom,
+            basename=args.basename,
+            qvalue=args.qvalue,
+        )
+    except Exception as exc:
+        print(f"Error parsing Percolator file: {exc}", file=sys.stderr)
+        return 1
+    return 0
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())

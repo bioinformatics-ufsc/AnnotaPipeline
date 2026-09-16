@@ -1,245 +1,220 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+"""
+funcannotation_parser.py - Parse and integrate InterProScan, HMMER, and RPS-BLAST outputs.
+"""
 
-import re
-import logging
-import os
 import argparse
+import logging
+from pathlib import Path
+import re
 import sys
 
-def cli():
-    # ---------------Parser arguments ----------------
+UNWANTED_DATABASES = {"coils", "gene3d", "mobidblite"}
+
+
+def cli() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        add_help=False,  # removes original [--help]
-        description='''    
-        Script to parser Interproscan, RPSblast and HMMer results.
-        WARNING: Results from Coils, Gene3D and MobiDBLite won't be parsed
-        ''',
-        epilog="""And shall the hopeful words bring love inside your heart ...""",
-        formatter_class=argparse.RawTextHelpFormatter
+        description="Parse and integrate InterProScan, HMMER, and RPS-BLAST results.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
-    requiredNamed = parser.add_argument_group('required arguments')
-    optionalNamed = parser.add_argument_group('optional arguments')
-
-    # mandatory arguments
-    #   type (default): string
-    requiredNamed.add_argument(
-        '-ipr_annot', dest='ipr_annot',
-        metavar='[InterProScan_Output_annotated.gff3]',
-        help='InterProScan_Input',
-        required=True
+    req = parser.add_argument_group("required arguments")
+    req.add_argument(
+        "-ipr_annot", dest="ipr_annot",
+        metavar="[InterProScan_annotated.gff3]",
+        required=True,
+        help="InterProScan GFF3 for annotated proteins.",
     )
-
-    requiredNamed.add_argument(
-        '-ipr_hyp', dest='ipr_hyp',
-        metavar='[InterProScan_Output_hyphotetical.gff3]',
-        help='InterProScan_Input',
-        required=True
+    req.add_argument(
+        "-ipr_hyp", dest="ipr_hyp",
+        metavar="[InterProScan_hypothetical.gff3]",
+        required=True,
+        help="InterProScan GFF3 for hypothetical proteins.",
     )
-
-
-    requiredNamed.add_argument(
-        '-hmm', '--hmmscan', dest='hmm',
-        metavar='[HMMSCAN_Output.txt]',
-        help='HMMSCAN_Input',
-        required=True
+    req.add_argument(
+        "-hmm", "--hmmscan", dest="hmm",
+        metavar="[hmmscan_output.txt]",
+        required=True,
+        help="HMMSCAN tabular output file.",
     )
-
-    requiredNamed.add_argument(
-        '-rpsblast', '--rpsblast', dest='rpsblast',
-        metavar='[RPSblast_Output.txt]',
-        help='RPSblast_Input',
-        required=True
+    req.add_argument(
+        "-rpsblast", "--rpsblast", dest="rpsblast",
+        metavar="[rpsblast_output.txt]",
+        required=True,
+        help="RPS-BLAST tabular output file.",
     )
-
-    requiredNamed.add_argument(
-        '-basename', '--basename', dest='basename',
-        metavar='[It\'s a boy, and will be called Jonas]',
-        help='basename',
-        required=True
-    )
-
-    # custom [--help] argument
-    optionalNamed.add_argument(
-        '-h', '-help', '--help',
-        action='help',
-        default=argparse.SUPPRESS,  # hidden argument
-        help='It\'s going to be legen - wait for it - dary!'
+    req.add_argument(
+        "-basename", "--basename", dest="basename",
+        metavar="[basename]",
+        required=True,
+        help="Basename prefix for output files.",
     )
     return parser
 
-class StreamToLogger(object):
+
+def parse_interpro_gff(gff_file: Path) -> list[tuple[str, str, str, str, str, str]]:
     """
-    Fake file-like stream object that redirects writes to a logger instance.
+    Parse InterProScan GFF3 output before ##FASTA.
+    Returns list of tuples: (subject_id, db, name, description, ipr, ontology).
     """
+    results = []
+    if not gff_file.exists() or gff_file.stat().st_size == 0:
+        return results
 
-    def __init__(self, logger, log_level=logging.INFO):
-        self.logger = logger
-        self.log_level = log_level
-        self.linebuf = ''
+    with open(gff_file, "r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("##FASTA"):
+                break
+            if not line or line.startswith("#"):
+                continue
 
-    def write(self, buf):
-        temp_linebuf = self.linebuf + buf
-        self.linebuf = ''
-        for line in temp_linebuf.splitlines(True):
-            if line[-1] == '\n':
-                self.logger.log(self.log_level, line.rstrip())
-            else:
-                self.linebuf += line
+            parts = line.split("\t")
+            if len(parts) < 9:
+                continue
 
-    def flush(self):
-        if self.linebuf != '':
-            self.logger.log(self.log_level, self.linebuf.rstrip())
-        self.linebuf = ''
+            seq_id = parts[0]
+            db = parts[1]
+            if any(unwanted in db.lower() for unwanted in UNWANTED_DATABASES):
+                continue
 
+            attributes = parts[8].split(";")
+            ontology = "None"
+            signature_desc = "None"
+            name = "None"
+            dbxref = "None"
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
-    datefmt='%d/%m/%Y %H:%M:%S',
-    filename="FunctionalAnnotation.log",
-    filemode='a'
-)
+            for attr in attributes:
+                if attr.startswith("Ontology_term="):
+                    ontology = attr.replace("Ontology_term=", "").strip('"')
+                elif attr.startswith("signature_desc="):
+                    signature_desc = attr.replace("signature_desc=", "").strip('"')
+                elif attr.startswith("Name="):
+                    name = attr.replace("Name=", "").strip('"')
+                elif attr.startswith("Dbxref="):
+                    dbxref = attr.replace("Dbxref=", "").strip('"')
 
-stderr_logger = logging.getLogger('Functional Annotation')
-sl = StreamToLogger(stderr_logger, logging.ERROR)
-sys.stderr = sl
+            results.append((seq_id, db, name, signature_desc, dbxref, ontology))
 
-# --------------------------------------------------------------------------
-
-
-def parser_interproscan(arq_entrada, arq_ipr, arq_saida):
-    entrada = open(str(arq_entrada), "r").read().split("##FASTA")  # SPLITTING THE GFF3 FILE IN TWO CATEGORIES
-    interp = entrada[0].split("##sequence-region")  # WE'LL BE USING ONLY THE FIRST PART OF THE GFF3 OUTPUT FILE
-    del interp[0]
-    ipr = open(str(arq_ipr), "a")
-    output = open(str(arq_saida), "a")
-
-    db_list = ["Coils", "Gene3D", "MobiDBLite"]
-
-    # TREATING EACH QUERY, RETRIEVING THE INFORMATION THAT WILL BE WRITTEN ON THE FIRST OUTPUT FILE
-    for seq_reg in interp:
-        seq_reg = seq_reg.splitlines()
-        for linha in seq_reg:
-            if linha == seq_reg[0]:
-                linha = linha.split(" ")
-                del linha[0]
-            elif linha == seq_reg[1]:  # IGNORING THE FIRST LINE ON EACH GROUP OF QUERIES, AS IT'S NON-INFORMATIVE
-                pass
-            else:
-                ontology = str(None)
-                anotation_db = str(None)
-                name = str(None)
-                interpro = str(None)
-                linha = linha.split("\t")
-                name_subject = linha[0]
-                db = linha[1]
-                if not any(unwanted in db for unwanted in db_list):
-                    correct_db = db
-                    anotation = linha[-1].split(";")
-                    for query in anotation:
-                        if "Ontology" in query:
-                            ontology = query.replace('"', "").replace("Ontology_term=", "")
-                        if "signature_" in query:
-                            anotation_db = query.replace("signature_desc=", "")
-                        if "Name" in query:
-                            name = query.replace('"', "").replace("Name=", "")
-                        if "Dbxref" in query:
-                            interpro = query.replace('"', "").replace("Dbxref=", "")
-                    ipr.write(f"{name_subject}\t{correct_db}\t{name}\t{anotation_db}\t{interpro}\t{ontology}\n")
-                    output.write(f"{name_subject}\t{correct_db}\t{name}\t{anotation_db}\t{interpro}\t{ontology}\n")
-    output.close()
-    ipr.close()
+    return results
 
 
-def pfam_format(arq_entrada, arq_saida):
-    input = open(str(arq_entrada), "r").read().splitlines()
-    output = open(str(arq_saida), "w")
-    del input[0:3] 
-    del input[-10:]  
-    for line in input:
-        line = re.sub(r'\s+', ' ', line).split(" ")  
-        aux = " ".join(line[18:]) 
-        del line[18:]  
-        line.append(aux) 
-        output.write("\t".join(line) + "\n")
-    output.close()
+def parse_hmmscan_tblout(hmm_file: Path) -> list[tuple[str, str, str, str, str, str]]:
+    """Parse HMMER hmmscan --tblout tabular format."""
+    results = []
+    if not hmm_file.exists() or hmm_file.stat().st_size == 0:
+        return results
+
+    with open(hmm_file, "r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            # Regex split whitespace up to column 18
+            parts = re.split(r"\s+", line, maxsplit=18)
+            if len(parts) >= 19:
+                target_name = parts[0]
+                query_name = parts[2]
+                description = parts[18]
+                results.append((query_name, "Pfam", target_name, description, "None", "None"))
+    return results
 
 
-def parser_pfam(arq_entrada, arq_saida):
-    input = open(str(arq_entrada), "r").read().splitlines()
-    output = open(str(arq_saida), "a")
-    for line in input:
-        line = line.strip()
-        line = line.split("\t")
-        query = line[2]
-        db = "Pfam"  # ESPECIFICALLY WRITING THIS, AS THERE ARE NO OTHER DBs ON THIS PART OF THE ANALYSIS
-        ontologia = str(None)
-        anotacao_db = line[-1]
-        name = line[1]
-        interpro = str(None)
-        output.write(f"{query}\t{db}\t{name}\t{anotacao_db}\t{interpro}\t{ontologia}\n")
-    output.close()
+def parse_rpsblast_out(rps_file: Path) -> list[tuple[str, str, str, str, str, str]]:
+    """Parse RPS-BLAST outfmt 6 format."""
+    results = []
+    if not rps_file.exists() or rps_file.stat().st_size == 0:
+        return results
+
+    with open(rps_file, "r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("\t")
+            if len(parts) >= 9:
+                query_id = parts[0]
+                subject_acc = parts[1]
+                title = parts[-1]
+                results.append((query_id, "CDD", subject_acc, title, "None", "None"))
+    return results
 
 
-def parser_rpsblast(arq_entrada, arq_rps, arq_saida):
-    input = open(str(arq_entrada), "r").read().splitlines()
-    rps = open(str(arq_rps), "w")
-    output = open(str(arq_saida), "a")
-    for line in input:
-        hit = line.split("\t")
-        query = hit[0]
-        db = "CDD"
-        name = hit[1]  # Acesso_DB
-        anotation = hit[-1]
-        interpro = str(None)
-        ontology = str(None)
-        rps.write(f"{query}\t{db}\t{name}\t{anotation}\t{interpro}\t{ontology}\n")
-        output.write(f"{query}\t{db}\t{name}\t{anotation}\t{interpro}\t{ontology}\n")
-    output.close()
-    rps.close()
+def parse_functional_annotations(
+    ipr_annot: str | Path,
+    ipr_hyp: str | Path,
+    hmm_file: str | Path,
+    rpsblast_file: str | Path,
+    basename: str,
+    output_dir: str | Path | None = None,
+    logger: logging.Logger | None = None,
+) -> dict[str, Path]:
+    """Execute parsing of InterProScan, HMMER, and RPS-BLAST outputs."""
+    out_dir = Path(output_dir) if output_dir else Path.cwd()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    log = logger or logging.getLogger("FunctionalAnnotation")
+
+    ipr_out_file = out_dir / f"InterProScan_Out_{basename}.tsv"
+    hmm_out_file = out_dir / f"Hmmscan_Out_{basename}.tsv"
+    rps_out_file = out_dir / f"RPSblast_Out_{basename}.tsv"
+    grouped_file = out_dir / f"{basename}_Grouped_Hypothetical_Information.tsv"
+
+    # Parse hypothetical proteins
+    hyp_ipr_rows = parse_interpro_gff(Path(ipr_hyp))
+    hmm_rows = parse_hmmscan_tblout(Path(hmm_file))
+    rps_rows = parse_rpsblast_out(Path(rpsblast_file))
+
+    # Parse annotated proteins
+    annot_ipr_rows = parse_interpro_gff(Path(ipr_annot))
+
+    # Write InterProScan combined output
+    with open(ipr_out_file, "w", encoding="utf-8") as f:
+        for r in hyp_ipr_rows + annot_ipr_rows:
+            f.write("\t".join(r) + "\n")
+    log.info("InterProScan output written to %s", ipr_out_file)
+
+    # Write HMMER formatted output
+    with open(hmm_out_file, "w", encoding="utf-8") as f:
+        for r in hmm_rows:
+            f.write("\t".join(r) + "\n")
+    log.info("Hmmscan output written to %s", hmm_out_file)
+
+    # Write RPS-BLAST output
+    with open(rps_out_file, "w", encoding="utf-8") as f:
+        for r in rps_rows:
+            f.write("\t".join(r) + "\n")
+    log.info("RPSblast output written to %s", rps_out_file)
+
+    # Combine and sort hypothetical annotations
+    hypothetical_combined = hyp_ipr_rows + hmm_rows + rps_rows
+    hypothetical_combined.sort(key=lambda x: (x[0], x[1], x[2]))
+
+    with open(grouped_file, "w", encoding="utf-8") as f:
+        f.write("ID\tDB\tDB_ACCESS\tDESCRIPTION\tIPR\tGO\n")
+        for r in hypothetical_combined:
+            f.write("\t".join(r) + "\n")
+    log.info("Grouped hypothetical information written to %s", grouped_file)
+
+    return {
+        "interpro": ipr_out_file,
+        "hmmscan": hmm_out_file,
+        "rpsblast": rps_out_file,
+        "grouped_hypothetical": grouped_file,
+    }
 
 
-def sort_arq(arq_entrada, arq_saida):
-    hits = open(str(arq_entrada), "r")
-    ordered = open(str(arq_saida), "w")
-    ordered.write("ID\tDB\tDB_ACCESS\tDESCRIPTION\tIPR\tGO\n")
-    lines = hits.readlines()
-    lines.sort()
-    for line in lines:
-        ordered.write(str(line))
-    ordered.close()
+def main(argv: list[str] | None = None) -> int:
+    parser = cli()
+    args = parser.parse_args(argv)
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
+    parse_functional_annotations(
+        ipr_annot=args.ipr_annot,
+        ipr_hyp=args.ipr_hyp,
+        hmm_file=args.hmm,
+        rpsblast_file=args.rpsblast,
+        basename=args.basename,
+    )
+    return 0
 
 
-def main():
-    parser=cli()
-    # arguments saved here
-    args = parser.parse_args()
-    logger = logging.getLogger('Functional Annotation')
-    # ------------ Hipothetical ---------------------------------------
-    # Parse interproscan file
-    parser_interproscan(args.ipr_hyp, f"InterProScan_Out_{args.basename}.tsv", f"Temp_{args.basename}.tsv")
-    logger.info("InterProScan parser done")
-    # Parse HMMer file
-    pfam_format(args.hmm, f"Hmmscan_Out_{args.basename}.tsv")
-    logger.info("Hmmscan format done")
-    parser_pfam(f"Hmmscan_Out_{args.basename}.tsv", f"Temp_{args.basename}.tsv")
-    logger.info("Hmmscan parser done")
-    # Parse RPSblast file
-    parser_rpsblast(args.rpsblast, f"RPSblast_Out_{args.basename}.tsv", f"Temp_{args.basename}.tsv")
-    logger.info("RPSblast parser done")
-    # Group and sort 
-    sort_arq(f"Temp_{args.basename}.tsv", f"{args.basename}_Grouped_Hypothetical_Information.tsv")
-    logger.info("Sorting queryes in files")
-
-    # ------------ Annotated -----------------------------------------
-    # Save annotated proteins in Interpro_Out
-    parser_interproscan(args.ipr_annot, f"InterProScan_Out_{args.basename}.tsv", f"Temp_{args.basename}.tsv")
-    # Cleaning the house
-    os.system(f"rm Temp_{args.basename}.tsv")
-    logger.info("Temporary file removed")
-    logger.info("Functional Annotation step is completed")
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())
