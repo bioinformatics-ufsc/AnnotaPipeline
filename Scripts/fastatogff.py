@@ -1,118 +1,145 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+"""
+fastatogff.py - Integrate functional annotations into GFF files.
+
+Parses AUGUSTUS GFF3 files and replaces transcript attributes with annotations
+from All_Annotated_Products.txt.
+"""
 
 import argparse
+from pathlib import Path
 import re
+import sys
 
-# --- PARSER ARGUMENTS ---------------------------------------------------------
 
-parser = argparse.ArgumentParser(
-        add_help=False,
-        description='''
-        AnnotaPipeline script to parse GFF
+def cli() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Integrate protein annotations into an AUGUSTUS GFF file.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-all", "-a", "--annotations", "--allah", dest="anot",
+        metavar="[All_Annotated_Products.txt]",
+        required=True,
+        help="AnnotaPipeline annotation file (e.g. All_Annotated_Products.txt).",
+    )
+    parser.add_argument(
+        "-gff", "--gff", dest="gff",
+        metavar="[prediction.gff]",
+        required=True,
+        help="GFF file containing AUGUSTUS predictions.",
+    )
+    parser.add_argument(
+        "-b", "--basename", dest="basename",
+        metavar="[basename]",
+        required=True,
+        help="Basename for output files.",
+    )
+    return parser
 
-        Input GFF file and All annotated Products to join annotation into GFF
 
-        NOTE: If you make a subset from All_Annotated_Products.txt and input in this script,
-        the output will have only this subset.
-        ''',
+def load_annotations(annot_file: Path) -> dict[str, str]:
+    """Load annotations into a dictionary mapping sequence ID to description."""
+    annotations = {}
+    with open(annot_file, "r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("\t", 1)
+            if len(parts) >= 2:
+                annotations[parts[0].strip()] = parts[1].strip()
+    return annotations
 
-        epilog="""Hear the whispers of your hope, the answer wasn't told""",
-        formatter_class=argparse.RawTextHelpFormatter
-)
 
-requiredNamed = parser.add_argument_group('required arguments')
-optionalNamed = parser.add_argument_group('optional arguments')
+def extract_transcript_id(attribute_str: str) -> str:
+    """Extract transcript/gene ID from the GFF attribute column."""
+    # Remove ;.* to keep only first attribute if formatted as ID=...;Parent=...
+    attr = re.sub(r";.*", "", attribute_str.strip())
+    # Remove key= prefix (e.g. ID=)
+    attr = re.sub(r"^.*=", "", attr)
+    return attr.strip()
 
-# mandatory arguments
-#   type (default): string
-requiredNamed.add_argument(
-        '-all', '--allah', dest='anot',
-        metavar='[All_Annotated_Products.txt]',
-        help='One of AnnotaPipeline Outputs',
-        required=True
-)
 
-requiredNamed.add_argument(
-        '-gff', '--gff', dest='gff',
-        metavar='[GFF file]',
-        help='GFF file with all predictions',
-        required=True
-)
+def annotate_gff(
+    annot_file: str | Path,
+    gff_file: str | Path,
+    basename: str,
+    output_dir: str | Path | None = None,
+) -> Path:
+    """Insert annotations into GFF transcript lines for matching IDs."""
+    annot_path = Path(annot_file)
+    gff_path = Path(gff_file)
+    out_dir = Path(output_dir) if output_dir else Path.cwd()
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-requiredNamed.add_argument(
-        '-b', '--basename', dest='basename',
-        metavar='[Jonas]',
-        help='Just a name to your child',
-        required=True
-)
+    annotations = load_annotations(annot_path)
+    output_file = out_dir / f"{basename}_Annotated_GFF.gff"
 
-# custom [--help] argument
-optionalNamed.add_argument(
-        '-h', '-help', '--help',
-        action='help',
-        default=argparse.SUPPRESS,
-        help='What kind of sorcery is this?'
-)
+    with open(gff_path, "r", encoding="utf-8", errors="replace") as gff_in, \
+         open(output_file, "w", encoding="utf-8") as gff_out:
 
-# arguments saved here
-args = parser.parse_args()
+        header_lines = []
+        current_block = []
+        has_gene_started = False
+        gene_transcript_id = None
 
-annotations = open(args.anot, "r")
-anots = []
-ids = []
-# Get annotations and ids
-while True:
-        line = annotations.readline()
-        array_anot = line.split("\t")
-        try:
-                anots.append(array_anot[1])
-                ids.append(array_anot[0])
-        except Exception as warn:
-                pass
-        if not line:
-                break
+        for line in gff_in:
+            if line.startswith("# start gene "):
+                if current_block:
+                    _write_block_if_annotated(current_block, gene_transcript_id, annotations, gff_out)
+                    current_block = []
+                    gene_transcript_id = None
+                has_gene_started = True
+                current_block.append(line)
+            elif not has_gene_started:
+                header_lines.append(line)
+                gff_out.write(line)
+            else:
+                current_block.append(line)
+                if "\ttranscript\t" in line:
+                    parts = line.rstrip("\r\n").split("\t")
+                    if len(parts) >= 9:
+                        gene_transcript_id = extract_transcript_id(parts[8])
 
-# Build dictionary with id and anotation
-dict_anot = dict(zip(ids, anots))
-del ids, anots
+        if current_block:
+            _write_block_if_annotated(current_block, gene_transcript_id, annotations, gff_out)
 
-gff = open(str(args.gff), "r").read().split("# start gene ")
-header_gff = gff[0]
-del gff[0]
+    return output_file
 
-outfile = open(f"{str(args.basename)}_Annotated_GFF.gff", "w")
-outfile.write(str(header_gff))
-infos = []
 
-for gene in gff:
-        gene = gene.split("\n")
-        gene_stats = gene[1:]
-        infos.append(f"# start gene {str(gene[0])}")
-        id_gene = None
-        count = 0
-        count_transcript = None
-        transcript_line = None
-        for stat in gene_stats:
-                count += 1
-                if "\ttranscript\t" not in stat:
-                        infos.append(stat)
+def _write_block_if_annotated(
+    block: list[str],
+    transcript_id: str | None,
+    annotations: dict[str, str],
+    out_handle,
+) -> None:
+    """Write the gene block if transcript_id is annotated, replacing transcript attribute."""
+    if transcript_id and transcript_id in annotations:
+        annot_val = annotations[transcript_id]
+        for line in block:
+            if "\ttranscript\t" in line:
+                parts = line.rstrip("\r\n").split("\t")
+                if len(parts) >= 9:
+                    # Replace 9th column (attributes) with annotation
+                    parts[8] = annot_val
+                    out_handle.write("\t".join(parts) + "\n")
                 else:
-                        # SPLIT STATS TO CATCH ID
-                        stat_split = stat.split("\t")
-                        #id_gene = stat_split[-1]
-                        # use regex to remove ID= and ;PARENT from annotation ID in gff AUGUSTUS output
-                        id_gene =  re.sub(r';.*', '', stat_split[-1])
-                        id_gene =  re.sub(r'.*=', '', id_gene)
-                        count_transcript = count
-                        transcript_line = "\t".join(stat_split[0:-1])
-                if stat is gene_stats[-1]:
-                        if id_gene in dict_anot.keys():
-                                try:
-                                        outfile.write("\n".join(infos[0:count_transcript]) + "\n" +
-                                                                  transcript_line + "\t" + dict_anot.get(id_gene)
-                                                                  + "\n".join(infos[count_transcript:]))
-                                except NameError:
-                                        raise Exception("Inconsistent ID between gff and annotations")
-                        infos = []
-                        count_transcript = None
-                        transcript_line = None
+                    out_handle.write(line)
+            else:
+                out_handle.write(line)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = cli()
+    args = parser.parse_args(argv)
+    annotate_gff(
+        annot_file=args.anot,
+        gff_file=args.gff,
+        basename=args.basename,
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

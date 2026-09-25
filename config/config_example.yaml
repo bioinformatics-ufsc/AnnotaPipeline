@@ -17,8 +17,6 @@
 # A AVENTURA VAI COMEÇAR -------------------------------------------------------
 
 pipeline:
-  python: /usr/bin/python3  # [path] full path to python interpreter (>=3.6)
-  perl: /usr/bin/perl       # [path] full path to perl interpreter (required for augustus)
   threads: 8                # [int] number of threads to run all programs (default: 8)
   organism: Arabidopsis thaliana
   basename: Athaliana
@@ -50,8 +48,6 @@ databases:
 # AUGUSTUS ---------------------------------------------------------------------
 
 augustus:
-  augustus-path: conda          # if you are using our conda environment, set "conda"
-                                # and we will find augustus path
   strand: both                  # [ both / forward / backward ]
   genemodel: intronless         # [ partial / intronless / complete / atleastone / exactlyone ]
   species: arabidopsis thaliana  # based on species within /path/to/augustus/config/species
@@ -82,7 +78,6 @@ seq-cleaner:
 
 # blast will run *exclusively* with these parameters (any others will be ignored)
 local-aligner:
-  blast-exe: blastp
   evalue: 0.00001      # [float] e-value (default: 0.00001)
   identity: 40         # [int] identity threshold to filter blast results
   positivity: 60       # [int] positivity threshold to filter blast results
@@ -94,7 +89,6 @@ local-aligner:
 #   [-outfmt "6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle"]
 #   these flags are not listed
 rpsblast:
-  rpsblast-exe: rpsblast
   evalue: 0.00001      # [float] e-value (default: 1e-5)
   # OPTIONAL PARAMETERS (remove if not used)
   max_target_seqs: 10  # [int] maximum number of high scoring pairs
@@ -110,12 +104,9 @@ rpsblast:
 # EXAMPLE:
 #   goterms: flag
 interproscan:
-  #run with previous version of interproscan (which databases are already configured)
-  interproscan-exe: /home/opt/interproscan.sh 
   ms:         # OPTIONAL: minimum nucleotide size
 
 hmmer:
-  hmmscan-exe: hmmscan
   E: 1e-5     # e-value [1e-n] (n is an integer)
   domE: 1e-5  # filter per-domain output based on evalue [1e-n] (n is an integer)
 
@@ -127,7 +118,7 @@ hmmer:
 #     if one file was given in rna-seq, provide a value for these parameters
 #   do not fill if you don't want to use these flags with paired-end data
 kallisto:
-  kallisto-exe: kallisto
+  run-kallisto: False
   # FILE(s): path to rna-seq reads
   #          2 files for paired-end data OR 1 file for single-end data
   # EXAMPLE:
@@ -153,7 +144,7 @@ kallisto:
 
 # comet is OPTIONAL but requires percolator
 proteomics:
-  comet-exe: comet            # [path-to-file] /full/path/to/comet
+  run-comet:  False
   comet-params: /home/teste/comet.params    # [path-to-file] /full/path/to/comet.params
   comet-spectrometry: /home/Athaliana/Proteome/   # [path] /full/path/to/spectrometryfiles
   comet-ext: mzXML            # [extension] mass spectrometry file extension
@@ -165,5 +156,5 @@ proteomics:
                               #       overriding entry in parameters file
   last: 2000                  # [int] specify the last/end scan to search
                               #       overriding entry in parameters file
-  percolator-exe: percolator  # [path] /full/path/to/percolator
+  run-percolator: False
   percolator-qvalue: 0.5      # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)

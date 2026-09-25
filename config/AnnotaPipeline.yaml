@@ -17,8 +17,6 @@
 # A AVENTURA VAI COMEÇAR -------------------------------------------------------
 
 pipeline:
-  python: python3  # [path] full path to python interpreter (>=3.6)
-  perl: perl       # [path] full path to perl interpreter (required for augustus)
   threads: 8                # [int] number of threads to run all programs (default: 8)
   organism:                 # EXAMPLE: Homo sapiens
   basename:                 # EXAMPLE: Hsapiens
@@ -50,8 +48,6 @@ databases:
 # AUGUSTUS ---------------------------------------------------------------------
 
 augustus:
-  augustus-path: conda  # if you are using our conda environment, set "conda"
-                        # and we will find augustus path
   strand:               # [ both / forward / backward ]
   genemodel:            # [ partial / intronless / complete / atleastone / exactlyone ]
   species:              # based on species within /path/to/augustus/config/species
@@ -81,7 +77,6 @@ seq-cleaner:
 
 # blast will run *exclusively* with these parameters (any others will be ignored)
 local-aligner:
-  blast-exe: blastp
   evalue:       # [float] e-value (default: 0.00001)
   identity:     # [int] identity threshold to filter blast results
   positivity:   # [int] positivity threshold to filter blast results
@@ -93,7 +88,6 @@ local-aligner:
 #   [-outfmt "6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle"]
 #   these flags are not listed
 rpsblast:
-  rpsblast-exe: rpsblast
   evalue:    # [float] e-value (default: 1e-5)
   max_target_seqs:   # [int] maximum number of high scoring pairs
 
@@ -108,11 +102,9 @@ rpsblast:
 # EXAMPLE:
 #   goterms: flag
 interproscan:
-  interproscan-exe: interproscan.sh
   ms:     # OPTIONAL: minimum nucleotide size
 
 hmmer:
-  hmmscan-exe: hmmscan
   E:      # e-value [1e-n] (n is an integer)
   domE:   # filter per-domain output based on evalue [1e-n] (n is an integer)
 
@@ -125,7 +117,7 @@ hmmer:
 #     if one file was given in rna-seq, provide a value for these parameters
 #   do not fill if you don't want to use these flags with paired-end data
 kallisto:
-  kallisto-exe:  # [path] kallisto
+  run-kallisto: False
   # FILE(s): path to rna-seq reads
   #          2 files for paired-end data OR 1 file for single-end data
   # EXAMPLE:
@@ -151,7 +143,7 @@ kallisto:
 # comet is OPTIONAL but requires percolator
 #   add comet to "comet-exe" to run this analysis
 proteomics:
-  comet-exe:               # [path] comet
+  run-comet:  False
   comet-params:            # [path] full path to comet.params
   comet-spectrometry:      # [path] full path to directory containing mass spectrometry files
   comet-ext:               # [extension] mass spectrometry file extension
@@ -163,5 +155,4 @@ proteomics:
                            #       overriding entry in parameters file
   last:                    # [int] specify the last/end scan to search
                            #       overriding entry in parameters file
-  percolator-exe: percolator # [path] /full/path/to/percolator
   percolator-qvalue: 0.05  # [float] parse percolator output by qvalue (<=) between 0 and 1 (default: 0.05)

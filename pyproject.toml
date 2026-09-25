@@ -1,0 +1,41 @@
+[project]
+name = "AnnotaPipeline"
+version = "2"
+description = "Multiomics Annotation Pipeline"
+authors = [
+  {name = "Guilherme Augusto Maia"},
+  {name = "Eric Kazuo Kawagoe"},
+  {name = "Vilmar Benetti Filho"},
+  {name = "Tatiany Soratto"},
+  {name = "Renato Simões"},
+  {name = "Glauber Wagner"}
+]
+readme = "README.md"
+dependencies = [
+    'biopython>=1.73',
+    'pandas>=0.24.1',
+    'PyYAML>=6.0'
+]
+requires-python = ">=3.6.9"
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools", "wheel"]
+
+[tool.setuptools]
+include-package-data = true
+package-dir = {"" = "."}
+packages=[
+        "Scripts"
+        ]
+
+[project.scripts]
+AnnotaPipeline = "Scripts.AnnotaPipeline:main"
+blastp_parser = "Scripts.blastp_parser:main"
+fasta_simple = "Scripts.fasta_simple:main"
+fastatogff = "Scripts.fastatogff:main" 
+funcannotation_parser = "Scripts.funcannotation_parser:main"
+gfftofasta_parser = "Scripts.gfftofasta_parser:main"
+info_parser ="Scripts.info_parser:main"
+kallisto_parser ="Scripts.kallisto_parser:main"
+percolator_parser ="Scripts.percolator_parser:main"
+summary_parser = "Scripts.summary_parser:main"

@@ -1,508 +1,449 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+"""
+blastp_parser.py - Similarity analysis using SwissProt and a secondary database.
 
-############################
-###   DESCRIPTION HERE   ###
-############################
-
-# USAGE: python3 BLASTp_SwissProt_TriTrypDB.py \
-#                    --seq Cleared_Linfantum_AUGUSTUS.aa \
-#                    --swissprot uniprot_sprot.fasta \
-#                    --tritrypdb TriTrypDB_proteins.fasta
-
-"""---A AVENTURA VAI COMEÇAR-------------------------------------------------"""
+Executes BLASTp against SwissProt, filters annotations, extracts unannotated sequences,
+and performs a secondary search against TrEMBL, NR, EuPathDB, or a custom database.
+"""
 
 import argparse
-import subprocess
+from collections import defaultdict
 import logging
-import sys
+from pathlib import Path
 import re
-import os
-from shutil import which
-
-'''---ARGUMENTS AND [--help / -help / -h]------------------------------------'''
-
-parser = argparse.ArgumentParser(
-    add_help=False,  # removes original [--help]
-    description='''Scritp to run and parse output from Swissprot and other database [NR, EupathDB, Trembl],
-    Please give at least one, through flags -nr, -spdb or -trbl   
-    ''',
-    epilog=""">>>> -nr, -spdb and -trbl are mutually exclusive arguments <<<<
-    
-Poof, you're a sandwich!""", formatter_class=argparse.RawTextHelpFormatter
-)
-
-requiredNamed = parser.add_argument_group('required arguments')
-optionalNamed = parser.add_argument_group('optional arguments')
-
-# mandatory arguments
-#   type (default): string
-requiredNamed.add_argument(
-    '-s', '--seq', dest='seq',
-    metavar='[protein_file]',
-    help=('non-redundant protein fasta file'
-          + ' to be used by the BLASTp suite'),
-    required=True
-)
-
-requiredNamed.add_argument(
-    '-sp', '--swissprot', dest='spdb',
-    metavar='[UniProt_SwissProt_database]',
-    help='destination to /SwissProt/database',
-    required=True
-)
-
-requiredNamed.add_argument(
-    '-basename', dest='basename',
-    metavar='[It\'s a boy, and will be called Jonas]',
-    help='basename',
-    required=True
-)
-
-requiredNamed.add_argument(
-    '-blastp', dest='blastp',
-    metavar='/opt/blast/blastp',
-    help='full path to blastp [if it`s in bin pass just "blastp"]',
-    required=True
-)
-
-#   type (default): string
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument(
-    '-trbl', '--Trembl', dest='trembl',
-    metavar='[Trembl_database]',
-    help='destination to Trembl database'
-)
-
-group.add_argument(
-    '-spdb', '--specificdb', dest='specificdb',
-    metavar='[SpecificDB_database]',
-    help='destination to specific database, in EupathDB format',
-)
-
-group.add_argument(
-    '-nr', '--nrdb', dest='nr',
-    metavar='[NR_database]',
-    help='destination to NR database',
-)
-
-optionalNamed.add_argument(
-    '-id', '--identity', dest='id',
-    metavar='', default=40,
-    help=('Minimal identity to transfer annotation. If a query has results below this threshold '
-          'it will be classified as hypothetical'
-          + ' (default: 40)')
-)
-
-optionalNamed.add_argument(
-    '-cov', '--coverage', dest='cov',
-    metavar='', default=30,
-    help=('Minimal coverage to analyse query result. Matches below this threshold '
-          'will not be considered'
-          + ' (default: 30)')
-)
-
-optionalNamed.add_argument(
-    '-kw', '--keywords', dest='keywords',
-    metavar='[\"hypothetical,unspecified,fragment'
-            ',partial,unknown,fragemnt\"]', default=str("hypothetical,unspecified,fragment,"
-                                                        "partial,unknown,fragemnt"),
-    help=('Keywords to search for hypothetical annotations. Please, pass each word followed by comma,'
-            +' whitout spaces')
-)
-
-optionalNamed.add_argument(
-    '-pos', '--positivity', dest='pos',
-    metavar='', default=60,
-    help=('Minimal positivity to transfer annotation. If a query has results below this threshold '
-          'it will be classified as hypothetical'
-          + ' (default: 60)')
-)
-
-optionalNamed.add_argument(
-    '-t', '--threads', dest='threads',
-    metavar='', type=int, default=20,
-    help='number of threads [int] (default: 20)'
-)
-
-optionalNamed.add_argument(
-    '-max_target_seqs', dest='hsps',
-    metavar='', type=int, default=10,
-    help='max_target_seqs flag from blastp [int] (default: 10)'
-)
-
-optionalNamed.add_argument(
-    '-evalue', dest='evalue',
-    metavar='', type=float, default=0.00001,
-    help='evalue flag from blastp [int] (default: 0.00001)'
-)
-
-# custom [--help] argument
-optionalNamed.add_argument(
-    '-h', '-help', '--help',
-    action='help',
-    default=argparse.SUPPRESS,  # hidden argument
-    help='It\'s going to be legen - wait for it - dary!'
-)
-
-optionalNamed.add_argument(
-    '-customsep', dest='customsep',
-    metavar='\\t \\s |', default="|",
-    help=('Custom separator for specifiedDB when is not a pattern of NR/Trembl/Eupathdb\
-        Default is Eupathdb pattern')
-)
-
-optionalNamed.add_argument(
-    '-customcolumn', dest='customcolumn',
-    metavar='', default=5, type=int,
-    help=('Custom column that contains protein annotation for specifiedDB when is not a pattern of NR/Trembl/Eupathdb\
-         Default is Eupathdb pattern')
-)
-
-# arguments saved here
-args = parser.parse_args()
-
-# ----------------------- Create LogFile ------------------------------------
-
-logger = logging.getLogger('Blast')
-
-# ----------------------Redirect STDOUT and STDERR to logfile--------------
+import shutil
+import subprocess
+import sys
+from Bio import SeqIO
 
 
-class StreamToLogger(object):
-    """
-    Fake file-like stream object that redirects writes to a logger instance.
-    """
+def cli() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Run and parse BLASTp searches against SwissProt and a secondary database.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    req = parser.add_argument_group("required arguments")
+    req.add_argument(
+        "-s", "--seq", dest="seq",
+        metavar="[protein_file]",
+        required=True,
+        help="Input protein FASTA file.",
+    )
+    req.add_argument(
+        "-sp", "--swissprot", dest="spdb",
+        metavar="[SwissProt_db]",
+        required=True,
+        help="Path to SwissProt BLAST database.",
+    )
+    req.add_argument(
+        "-basename", dest="basename",
+        metavar="[basename]",
+        required=True,
+        help="Basename prefix for output files.",
+    )
 
-    def __init__(self, logger, log_level=logging.INFO):
-        self.logger = logger
-        self.log_level = log_level
-        self.linebuf = ''
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        "-trbl", "--Trembl", dest="trembl",
+        metavar="[Trembl_db]",
+        help="Path to TrEMBL database.",
+    )
+    group.add_argument(
+        "-spdb", "--specificdb", dest="specificdb",
+        metavar="[Specific_db]",
+        help="Path to specific database (e.g. EuPathDB format).",
+    )
+    group.add_argument(
+        "-nr", "--nrdb", dest="nr",
+        metavar="[NR_db]",
+        help="Path to NR database.",
+    )
 
-    def write(self, buf):
-        temp_linebuf = self.linebuf + buf
-        self.linebuf = ''
-        for line in temp_linebuf.splitlines(True):
-            if line[-1] == '\n':
-                self.logger.log(self.log_level, line.rstrip())
+    opt = parser.add_argument_group("optional arguments")
+    opt.add_argument(
+        "-id", "--identity", dest="id",
+        type=float, default=40.0,
+        help="Minimum percentage identity threshold.",
+    )
+    opt.add_argument(
+        "-pos", "--positivity", dest="pos",
+        type=float, default=60.0,
+        help="Minimum percentage positivity threshold.",
+    )
+    opt.add_argument(
+        "-cov", "--coverage", dest="cov",
+        type=float, default=30.0,
+        help="Minimum query coverage threshold.",
+    )
+    opt.add_argument(
+        "-kw", "--keywords", dest="keywords",
+        default="hypothetical,unspecified,fragment,partial,unknown,fragemnt",
+        help="Comma-separated keywords indicating uninformative annotations.",
+    )
+    opt.add_argument(
+        "-t", "--threads", dest="threads",
+        type=int, default=8,
+        help="Number of threads for BLASTp.",
+    )
+    opt.add_argument(
+        "-max_target_seqs", dest="hsps",
+        type=int, default=10,
+        help="Maximum target sequences per query.",
+    )
+    opt.add_argument(
+        "-evalue", dest="evalue",
+        type=float, default=1e-5,
+        help="E-value cutoff for BLASTp.",
+    )
+    opt.add_argument(
+        "-blastp", dest="blastp",
+        default="blastp",
+        help="Path to blastp executable.",
+    )
+    opt.add_argument(
+        "-customsep", dest="customsep",
+        default="|",
+        help="Field separator for custom database header.",
+    )
+    opt.add_argument(
+        "-customcolumn", dest="customcolumn",
+        type=int, default=5,
+        help="Zero-indexed column containing annotation in custom database.",
+    )
+    return parser
+
+
+def run_blast(
+    blast_bin: str,
+    query_file: Path,
+    out_file: Path,
+    db: str,
+    threads: int,
+    evalue: float,
+    max_targets: int,
+    logger: logging.Logger,
+) -> None:
+    """Execute blastp subprocess with standardized format 6 output."""
+    fmt = "6 qseqid sseqid sacc bitscore evalue ppos pident qcovs stitle"
+    cmd = [
+        str(blast_bin),
+        "-query", str(query_file),
+        "-out", str(out_file),
+        "-db", str(db),
+        "-evalue", str(evalue),
+        "-outfmt", fmt,
+        "-max_target_seqs", str(max_targets),
+        "-num_threads", str(threads),
+    ]
+    logger.info("Executing BLAST command: %s", " ".join(cmd))
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        logger.error("BLASTp execution failed: %s", result.stderr)
+        raise RuntimeError(f"BLASTp failed with return code {result.returncode}: {result.stderr}")
+
+
+def extract_description(
+    title: str,
+    dbtype: str,
+    customsep: str = "|",
+    customcolumn: int = 5,
+) -> str:
+    """Extract informative description string based on database format."""
+    if dbtype == "nr":
+        # Match '... [organism]'
+        m = re.search(r"\s(.*?)\s\[", title)
+        if m:
+            return m.group(1).strip()
+        return title.split(" ", 1)[-1].strip()
+
+    if dbtype == "trembl" or dbtype == "swissprot":
+        # Format: 'sp|P12345|ID Description OS=Species ...'
+        desc_part = title.split(" ", 1)[-1] if " " in title else title
+        return desc_part.split("OS=")[0].strip()
+
+    if dbtype == "specificdb":
+        # EuPathDB or custom format
+        tokens = title.split(customsep)
+        if len(tokens) > customcolumn:
+            val = tokens[customcolumn].replace("transcript_product=", "").strip()
+            return val
+        return title.strip()
+
+    return title.strip()
+
+
+def parse_blast_records(outfmt6_file: Path) -> dict[str, list[dict]]:
+    """Parse format 6 tabular output into hits grouped by query ID."""
+    grouped_hits: dict[str, list[dict]] = defaultdict(list)
+    if not outfmt6_file.exists() or outfmt6_file.stat().st_size == 0:
+        return grouped_hits
+
+    with open(outfmt6_file, "r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            parts = line.rstrip("\r\n").split("\t")
+            if len(parts) < 9:
+                continue
+            try:
+                grouped_hits[parts[0]].append({
+                    "qseqid": parts[0],
+                    "sseqid": parts[1],
+                    "sacc": parts[2],
+                    "bitscore": float(parts[3]),
+                    "evalue": float(parts[4]),
+                    "ppos": float(parts[5]),
+                    "pident": float(parts[6]),
+                    "qcovs": float(parts[7]),
+                    "stitle": parts[8],
+                })
+            except (ValueError, IndexError):
+                continue
+    return grouped_hits
+
+
+def process_swissprot_results(
+    basename: str,
+    query_fasta: Path,
+    swiss_out: Path,
+    min_identity: float,
+    min_positivity: float,
+    min_coverage: float,
+    keywords: list[str],
+    out_dir: Path,
+) -> set[str]:
+    """Filter SwissProt BLAST hits and export unannotated sequences."""
+    grouped = parse_blast_records(swiss_out)
+    annotated_file = out_dir / f"{basename}_annotated_products.txt"
+    swiss_annot_file = out_dir / f"{basename}_SwissProt_annotations.txt"
+    unannotated_fasta = out_dir / f"{basename}_BLASTp_AA_SwissProted.fasta"
+
+    annotated_ids: set[str] = set()
+
+    with open(annotated_file, "w", encoding="utf-8") as f_annot, \
+         open(swiss_annot_file, "w", encoding="utf-8") as f_swiss:
+
+        for qid, hits in grouped.items():
+            valid_hits = []
+            all_descriptions = []
+
+            for hit in hits:
+                desc = extract_description(hit["stitle"], "swissprot")
+                all_descriptions.append(desc)
+
+                has_kw = any(kw.lower() in desc.lower() for kw in keywords)
+                if (hit["qcovs"] >= min_coverage and not has_kw and
+                        hit["ppos"] >= min_positivity and hit["pident"] >= min_identity):
+                    valid_hits.append((hit["bitscore"], desc))
+
+            if valid_hits:
+                # Select best bitscore hit
+                valid_hits.sort(key=lambda x: x[0], reverse=True)
+                best_desc = valid_hits[0][1]
+                f_annot.write(f"{qid}\t{best_desc}\n")
+                f_swiss.write(f"{qid}\t{len(all_descriptions)} Annotation(s): [{';'.join(all_descriptions)}]\n")
+                annotated_ids.add(qid)
+
+    # Write non-annotated queries to separate FASTA for secondary search
+    unannotated_count = 0
+    with open(unannotated_fasta, "w", encoding="utf-8") as f_unann:
+        for record in SeqIO.parse(str(query_fasta), "fasta"):
+            if record.id.strip() not in annotated_ids:
+                SeqIO.write(record, f_unann, "fasta-2line")
+                unannotated_count += 1
+
+    return annotated_ids
+
+
+def process_secondary_db_results(
+    basename: str,
+    secondary_out: Path,
+    dbtype: str,
+    min_identity: float,
+    min_positivity: float,
+    min_coverage: float,
+    keywords: list[str],
+    customsep: str,
+    customcolumn: int,
+    out_dir: Path,
+) -> set[str]:
+    """Parse secondary BLAST hits and classify into annotated vs hypothetical."""
+    grouped = parse_blast_records(secondary_out)
+    annotated_file = out_dir / f"{basename}_annotated_products.txt"
+    hypo_file = out_dir / f"{basename}_hypothetical_products.txt"
+    spec_annot_file = out_dir / f"{basename}_SpecifiedDB_annotations.txt"
+
+    secondary_annotated_ids: set[str] = set()
+
+    with open(annotated_file, "a", encoding="utf-8") as f_annot, \
+         open(hypo_file, "w", encoding="utf-8") as f_hypo, \
+         open(spec_annot_file, "w", encoding="utf-8") as f_spec:
+
+        for qid, hits in grouped.items():
+            valid_hits = []
+            all_descriptions = []
+
+            for hit in hits:
+                desc = extract_description(hit["stitle"], dbtype, customsep, customcolumn)
+                all_descriptions.append(desc)
+
+                has_kw = any(kw.lower() in desc.lower() for kw in keywords)
+                if (hit["qcovs"] >= min_coverage and not has_kw and
+                        hit["ppos"] >= min_positivity and hit["pident"] >= min_identity):
+                    valid_hits.append((hit["bitscore"], desc))
+
+            if valid_hits:
+                valid_hits.sort(key=lambda x: x[0], reverse=True)
+                best_desc = valid_hits[0][1]
+                f_annot.write(f"{qid}\t{best_desc}\n")
+                f_spec.write(f"{qid}\t{len(all_descriptions)} Annotation(s): [{';'.join(all_descriptions)}]\n")
+                secondary_annotated_ids.add(qid)
             else:
-                self.linebuf += line
+                f_hypo.write(f"{qid}\n")
 
-    def flush(self):
-        if self.linebuf != '':
-            self.logger.log(self.log_level, self.linebuf.rstrip())
-        self.linebuf = ''
+    return secondary_annotated_ids
 
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s',
-    datefmt='%d/%m/%Y %H:%M:%S',
-    filename="SimilarityAnalysis.log",
-    filemode='a'
-)
+def identify_no_hits(
+    basename: str,
+    unannotated_fasta: Path,
+    secondary_out: Path,
+    out_dir: Path,
+) -> Path:
+    """Identify sequences with no alignments against SwissProt or secondary database."""
+    hit_ids = set()
+    if secondary_out.exists() and secondary_out.stat().st_size > 0:
+        with open(secondary_out, "r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                parts = line.split("\t")
+                if parts:
+                    hit_ids.add(parts[0].strip())
 
-stderr_logger = logging.getLogger('Blast')
-sl = StreamToLogger(stderr_logger, logging.ERROR)
-sys.stderr = sl
+    no_hit_file = out_dir / f"{basename}_no_hit_products.txt"
+    with open(no_hit_file, "w", encoding="utf-8") as f_nohit:
+        if unannotated_fasta.exists():
+            for record in SeqIO.parse(str(unannotated_fasta), "fasta"):
+                seq_id = record.id.strip()
+                if seq_id not in hit_ids:
+                    f_nohit.write(f"{seq_id}\n")
 
-# --------------------------------------------------------------------------
-
-'''---SOFTWARE SETTINGS------------------------------------------------------'''
-
-class hit:
-
-    def __init__(self, desc, bitscore):
-        self.desc = desc
-        self.bitscore = bitscore
-
-    def __lt__(self, other):
-        return self.bitscore > other.bitscore
-
-
-def blast(arq1, arq2, db, hsps, evalue):
-    datab = str(db)
-    fmt = str("\"6 qseqid sseqid sacc bitscore"
-              + " evalue ppos pident qcovs stitle\"")
-
-    command = f"{args.blastp} -query {arq1} -out {arq2}" \
-                    f" -db {datab} -evalue {evalue}" \
-                    f" -outfmt {fmt}" \
-                    f" -max_target_seqs {hsps}" \
-                    f" -num_threads {str(args.threads)}"
-    logger.debug(command)
-    subprocess.getoutput(command)
+    return no_hit_file
 
 
-def temporary_query(arq):
-    # temporary adding a line to the BLAST analysis
-    #   so it accounts for the last query found by the BLAST algorithm
-    try:
-        temp = arq[-1].split("\t")
-        del temp[0]
-        temp.insert(0, "QueryTemp")
-        arq.append("\t".join(temp))
-        # Index error ocours when Interproscan returns no results, as consequence, arq is empty, and split empty file is not allowed
-    except IndexError:
-        arq.append("\t".join("QueryTemp"))
+def run_blastp_similarity(
+    query_fasta: str | Path,
+    swissprot_db: str,
+    secondary_db: str,
+    secondary_type: str,
+    basename: str,
+    blastp_bin: str = "blastp",
+    threads: int = 8,
+    evalue: float = 1e-5,
+    max_targets: int = 10,
+    min_identity: float = 40.0,
+    min_positivity: float = 60.0,
+    min_coverage: float = 30.0,
+    keywords: list[str] | str | None = None,
+    customsep: str = "|",
+    customcolumn: int = 5,
+    output_dir: str | Path | None = None,
+    logger: logging.Logger | None = None,
+) -> dict[str, Path]:
+    """Complete modular similarity pipeline execution."""
+    out_dir = Path(output_dir) if output_dir else Path.cwd()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    log = logger or logging.getLogger("SimilarityAnalysis")
 
-
-def check_query(full_line_list, coverage, word_list, id, pos, list_classification, list_annot, list_desc, description):
-    if float(full_line_list[7]) > float(coverage):
-        if not any(word.lower() in description.lower() for word in word_list):
-            if float(full_line_list[5]) >= float(pos) and float(full_line_list[6]) >= float(id):
-                # If annotation is strong, is considered as non_hypothetical
-                list_classification.append("non_hypothetical")
-                # Store desc and bitscore
-                list_annot.append(hit(str(description), float(full_line_list[3])))
-                list_desc.append(description)
-            else:
-                list_classification.append("hypothetical")
-        else:
-            list_classification.append("hypothetical")
+    if isinstance(keywords, str):
+        kw_list = [w.strip() for w in keywords.split(",") if w.strip()]
+    elif isinstance(keywords, list):
+        kw_list = keywords
     else:
-        pass
+        kw_list = ["hypothetical", "unspecified", "fragment", "partial", "unknown", "fragemnt"]
+
+    query_path = Path(query_fasta)
+    swiss_out = out_dir / f"{basename}_BLASTp_AAvsSwissProt.outfmt6"
+    secondary_out = out_dir / f"{basename}_BLASTp_AAvsSpecifiedDB.outfmt6"
+    unannotated_fasta = out_dir / f"{basename}_BLASTp_AA_SwissProted.fasta"
+
+    # 1. Search against SwissProt
+    log.info("Running BLASTp against SwissProt...")
+    run_blast(blastp_bin, query_path, swiss_out, swissprot_db, threads, evalue, max_targets, log)
+
+    # 2. Process SwissProt hits
+    log.info("Processing SwissProt annotations...")
+    process_swissprot_results(
+        basename, query_path, swiss_out, min_identity, min_positivity, min_coverage, kw_list, out_dir
+    )
+
+    # 3. Search against Secondary DB
+    log.info("Running BLASTp against secondary database (%s)...", secondary_type)
+    run_blast(blastp_bin, unannotated_fasta, secondary_out, secondary_db, threads, evalue, max_targets, log)
+
+    # 4. Process Secondary DB hits
+    log.info("Processing secondary database hits...")
+    process_secondary_db_results(
+        basename, secondary_out, secondary_type, min_identity, min_positivity, min_coverage,
+        kw_list, customsep, customcolumn, out_dir
+    )
+
+    # 5. Extract no-hit queries
+    log.info("Identifying queries with no hits in either database...")
+    identify_no_hits(basename, unannotated_fasta, secondary_out, out_dir)
+
+    log.info("Similarity analysis completed successfully.")
+    return {
+        "swissprot_out": swiss_out,
+        "secondary_out": secondary_out,
+        "annotated": out_dir / f"{basename}_annotated_products.txt",
+        "hypothetical": out_dir / f"{basename}_hypothetical_products.txt",
+        "no_hit": out_dir / f"{basename}_no_hit_products.txt",
+    }
 
 
-# Function to check if file was generated. It helps if AnnotaPipeline crash
-def check_file(file):
-    logger = logging.getLogger('Blast')
-    if os.path.isfile(file) == 0:
-        logger.error(f"File {str(file)} does not exist, please check command line for blastp execution")
-        log_quit()
-    elif os.path.getsize(file) == 0:
-        logger.error(f"File {str(file)} is empty, this is uncommon for a blastp search with a set of proteins")
-        logger.warning("AnnotaPipeline can't go on with this uncertainty.")
-        logger.warning("Check command Blast line execution to find out what happened")
-        logger.info("Exiting")
-        logging.shutdown()
-        sys.exit(1)
+def main(argv: list[str] | None = None) -> int:
+    parser = cli()
+    args = parser.parse_args(argv)
 
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
+    logger = logging.getLogger("SimilarityAnalysis")
 
-'''---Keywords-------------------------------------------------------------'''
-
-# defining the keywords that will be used
-#   to separate each HSP found in the BLAST output_file.txt:
-keyword_list = args.keywords.split(",")
-
-def define_db():
-    # check dbtype to get pattern correctly
-    if args.nr is not None:
+    if args.nr:
         dbtype = "nr"
         secondary_db = args.nr
-    elif args.trembl is not None:
+    elif args.trembl:
         dbtype = "trembl"
         secondary_db = args.trembl
-    elif args.specificdb is not None:
+    elif args.specificdb:
         dbtype = "specificdb"
         secondary_db = args.specificdb
     else:
-        logger.error("Can't find any secondary database")
-        sys.exit(1)
-    return dbtype, secondary_db
+        logger.error("No secondary database specified.")
+        return 1
+
+    try:
+        run_blastp_similarity(
+            query_fasta=args.seq,
+            swissprot_db=args.spdb,
+            secondary_db=secondary_db,
+            secondary_type=dbtype,
+            basename=args.basename,
+            blastp_bin=args.blastp,
+            threads=args.threads,
+            evalue=args.evalue,
+            max_targets=args.hsps,
+            min_identity=args.id,
+            min_positivity=args.pos,
+            min_coverage=args.cov,
+            keywords=args.keywords,
+            customsep=args.customsep,
+            customcolumn=args.customcolumn,
+            logger=logger,
+        )
+    except Exception as exc:
+        logger.error("BLAST pipeline failed: %s", exc, exc_info=True)
+        return 1
+
+    return 0
 
 
-# Get patten according to database
-def get_pattern(query, dbtype):
-    if dbtype == "nr":
-        # split line by \t > separate columns > each line becomes a list
-        fields = query.split("\t")
-        desc = fields[8]
-        try:
-            desc = re.search(r'\s(.*?)\s\[.*', desc).group(1)
-        # if regex fail, catch annotation
-        except AttributeError:
-            desc = desc.replace("\n","")
-        seqname = fields[0]
-    elif dbtype == "trembl":
-        fields = query.split("\t")
-        title = fields[-1]  # get description
-        title_split = title.split(" ", 1)[-1]  # get last part of description
-        desc = title_split.split("OS=")[0].strip().rstrip()  # get only description
-        seqname = fields[0]
-    elif dbtype == "specificdb":
-        fields = query.split("\t")
-        # 8 is the column for annotaion in blast results
-        description = fields[8].split(str(args.customsep))
-        desc = description[int(args.customcolumn)].replace("transcript_product=", "")
-        seqname=fields[0]
-    else:
-        logger.error("Wrong dbtype - exiting")
-        sys.exit(1)
-
-    return seqname, desc.strip(), fields
-
-
-def parser_blast(basename, result_blast, identidade, positividade, cov, dbtype):
-    result_blast_file = open(str(result_blast), "r").read().splitlines()
-    hyp = open(f"{str(basename)}_hypothetical_products.txt", "w")
-    nhyp = open(f"{str(basename)}_annotated_products.txt", "a")
-    all_anot = open(f"{str(basename)}_SpecifiedDB_annotations.txt", "w")
-    # temporary adding a line
-    #   so it accounts for the last query found by the BLAST analysis
-    temporary_query(result_blast_file)
-    # creating the lists and counter that will be used
-    #   to make sure the script goes through each HSP in every query
-    # it's important that these lists are set back to NULL
-    #   and the counter is set to zero before we start
-    old_id = result_blast_file[0].split("\t")  # recebe a primeira query para começar a contagem
-    old_id = old_id[0]
-    annots = []
-    classification = []
-    desc_list = []
-
-    for query in result_blast_file:
-        new_id, desc, fields = get_pattern(query, dbtype)
-        # defining which file will receive each HSP depending on the counter number
-        #   the script will write each HSP on its corresponding .txt file
-        # IMPORTANT: the first time this loop runs it will add an empty line ("\n")
-        #            to the first line of the hyp_file.txt
-        if old_id != new_id:
-            if "non_hypothetical" in ' '.join(classification):
-                nhyp.write(f"{str(old_id)}\t")
-                # Sort annotations by bitscore
-                annots.sort()
-                # Get best identity, first position of array
-                nhyp.write(f"{str(annots[0].desc)}\n")
-                all_anot.write(f"{old_id}\t{len(desc_list)} Annotation(s): [{';'.join(desc_list)}]\n")
-            else:
-                hyp.write(f"{str(old_id)}\n")
-            # this just resets the count back to zero, before it starts again
-            classification.clear()
-            annots.clear()
-            desc_list.clear()
-            # check first query of new ID
-            check_query(fields, cov, keyword_list, identidade, positividade, 
-                        classification, annots, desc_list, desc)
-        else:
-            check_query(fields, cov, keyword_list, identidade, positividade, 
-                        classification, annots, desc_list, desc)
-        # saving the information that will be written in the .txt files
-        old_id = new_id
-
-    hyp.close()
-    nhyp.close()
-    all_anot.close()
-
-
-def process_swiss(basename, protein_seq, swiss_out, identidade, positividade, cov):
-    # --------------------------Parser ----------------------------------------------------
-    swiss = open(str(swiss_out), "r").read().splitlines()
-
-    nhyp = open(f"{str(basename)}_annotated_products.txt", "w")
-    swiss_anot = open(f"{str(basename)}_SwissProt_annotations.txt", "w")
-    # temporary adding a line
-    #   so it accounts for the last query found by the BLAST analysis
-    temporary_query(swiss)
-
-    # creating the lists and counter that will be used
-    #   to make sure the script goes through each HSP in every query
-    # it's important that these lists are set back to NULL
-    #   and the counter is set to zero before we start
-    old_id = swiss[0].split("\t")  # recebe a primeira query para começar a contagem
-    old_id = old_id[0]
-    nhyp_list = []
-    classification = []
-    desc = []
-    annots = []
-
-    # loop starting and parsing preparation
-    for query in swiss:
-        # split line by \t > separate columns > each line becomes a list
-        line_split = query.split("\t")
-        title = line_split[-1]  # get description
-        title_split = title.split(" ", 1)[-1]  # get last part of description
-        description = title_split.split("OS=")[0].strip().rstrip()  # get only description
-        new_id = line_split[0]
-        # defining which file will receive each HSP depending on the counter number
-        #   the script will write each HSP on its corresponding .txt file
-        # IMPORTANT: the first time this loop runs it will add an empty line ("\n")
-        #            to the first line of the hyp_file.txt
-        if old_id != new_id:
-            if "non_hypothetical" in ' '.join(classification):
-                nhyp.write(f"{str(old_id)}\t")
-                # Sort annotations by bitscore
-                annots.sort()
-                # Get best identity, first position of array
-                nhyp.write(f"{str(annots[0].desc)}\n")
-
-                nhyp_list.append(str(old_id))
-
-                swiss_anot.write(f"{old_id}\t{len(desc)} Annotation(s): [{';'.join(desc)}]\n")
-
-            desc.clear()
-            classification.clear()
-            annots.clear()
-            # check first query of new ID
-            check_query(line_split, cov, keyword_list, identidade, positividade,
-                        classification, annots, desc, description)
-        else:
-            check_query(line_split, cov, keyword_list, identidade, positividade,
-                        classification, annots, desc, description)
-        # saving the information that will be written in the .txt files
-        old_id = new_id
-
-    # remove HSPs found by SwissProt from the original fasta_file input
-    fasta = open(str(protein_seq), "r").read().split(">")
-
-    for id_list in nhyp_list:
-        for seq in fasta:
-            if id_list in seq:
-                fasta.remove(seq)
-
-    new_fasta = open(f"{str(basename)}_BLASTp_AA_SwissProted.fasta", "w")
-    new_fasta.write(">".join(fasta))
-    new_fasta.close()
-    swiss_anot.close()
-    nhyp.close()
-
-
-def no_hit(basename, blast6):
-
-    # =============================== Parser sequences with no hit =============================
-    # Get hit headers
-    list_hit = set([line.strip().split()[0] for line in open(blast6, "r")])
-
-    # Get all headers
-    list_all = [
-        line.strip().replace(">", "")
-        for line in open(f"{str(basename)}_BLASTp_AA_SwissProted.fasta", "r")
-        if line.startswith(">")
-    ]
-
-    no_hit_file = open(f"{str(basename)}_no_hit_products.txt", "w")
-    for annotated in list_hit:
-        if annotated in list_all:
-            list_all.remove(annotated)
-    if len(list_all) > 0:
-        no_hit_file.write("\n".join(list_all) + "\n")
-    no_hit_file.close()
-
-    # =========================================================================================
-
-def swiss_run():
-    logger.info("Running BLAST against SwissProt")
-    blast(args.seq, swiss_out, args.spdb, args.hsps, args.evalue)
-    logger.info("Running parser SwissProt")
-
-
-dbtype, second_db = define_db()
-# Run BLAST against swissprotDB
-swiss_out = f"{str(args.basename)}_BLASTp_AAvsSwissProt.outfmt6"
-swiss_run()
-process_swiss(args.basename, args.seq, swiss_out, args.id, args.pos, args.cov)
-# Secondary database
-odb_out_name = f"{str(args.basename)}_BLASTp_AAvsSpecifiedDB.outfmt6"
-logger.info(f"Running BLAST against {dbtype}")
-blast(f"{args.basename}_BLASTp_AA_SwissProted.fasta", odb_out_name, second_db, args.hsps, args.evalue)
-# check file for secondary database
-# -----------------------------
-check_file(odb_out_name)
-# ------------------------------
-logger.info(f"Running parser {dbtype}")
-parser_blast(args.basename, odb_out_name, args.id, args.pos, args.cov,dbtype)
-logger.info(f"Parser blast done")
-# -------------No hit-----------
-logger.info(f"Identifying proteins with no hits in Swissprot and {dbtype} databases")
-no_hit(str(args.basename), odb_out_name)
-# ------------------------------
-logger.info("Blastp_parser is Finished")
+if __name__ == "__main__":
+    sys.exit(main())
